@@ -1,0 +1,117 @@
+import 'package:farm_flutter/utils/app_colors.dart';
+import 'package:flutter/material.dart';
+
+import '../utils/global.dart';
+
+class MineView extends StatefulWidget {
+  const MineView({super.key});
+
+  @override
+  State<MineView> createState() => _MineViewState();
+}
+
+class _MineViewState extends State<MineView> {
+  Widget _getStatItem(String value, String label) {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Text(
+          value,
+          style: TextStyle(
+            fontSize: 24,
+            fontWeight: FontWeight.bold,
+            color: AppColors.textPrimary,
+          ),
+        ),
+        SizedBox(height: 4),
+        Text(label, style: TextStyle(color: Colors.grey[600])),
+      ],
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: AppColors.backgroundLight,
+      body: Padding(
+        padding: EdgeInsets.all(33),
+        child: ListView(
+          children: [
+            SizedBox(height: 100),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                TextButton(
+                  onPressed: () {
+                    ScaffoldMessenger.of(context).clearSnackBars();
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text("跳转个人资料"),
+                        duration: Duration(milliseconds: 500),
+                        backgroundColor: AppColors.info,
+                      ),
+                    );
+                  },
+                  style: ButtonStyle(
+                    overlayColor: WidgetStateProperty.all(Colors.transparent),
+                    padding: WidgetStateProperty.all(EdgeInsets.zero),
+                    minimumSize: WidgetStateProperty.all(Size.zero),
+                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                  ),
+                  child: Row(
+                    children: [
+                      // SizedBox(width: 36),
+                      Text(
+                        Global.currentUserNickname,
+                        style: TextStyle(
+                          fontSize: 28,
+                          color: Colors.black,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      SizedBox(width: 13),
+                      Icon(
+                        Icons.arrow_forward_ios_outlined,
+                        size: 16,
+                        color: Colors.black,
+                      ),
+                    ],
+                  ),
+                ),
+                CircleAvatar(
+                  radius: 40,
+                  backgroundImage: Global.userAvatarUrl.isNotEmpty == true
+                      ? NetworkImage(Global.userAvatarUrl)
+                      : null,
+                  backgroundColor: Colors.grey[200],
+                  child: (Global.userAvatarUrl.isEmpty)
+                      ? Icon(Icons.person, size: 30, color: Colors.grey[600])
+                      : null,
+                ),
+              ],
+            ),
+            SizedBox(height: 32),
+            Container(
+              height: 100,
+              padding: EdgeInsets.symmetric(horizontal: 15),
+              decoration: BoxDecoration(
+                color: AppColors.cardBackground,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              width: double.infinity,
+              child: Row(
+                children: [
+                  Expanded(child: _getStatItem("28", "诊断次数")),
+                  Container(width: 1, height: 30, color: AppColors.cardBorder),
+                  Expanded(child: _getStatItem("12", "已保存方案")),
+                  Container(width: 1, height: 30, color: AppColors.cardBorder),
+                  Expanded(child: _getStatItem("3", "专家咨询")),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
