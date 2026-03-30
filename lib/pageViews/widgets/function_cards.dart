@@ -9,7 +9,6 @@ class FunctionCards extends StatefulWidget {
 }
 
 class _FunctionCardsState extends State<FunctionCards> {
-
   List<Map<String, dynamic>> _getCardsInfo = [
     {
       "icon": Icons.history,
@@ -54,19 +53,27 @@ class _FunctionCardsState extends State<FunctionCards> {
                     ),
                   );
                 },
-                title: Row(
+                title: Column(
                   children: [
-                    Container(
-                      width: 45,
-                      height: 45,
-                      decoration: BoxDecoration(
-                        color: item["iconBackgroundColor"],
-                        borderRadius: BorderRadius.circular(15),
-                      ),
-                      child: Icon(item["icon"], color: item["iconColor"]),
+                    SizedBox(height: 5),
+                    Row(
+                      children: [
+                        Container(
+                          width: 45,
+                          height: 45,
+                          decoration: BoxDecoration(
+                            color: item["iconBackgroundColor"],
+                            borderRadius: BorderRadius.circular(15),
+                          ),
+                          child: Icon(item["icon"], color: item["iconColor"]),
+                        ),
+                        SizedBox(width: 10),
+                        Text(
+                          item["title"],
+                          style: TextStyle(fontWeight: FontWeight.bold),
+                        ),
+                      ],
                     ),
-                    SizedBox(width: 10),
-                    Text(item["title"], style: TextStyle(fontWeight: FontWeight.bold)),
                   ],
                 ),
                 subtitle: Padding(
@@ -80,7 +87,7 @@ class _FunctionCardsState extends State<FunctionCards> {
             SizedBox(height: 5),
           ],
         );
-      })
+      }),
     );
   }
 }

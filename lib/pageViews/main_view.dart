@@ -13,6 +13,8 @@ class MainView extends StatefulWidget {
 }
 
 class _MainViewState extends State<MainView> {
+  bool? _hasImageSelected;
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
