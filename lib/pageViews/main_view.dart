@@ -13,7 +13,7 @@ class MainView extends StatefulWidget {
 }
 
 class _MainViewState extends State<MainView> {
-  bool? _hasImageSelected;
+  bool _hasImageSelected = false;
 
   @override
   Widget build(BuildContext context) {
@@ -30,11 +30,19 @@ class _MainViewState extends State<MainView> {
                 child: Center(
                   child: Column(
                     children: [
-                      UploadWidget(),
+                      UploadWidget(
+                        onImageSelected: () {
+                          setState(() {
+                            _hasImageSelected = true;
+                          });
+                        },
+                      ),
                       const SizedBox(height: 30),
-                      FunctionCards(),
-                      const SizedBox(height: 30),
-                      FarmNews(),
+                      if (!_hasImageSelected) ...[
+                        FunctionCards(),
+                        const SizedBox(height: 30),
+                        FarmNews(),
+                      ],
                     ],
                   ),
                 ),
@@ -42,7 +50,7 @@ class _MainViewState extends State<MainView> {
             ],
           ),
 
-          // ===== 阶梯模糊 AppBar =====
+          // ===== AppBar =====
           SizedBox(
             height: 70 + MediaQuery.of(context).padding.top,
             child: Stack(

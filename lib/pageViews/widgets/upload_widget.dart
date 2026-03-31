@@ -6,7 +6,9 @@ import 'package:dio/dio.dart';
 import 'package:farm_flutter/utils/app_colors.dart';
 
 class UploadWidget extends StatefulWidget {
-  const UploadWidget({super.key});
+  final VoidCallback? onImageSelected;
+
+  const UploadWidget({super.key, this.onImageSelected});
 
   @override
   State<UploadWidget> createState() => _UploadWidgetState();
@@ -210,6 +212,8 @@ class _UploadWidgetState extends State<UploadWidget> {
         _selectedImage = File(pickedFile.path);
         _result = null;
       });
+      // 通知父组件图片已选择
+      widget.onImageSelected?.call();
     }
   }
 
