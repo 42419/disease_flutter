@@ -1,7 +1,7 @@
 import 'dart:ui' show ImageFilter;
-import 'package:farm_flutter/pageViews/widgets/farm_news.dart';
-import 'package:farm_flutter/pageViews/widgets/function_cards.dart';
-import 'package:farm_flutter/pageViews/widgets/upload_widget.dart';
+import 'package:farm_flutter/pageViews/widgets/mainView/farm_news.dart';
+import 'package:farm_flutter/pageViews/widgets/mainView/function_cards.dart';
+import 'package:farm_flutter/pageViews/widgets/mainView/upload_widget.dart';
 import 'package:farm_flutter/utils/app_colors.dart';
 import 'package:flutter/material.dart';
 
@@ -42,6 +42,8 @@ class _MainViewState extends State<MainView> {
                         FunctionCards(),
                         const SizedBox(height: 30),
                         FarmNews(),
+                      ] else ...[
+
                       ],
                     ],
                   ),

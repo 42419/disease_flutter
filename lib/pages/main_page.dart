@@ -1,6 +1,6 @@
 import 'package:farm_flutter/pageViews/main_view.dart';
 import 'package:farm_flutter/pageViews/mine_view.dart';
-import 'package:farm_flutter/pageViews/widgets/upload_widget.dart';
+import 'package:farm_flutter/pageViews/widgets/mainView/upload_widget.dart';
 import 'package:farm_flutter/utils/app_colors.dart';
 import 'package:flutter/material.dart';
 
