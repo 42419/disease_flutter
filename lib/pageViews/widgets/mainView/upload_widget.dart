@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:farm_flutter/utils/api_config.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:dio/dio.dart';
@@ -50,7 +51,7 @@ class _UploadWidgetState extends State<UploadWidget> {
                   borderRadius: BorderRadius.circular(2),
                 ),
               ),
-              
+
               // 标题
               Padding(
                 padding: EdgeInsets.symmetric(horizontal: 20, vertical: 8),
@@ -63,12 +64,9 @@ class _UploadWidgetState extends State<UploadWidget> {
                   ),
                 ),
               ),
-              
-              Divider(
-                color: AppColors.divider,
-                height: 1,
-              ),
-              
+
+              Divider(color: AppColors.divider, height: 1),
+
               // 拍照上传选项
               _buildOptionItem(
                 icon: Icons.camera_alt_rounded,
@@ -79,7 +77,7 @@ class _UploadWidgetState extends State<UploadWidget> {
                   _pickImage(ImageSource.camera);
                 },
               ),
-              
+
               // 分割线
               Divider(
                 color: AppColors.divider,
@@ -87,7 +85,7 @@ class _UploadWidgetState extends State<UploadWidget> {
                 indent: 20,
                 endIndent: 20,
               ),
-              
+
               // 从相册选择选项
               _buildOptionItem(
                 icon: Icons.photo_library_rounded,
@@ -98,7 +96,7 @@ class _UploadWidgetState extends State<UploadWidget> {
                   _pickImage(ImageSource.gallery);
                 },
               ),
-              
+
               // 取消按钮
               Padding(
                 padding: EdgeInsets.all(16),
@@ -159,14 +157,10 @@ class _UploadWidgetState extends State<UploadWidget> {
                   ),
                 ],
               ),
-              child: Icon(
-                icon,
-                color: AppColors.white,
-                size: 26,
-              ),
+              child: Icon(icon, color: AppColors.white, size: 26),
             ),
             SizedBox(width: 16),
-            
+
             // 文字部分
             Expanded(
               child: Column(
@@ -191,7 +185,7 @@ class _UploadWidgetState extends State<UploadWidget> {
                 ],
               ),
             ),
-            
+
             // 箭头图标
             Icon(
               Icons.chevron_right_rounded,
@@ -214,19 +208,13 @@ class _UploadWidgetState extends State<UploadWidget> {
       });
       // 通知父组件图片已选择
       widget.onImageSelected?.call();
+      // 选图后自动上传
+      await _uploadImage();
     }
   }
 
   Future<void> _uploadImage() async {
-    if (_selectedImage == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text("请先选择一张图片"),
-          backgroundColor: AppColors.warning,
-        ),
-      );
-      return;
-    }
+    if (_selectedImage == null) return;
 
     setState(() {
       _isUploading = true;
@@ -237,15 +225,25 @@ class _UploadWidgetState extends State<UploadWidget> {
       final formData = FormData.fromMap({
         "image": await MultipartFile.fromFile(_selectedImage!.path),
       });
+      final token = {
+        "X-API-Token": ApiConfig.apiToken,
+      };
+      dio.options.headers.addAll(token);
       final response = await dio.post(
-        "http://192.168.0.178:8080/api/upload",
+        ApiConfig.apiUrl,
         data: formData,
       );
+      print(response);
 
       if (mounted) {
+        final data = response.data;
+        String? successValue;
+        if (data is Map) {
+          successValue = data['top5class'][0]?.toString();
+        }
         setState(() {
           _isUploading = false;
-          _result = response.data.toString();
+          _result = successValue ?? data.toString();
         });
       }
     } catch (e) {
@@ -279,13 +277,24 @@ class _UploadWidgetState extends State<UploadWidget> {
                   height: 200,
                   decoration: BoxDecoration(
                     color: AppColors.uploadAreaBackground,
-                    borderRadius: BorderRadius.only(topLeft: Radius.circular(12), topRight: Radius.circular(12), bottomLeft: Radius.circular(12)),
-                    border: Border.all(color: AppColors.uploadAreaBorder, width: 2),
+                    borderRadius: BorderRadius.only(
+                      topLeft: Radius.circular(12),
+                      topRight: Radius.circular(12),
+                      bottomLeft: Radius.circular(12),
+                    ),
+                    border: Border.all(
+                      color: AppColors.uploadAreaBorder,
+                      width: 2,
+                    ),
                   ),
                   child: ClipRRect(
-                    borderRadius: BorderRadius.only(topLeft: Radius.circular(12), topRight: Radius.circular(12), bottomLeft: Radius.circular(12)),
+                    borderRadius: BorderRadius.only(
+                      topLeft: Radius.circular(12),
+                      topRight: Radius.circular(12),
+                      bottomLeft: Radius.circular(12),
+                    ),
                     child: _selectedImage != null
-                        ? Image.file(_selectedImage!, fit: BoxFit.cover)
+                        ? Image.file(_selectedImage!, fit: BoxFit.contain)
                         : Column(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
@@ -309,16 +318,22 @@ class _UploadWidgetState extends State<UploadWidget> {
                 ),
               ),
             ),
-            // 类别选择框 - 悬浮在右下角外侧，与上传框有轻微重叠
+            // 类别选择框 - 悬浮在右下角外侧，与上传框底部对齐
             Positioned(
               right: 0,
-              bottom: -2,
+              top: 200,
               child: Container(
                 padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                 decoration: BoxDecoration(
                   color: AppColors.white,
-                  borderRadius: BorderRadius.only(bottomLeft: Radius.circular(12), bottomRight: Radius.circular(12)),
-                  border: Border.all(color: AppColors.uploadAreaBorder, width: 1.5),
+                  borderRadius: BorderRadius.only(
+                    bottomLeft: Radius.circular(12),
+                    bottomRight: Radius.circular(12),
+                  ),
+                  border: Border.all(
+                    color: AppColors.uploadAreaBorder,
+                    width: 1.5,
+                  ),
                   boxShadow: [
                     BoxShadow(
                       color: AppColors.shadow,
@@ -330,19 +345,49 @@ class _UploadWidgetState extends State<UploadWidget> {
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Text(
-                      "类别：${_result ?? "请上传图片"}",
-                      style: TextStyle(
-                        fontSize: 15,
-                        color: AppColors.textSecondary,
+                    if (_isUploading) ...[
+                      SizedBox(
+                        width: 14,
+                        height: 14,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: AppColors.primary,
+                        ),
                       ),
-                    ),
-                    SizedBox(width: 6),
-                    Icon(
-                      Icons.arrow_drop_down,
-                      size: 20,
-                      color: AppColors.primary,
-                    ),
+                      SizedBox(width: 6),
+                      Text(
+                        "识别中...",
+                        style: TextStyle(
+                          fontSize: 15,
+                          color: AppColors.textSecondary,
+                        ),
+                      ),
+                    ] else ...[
+                      Text.rich(
+                        TextSpan(
+                          text: "类别：",
+                          style: TextStyle(
+                            fontSize: 15,
+                            color: AppColors.textSecondary,
+                          ),
+                          children: [
+                            TextSpan(
+                              text: _result ?? "请上传图片",
+                              style: TextStyle(
+                                fontSize: 17,
+                                color: AppColors.danger,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      SizedBox(width: 6),
+                      Icon(
+                        Icons.arrow_drop_down,
+                        size: 20,
+                        color: AppColors.primary,
+                      ),
+                    ],
                   ],
                 ),
               ),

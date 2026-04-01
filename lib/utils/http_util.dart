@@ -1,12 +1,14 @@
-import 'dart:convert';
-import 'dart:io';
+import 'package:dio/dio.dart';
 
 class HttpUtil {
   static String baseUrl = "";
 
-  static final HttpClient _client = HttpClient()
-    ..connectionTimeout = Duration(seconds: 10)
-    ..idleTimeout = Duration(seconds: 10);
+  static final Dio _client = Dio(
+    BaseOptions(
+      connectTimeout: Duration(seconds: 10),
+      receiveTimeout: Duration(seconds: 10),
+    ),
+  );
 
   static String _buildUrl(String url) {
     if (url.startsWith("http://") || url.startsWith("https://")) {
@@ -26,15 +28,14 @@ class HttpUtil {
     Map<String, String>? headers,
   }) async {
     try {
-      final request = await _client.getUrl(Uri.parse(_buildUrl(url)));
-      headers?.forEach((key, value) => request.headers.set(key, value));
-      final response = await request.close();
+      final response = await _client.get(
+        _buildUrl(url),
+        options: Options(headers: headers),
+      );
       if (response.statusCode != 200) {
-        throw HttpException("请求失败, ${response.statusCode}");
+        throw Exception("请求失败, ${response.statusCode}");
       }
-      final responseBody = await response.transform(utf8.decoder).join();
-      final Map<String, dynamic> data = jsonDecode(responseBody);
-      return data;
+      return response.data as Map<String, dynamic>;
     } catch (e) {
       throw Exception("GET 请求失败, $e");
     }
@@ -46,20 +47,61 @@ class HttpUtil {
     Map<String, String>? headers,
   }) async {
     try {
-      final request = await _client.postUrl(Uri.parse(_buildUrl(url)));
-      headers?.forEach((key, value) => request.headers.set(key, value));
-      final body = utf8.encode(jsonEncode(data));
-      request.headers.set(HttpHeaders.contentTypeHeader, "application/json");
-      request.add(body);
-      final response = await request.close();
-      if (response.statusCode < 200 || response.statusCode > 300) {
-        throw HttpException("请求失败, ${response.statusCode}");
+      final response = await _client.post(
+        _buildUrl(url),
+        data: data,
+        options: Options(headers: headers, contentType: "application/json"),
+      );
+      if (response.statusCode! < 200 || response.statusCode! > 300) {
+        throw Exception("请求失败, ${response.statusCode}");
       }
-      final responseBody = await response.transform(utf8.decoder).join();
-      final Map<String, dynamic> result = jsonDecode(responseBody);
-      return result;
+      return response.data as Map<String, dynamic>;
     } catch (e) {
       throw Exception("POST 请求失败, $e");
     }
+  }
+
+  static Future<Map<String, dynamic>> postFile(
+    String url,
+    List<String> filePaths, {
+    Map<String, dynamic>? data,
+    Map<String, String>? headers,
+  }) async {
+    try {
+      final formData = FormData();
+
+      // 添加文件
+      for (int i = 0; i < filePaths.length; i++) {
+        formData.files.add(
+          MapEntry(
+            'file${i > 0 ? i : ''}',
+            await MultipartFile.fromFile(filePaths[i]),
+          ),
+        );
+      }
+
+      // 添加其他表单数据
+      if (data != null) {
+        data.forEach((key, value) {
+          formData.fields.add(MapEntry(key, value.toString()));
+        });
+      }
+
+      final response = await _client.post(
+        _buildUrl(url),
+        data: formData,
+        options: Options(headers: headers),
+      );
+      if (response.statusCode! < 200 || response.statusCode! > 300) {
+        throw Exception("请求失败, ${response.statusCode}");
+      }
+      return response.data as Map<String, dynamic>;
+    } catch (e) {
+      throw Exception("文件上传失败, $e");
+    }
+  }
+
+  static void close() {
+    _client.close();
   }
 }
