@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:dio/dio.dart';
 
 class HttpUtil {
@@ -66,6 +68,7 @@ class HttpUtil {
     List<String> filePaths, {
     Map<String, dynamic>? data,
     Map<String, String>? headers,
+    String fileField = 'file',
   }) async {
     try {
       final formData = FormData();
@@ -74,7 +77,7 @@ class HttpUtil {
       for (int i = 0; i < filePaths.length; i++) {
         formData.files.add(
           MapEntry(
-            'file${i > 0 ? i : ''}',
+            '${fileField}${i > 0 ? i : ''}',
             await MultipartFile.fromFile(filePaths[i]),
           ),
         );
@@ -92,9 +95,11 @@ class HttpUtil {
         data: formData,
         options: Options(headers: headers),
       );
+
       if (response.statusCode! < 200 || response.statusCode! > 300) {
         throw Exception("请求失败, ${response.statusCode}");
       }
+
       return response.data as Map<String, dynamic>;
     } catch (e) {
       throw Exception("文件上传失败, $e");
