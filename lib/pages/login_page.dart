@@ -60,30 +60,29 @@ class _LoginPageState extends State<LoginPage> {
 
     showDialog(
       context: context,
-      builder: (context) => Center(
-        child: CircularProgressIndicator(color: AppColors.primary),
-      ),
+      builder: (context) =>
+          Center(child: CircularProgressIndicator(color: AppColors.primary)),
     );
 
     try {
       //TODO: 后续需要修改response内容
-      final response = await HttpUtil.post(
-        "http://192.168.0.178:8080/api/login",
-        {
-          "username": _usernameController.text,
-          "password": _passwordController.text,
-        },
-      );
+      // final response = await HttpUtil.post(
+      //   "http://192.168.0.178:8080/api/login",
+      //   {
+      //     "username": _usernameController.text,
+      //     "password": _passwordController.text,
+      //   },
+      // );
       if (mounted) Navigator.pop(context);
-      if (response["success"] == true) {
+      if ( /* response["success"] == true */ true) {
         //TODO: 后续需要修改“data["nickname"]”
-        Global.currentUserNickname = response["nickname"];
+        Global.currentUserNickname = /* response["nickname"] */ "用户名";
         if (mounted) {
           Navigator.pushNamedAndRemoveUntil(context, "/", (route) => false);
         }
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text("登录成功, 欢迎 ${response['nickname']}"),
+            content: Text(/* "登录成功, 欢迎 ${response['nickname']}" */ "登录成功"),
             backgroundColor: AppColors.success,
           ),
         );
@@ -92,7 +91,7 @@ class _LoginPageState extends State<LoginPage> {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               //TODO: 后续需要修改content内容
-              content: Text(response['message']),
+              content: Text(/* response['message'] */ "登录失败"),
               backgroundColor: AppColors.error,
             ),
           );
@@ -173,14 +172,20 @@ class _LoginPageState extends State<LoginPage> {
                             ),
                           ),
                           errorBorder: OutlineInputBorder(
-                            borderSide: BorderSide(color: AppColors.error, width: 1),
+                            borderSide: BorderSide(
+                              color: AppColors.error,
+                              width: 1,
+                            ),
                             borderRadius: BorderRadius.only(
                               topLeft: Radius.circular(8),
                               topRight: Radius.circular(8),
                             ),
                           ),
                           focusedErrorBorder: OutlineInputBorder(
-                            borderSide: BorderSide(color: AppColors.error, width: 2),
+                            borderSide: BorderSide(
+                              color: AppColors.error,
+                              width: 2,
+                            ),
                             borderRadius: BorderRadius.only(
                               topLeft: Radius.circular(8),
                               topRight: Radius.circular(8),
@@ -228,14 +233,20 @@ class _LoginPageState extends State<LoginPage> {
                             ),
                           ),
                           errorBorder: OutlineInputBorder(
-                            borderSide: BorderSide(color: AppColors.error, width: 1),
+                            borderSide: BorderSide(
+                              color: AppColors.error,
+                              width: 1,
+                            ),
                             borderRadius: BorderRadius.only(
                               bottomLeft: Radius.circular(8),
                               bottomRight: Radius.circular(8),
                             ),
                           ),
                           focusedErrorBorder: OutlineInputBorder(
-                            borderSide: BorderSide(color: AppColors.error, width: 2),
+                            borderSide: BorderSide(
+                              color: AppColors.error,
+                              width: 2,
+                            ),
                             borderRadius: BorderRadius.only(
                               bottomLeft: Radius.circular(8),
                               bottomRight: Radius.circular(8),
@@ -256,14 +267,14 @@ class _LoginPageState extends State<LoginPage> {
                             },
                             activeColor: AppColors.primary,
                             checkColor: AppColors.white,
-                            fillColor: WidgetStateProperty.resolveWith(
-                              (states) {
-                                if (states.contains(WidgetState.selected)) {
-                                  return AppColors.primary;
-                                }
-                                return AppColors.inputBorder;
-                              },
-                            ),
+                            fillColor: WidgetStateProperty.resolveWith((
+                              states,
+                            ) {
+                              if (states.contains(WidgetState.selected)) {
+                                return AppColors.primary;
+                              }
+                              return AppColors.inputBorder;
+                            }),
                           ),
                           Text(
                             "勾选即代表您已同意",
@@ -392,7 +403,7 @@ class _LoginPageState extends State<LoginPage> {
                         radius: 28,
                         child: Icon(
                           Icons.wechat_rounded,
-                          color: AppColors.primaryLight,
+                          color: AppColors.primary,
                           size: 28,
                         ),
                       ),
@@ -414,7 +425,7 @@ class _LoginPageState extends State<LoginPage> {
                         radius: 28,
                         child: Icon(
                           Icons.phone_rounded,
-                          color: AppColors.info,
+                          color: AppColors.primary,
                           size: 28,
                         ),
                       ),

@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:farm_flutter/utils/api_config.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:farm_flutter/utils/app_colors.dart';
 import 'package:farm_flutter/utils/http_util.dart';
@@ -23,6 +24,119 @@ class _UploadWidgetState extends State<UploadWidget> {
   String? _heatmapData;
   List<String>? _top5Classes;
   List<double>? _predictTop5;
+
+  void _showCategoryDetails() {
+    showDialog(
+      context: context,
+      builder: (dialogContext) => Dialog(
+        backgroundColor: AppColors.white,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Padding(
+          padding: EdgeInsets.all(20),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                "类别详情",
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w600,
+                  color: AppColors.textPrimary,
+                ),
+              ),
+              SizedBox(height: 16),
+              Container(
+                padding: EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: AppColors.cardBackground,
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(
+                    color: AppColors.uploadAreaBorder,
+                    width: 1,
+                  ),
+                ),
+                child: SelectableText(
+                  _result ?? "请上传图片",
+                  style: TextStyle(
+                    fontSize: 16,
+                    color: AppColors.danger,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ),
+              SizedBox(height: 20),
+              Row(
+                children: [
+                  Expanded(
+                    child: SizedBox(
+                      height: 44,
+                      child: OutlinedButton(
+                        onPressed: () => Navigator.pop(dialogContext),
+                        style: OutlinedButton.styleFrom(
+                          side: BorderSide(
+                            color: AppColors.uploadAreaBorder,
+                          ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                        ),
+                        child: Text(
+                          "关闭",
+                          style: TextStyle(
+                            color: AppColors.textSecondary,
+                            fontSize: 16,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                  SizedBox(width: 10),
+                  Expanded(
+                    child: SizedBox(
+                      height: 44,
+                      child: ElevatedButton(
+                        onPressed: () {
+                          final text = _result ?? "请上传图片";
+                          Clipboard.setData(ClipboardData(text: text));
+                          Navigator.pop(dialogContext);
+                          // 使用主 context 显示 SnackBar，确保其显示在最上层
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text("已复制到剪贴板"),
+                              duration: Duration(seconds: 2),
+                              backgroundColor: AppColors.primary,
+                            ),
+                          );
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.primary,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                        ),
+                        child: Text(
+                          "复制",
+                          style: TextStyle(
+                            color: AppColors.white,
+                            fontSize: 16,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
 
   void _showPickOptions() {
     showModalBottomSheet(
@@ -296,14 +410,14 @@ class _UploadWidgetState extends State<UploadWidget> {
             width: 32,
             height: 32,
             decoration: BoxDecoration(
-              color: index == 0 ? AppColors.primary : AppColors.plantSubHealthy,
+              color: index == 0 ? AppColors.primary : AppColors.primaryLightest,
               shape: BoxShape.circle,
             ),
             child: Center(
               child: Text(
                 "${index + 1}",
                 style: TextStyle(
-                  color: Colors.white,
+                  color: index == 0 ? Colors.white : AppColors.textPrimary,
                   fontSize: 14,
                   fontWeight: FontWeight.bold,
                 ),
@@ -334,7 +448,7 @@ class _UploadWidgetState extends State<UploadWidget> {
                 decoration: BoxDecoration(
                   color: index == 0
                       ? AppColors.primary
-                      : AppColors.plantSubHealthy,
+                      : AppColors.primaryLightest,
                   borderRadius: BorderRadius.circular(4),
                 ),
               ),
@@ -431,6 +545,9 @@ class _UploadWidgetState extends State<UploadWidget> {
                   ),
                 ],
               ),
+              constraints: BoxConstraints(
+                maxWidth: double.infinity,
+              ),
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
@@ -450,36 +567,44 @@ class _UploadWidgetState extends State<UploadWidget> {
                         fontSize: 15,
                         color: AppColors.textSecondary,
                       ),
+                      overflow: TextOverflow.ellipsis,
                     ),
                   ] else ...[
-                    Text.rich(
-                      TextSpan(
-                        text: "类别：",
-                        style: TextStyle(
-                          fontSize: 15,
-                          color: AppColors.textSecondary,
-                        ),
-                        children: [
-                          TextSpan(
-                            text: _result ?? "请上传图片",
-                            style: _result != null
-                                ? TextStyle(
-                                    fontSize: 17,
-                                    color: AppColors.danger,
-                                  )
-                                : TextStyle(
-                                    fontSize: 15,
-                                    color: AppColors.textSecondary,
-                                  ),
+                    Flexible(
+                      child: Text.rich(
+                        TextSpan(
+                          text: "类别：",
+                          style: TextStyle(
+                            fontSize: 15,
+                            color: AppColors.textSecondary,
                           ),
-                        ],
+                          children: [
+                            TextSpan(
+                              text: _result ?? "请上传图片",
+                              style: _result != null
+                                  ? TextStyle(
+                                      fontSize: 17,
+                                      color: AppColors.danger,
+                                    )
+                                  : TextStyle(
+                                      fontSize: 15,
+                                      color: AppColors.textSecondary,
+                                    ),
+                            ),
+                          ],
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                       ),
                     ),
                     SizedBox(width: 6),
-                    Icon(
-                      Icons.arrow_drop_down,
-                      size: 20,
-                      color: AppColors.primary,
+                    GestureDetector(
+                      onTap: _result != null ? _showCategoryDetails : null,
+                      child: Icon(
+                        Icons.arrow_drop_down,
+                        size: 20,
+                        color: _result != null ? AppColors.primary : AppColors.textTertiary,
+                      ),
                     ),
                   ],
                 ],

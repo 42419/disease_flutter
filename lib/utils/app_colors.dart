@@ -1,36 +1,36 @@
 import 'package:flutter/material.dart';
 
 /// 农业种植病虫害防治APP - 配色方案
-/// 设计理念：自然、专业、可靠、易识别
+/// 设计理念：高级、稳重、专业、优雅
 class AppColors {
   // ==========================================
-  // 主色调 - 绿色系（代表植物、生长、健康）
+  // 主色调 - 黑白系（代表专业、稳重、高级）
   // ==========================================
   
-  /// 主色 - 深绿色（用于主要按钮、导航栏等）
-  static const Color primary = Color(0xFF2E7D32);
+  /// 主色 - 纯黑色（用于主要按钮、导航栏等）
+  static const Color primary = Color(0xFF1A1A1A);
+
+  /// 主色浅色 - 深灰色（用于次要按钮、标签等）
+  static const Color primaryLight = Color(0xFF4A4A4A);
   
-  /// 主色浅色 - 中绿色（用于次要按钮、标签等）
-  static const Color primaryLight = Color(0xFF4CAF50);
+  /// 主色极浅色 - 浅灰色（用于背景装饰、轻微高亮）
+  static const Color primaryLightest = Color(0xFFE8E8E8);
   
-  /// 主色极浅色 - 浅绿色（用于背景装饰、轻微高亮）
-  static const Color primaryLightest = Color(0xFFE8F5E9);
-  
-  /// 主色深色 - 墨绿色（用于强调、选中状态）
-  static const Color primaryDark = Color(0xFF1B5E20);
+  /// 主色深色 - 极深黑色（用于强调、选中状态）
+  static const Color primaryDark = Color(0xFF0D0D0D);
 
   // ==========================================
-  // 辅助色 - 大地色系（代表土地、自然）
+  // 辅助色 - 灰度系（代表稳重、专业）
   // ==========================================
   
-  /// 大地棕 - 棕色（用于次要信息、边框）
-  static const Color earthBrown = Color(0xFF8D6E63);
+  /// 辅助灰 - 深灰色（用于次要信息、边框）
+  static const Color earthBrown = Color(0xFF696969);
   
-  /// 土壤色 - 浅棕色（用于背景、卡片）
-  static const Color soilLight = Color(0xFFD7CCC8);
+  /// 浅灰 - 中浅灰色（用于背景、卡片）
+  static const Color soilLight = Color(0xFFD3D3D3);
   
-  /// 金黄色 - 收获色（用于成功提示、重要信息）
-  static const Color harvestGold = Color(0xFFFFB300);
+  /// 白银色 - 高级银灰（用于强调、重要信息）
+  static const Color harvestGold = Color(0xFFC0C0C0);
 
   // ==========================================
   // 警示色 - 红橙系（用于病虫害提醒、警告）
@@ -106,19 +106,19 @@ class AppColors {
   static const Color inputBorder = Color(0xFFBDBDBD);
   
   /// 输入框聚焦边框 - 主色
-  static const Color inputBorderFocused = Color(0xFF4CAF50);
+  static const Color inputBorderFocused = Color(0xFF1A1A1A);
   
   /// 按钮文字 - 白色
   static const Color buttonText = Color(0xFFFFFFFF);
   
   /// 次要按钮文字 - 主色
-  static const Color buttonTextSecondary = Color(0xFF2E7D32);
+  static const Color buttonTextSecondary = Color(0xFF1A1A1A);
   
   /// 图标默认 - 深灰色
   static const Color iconDefault = Color(0xFF616161);
   
   /// 图标激活 - 主色
-  static const Color iconActive = Color(0xFF4CAF50);
+  static const Color iconActive = Color(0xFF1A1A1A);
   
   /// 导航栏背景 - 白色
   static const Color appBarBackground = Color(0xFFFFFFFF);
@@ -127,7 +127,7 @@ class AppColors {
   static const Color bottomNavBackground = Color(0xFFFFFFFF);
   
   /// 底部导航栏选中 - 主色
-  static const Color bottomNavSelected = Color(0xFF2E7D32);
+  static const Color bottomNavSelected = Color(0xFF1A1A1A);
   
   /// 底部导航栏未选中 - 灰色
   static const Color bottomNavUnselected = Color(0xFF9E9E9E);
@@ -168,11 +168,11 @@ class AppColors {
   // 渐变色
   // ==========================================
   
-  /// 主色渐变 - 从浅绿到深绿
+  /// 主色渐变 - 从浅灰到深黑
   static const LinearGradient primaryGradient = LinearGradient(
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
-    colors: [Color(0xFF4CAF50), Color(0xFF2E7D32)],
+    colors: [Color(0xFFE8E8E8), Color(0xFF1A1A1A)],
   );
   
   /// 警告渐变 - 从黄色到橙色
@@ -190,37 +190,37 @@ class AppColors {
   );
 
   // ==========================================
-  // 季节主题色（可选）
+  // 季节主题色（改为黑白系）
   // ==========================================
   
-  /// 春季 - 嫩绿色
-  static const Color seasonSpring = Color(0xFF66BB6A);
+  /// 春季 - 深灰色
+  static const Color seasonSpring = Color(0xFF5A5A5A);
   
-  /// 夏季 - 深绿色
-  static const Color seasonSummer = Color(0xFF2E7D32);
+  /// 夏季 - 黑色
+  static const Color seasonSummer = Color(0xFF1A1A1A);
   
-  /// 秋季 - 金黄色
-  static const Color seasonAutumn = Color(0xFFFFB300);
+  /// 秋季 - 中灰色
+  static const Color seasonAutumn = Color(0xFF808080);
   
-  /// 冬季 - 棕灰色
-  static const Color seasonWinter = Color(0xFF8D6E63);
+  /// 冬季 - 浅灰色
+  static const Color seasonWinter = Color(0xFFC0C0C0);
 
   // ==========================================
   // 特殊用途颜色
   // ==========================================
   
-  /// 上传区域背景 - 浅绿色
-  static const Color uploadAreaBackground = Color(0xFFE8F5E9);
+  /// 上传区域背景 - 浅灰色
+  static const Color uploadAreaBackground = Color(0xFFF5F5F5);
   
-  /// 上传区域边框 - 绿色
-  static const Color uploadAreaBorder = Color(0xFF4CAF50);
+  /// 上传区域边框 - 深灰色
+  static const Color uploadAreaBorder = Color(0xFF4A4A4A);
   
   /// 图片占位背景 - 浅灰色
   static const Color imagePlaceholder = Color(0xFFE0E0E0);
   
   /// 加载中颜色 - 主色
-  static const Color loading = Color(0xFF4CAF50);
+  static const Color loading = Color(0xFF1A1A1A);
   
-  /// 水印颜色 - 半透明灰色
+  /// 水印颜色 - 半透明黑色
   static const Color watermark = Color(0x40000000);
 }
