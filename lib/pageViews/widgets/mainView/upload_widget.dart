@@ -30,9 +30,7 @@ class _UploadWidgetState extends State<UploadWidget> {
       context: context,
       builder: (dialogContext) => Dialog(
         backgroundColor: AppColors.white,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         child: Padding(
           padding: EdgeInsets.all(20),
           child: Column(
@@ -76,9 +74,7 @@ class _UploadWidgetState extends State<UploadWidget> {
                       child: OutlinedButton(
                         onPressed: () => Navigator.pop(dialogContext),
                         style: OutlinedButton.styleFrom(
-                          side: BorderSide(
-                            color: AppColors.uploadAreaBorder,
-                          ),
+                          side: BorderSide(color: AppColors.uploadAreaBorder),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(8),
                           ),
@@ -545,9 +541,7 @@ class _UploadWidgetState extends State<UploadWidget> {
                   ),
                 ],
               ),
-              constraints: BoxConstraints(
-                maxWidth: double.infinity,
-              ),
+              constraints: BoxConstraints(maxWidth: double.infinity),
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
@@ -603,7 +597,9 @@ class _UploadWidgetState extends State<UploadWidget> {
                       child: Icon(
                         Icons.arrow_drop_down,
                         size: 20,
-                        color: _result != null ? AppColors.primary : AppColors.textTertiary,
+                        color: _result != null
+                            ? AppColors.primary
+                            : AppColors.textTertiary,
                       ),
                     ),
                   ],
@@ -691,6 +687,25 @@ class _UploadWidgetState extends State<UploadWidget> {
                       }),
                     ),
                 ],
+              ),
+            ),
+            SizedBox(height: 25),
+            SizedBox(
+              height: 55,
+              width: double.infinity,
+              child: ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.white,
+                  foregroundColor: Colors.black,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12)
+                  )
+                ),
+
+                onPressed: () {
+                  Navigator.pushNamed(context, "/analyze", arguments: "$_result");
+                },
+                child: Text("详细分析", style: TextStyle(fontSize: 20)),
               ),
             ),
           ],
