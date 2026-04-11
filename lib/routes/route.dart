@@ -6,7 +6,7 @@ import '../pages/main_page.dart';
 
 Widget getRootWidget() {
   return MaterialApp(
-    initialRoute: "/",
+    initialRoute: "/login",
     routes: _getRoutes(),
     debugShowCheckedModeBanner: false,
     theme: ThemeData(
