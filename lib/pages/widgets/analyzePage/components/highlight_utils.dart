@@ -29,7 +29,7 @@ List<InlineSpan> buildHighlightedSpans(String text) {
     '休眠期', '生长期', '花期', '果实膨大期',
   ];
 
-  const badgeKeywords = ['物理防治', '化学防治', '生物防治', '农业防治'];
+  const badgeKeywords = ['物理防治', '化学防治', '生物防治', '农业防治', '储运防治'];
 
   final spans = <InlineSpan>[];
   var remaining = text;
@@ -56,13 +56,12 @@ List<InlineSpan> buildHighlightedSpans(String text) {
     }
 
     if (badgeKeywords.contains(earliestKeyword)) {
-      spans.add(const TextSpan(text: '\n'));
       spans.add(
         WidgetSpan(
           alignment: PlaceholderAlignment.middle,
           child: Container(
-            margin: const EdgeInsets.only(bottom: 4),
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+            margin: const EdgeInsets.only(bottom: 8),
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
             decoration: BoxDecoration(
               color: AppColors.primary,
               borderRadius: BorderRadius.circular(4),
@@ -72,14 +71,13 @@ List<InlineSpan> buildHighlightedSpans(String text) {
               style: const TextStyle(
                 color: AppColors.white,
                 fontWeight: FontWeight.bold,
-                fontSize: 14,
+                fontSize: 13,
                 height: 1.2,
               ),
             ),
           ),
         ),
       );
-      spans.add(const TextSpan(text: '\n'));
     } else {
       spans.add(
         TextSpan(

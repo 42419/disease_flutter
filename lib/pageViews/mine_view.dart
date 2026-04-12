@@ -109,6 +109,24 @@ class _MineViewState extends State<MineView> {
                 ],
               ),
             ),
+            SizedBox(height: 32),
+            SizedBox(
+              height: 50,
+              width: double.infinity,
+              child: ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  foregroundColor: Colors.black,
+                  backgroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+                onPressed: () {
+                  Navigator.pushNamedAndRemoveUntil(context, "/login", (context) => false);
+                },
+                child: Text("退出登录"),
+              ),
+            ),
           ],
         ),
       ),

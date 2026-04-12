@@ -1,8 +1,8 @@
-import 'package:farm_flutter/pages/widgets/analyzePage/looping_dot.dart';
+import 'package:farm_flutter/pages/widgets/analyzePage/components/looping_dot.dart';
 import 'package:farm_flutter/utils/app_colors.dart';
 import 'package:flutter/material.dart';
 
-class AnalyzeLoadingWidget extends StatelessWidget {
+class AnalyzeLoadingWidget extends StatefulWidget {
   final ValueNotifier<String> streamingTextNotifier;
   final ScrollController scrollController;
 
@@ -13,12 +13,46 @@ class AnalyzeLoadingWidget extends StatelessWidget {
   });
 
   @override
+  State<AnalyzeLoadingWidget> createState() => _AnalyzeLoadingWidgetState();
+}
+
+class _AnalyzeLoadingWidgetState extends State<AnalyzeLoadingWidget> {
+  final ScrollController _innerScrollController = ScrollController();
+  bool _innerScrollScheduled = false;
+
+  @override
+  void initState() {
+    super.initState();
+    widget.streamingTextNotifier.addListener(_scrollToBottom);
+  }
+
+  @override
+  void dispose() {
+    widget.streamingTextNotifier.removeListener(_scrollToBottom);
+    _innerScrollController.dispose();
+    super.dispose();
+  }
+
+  void _scrollToBottom() {
+    if (_innerScrollScheduled) return;
+    _innerScrollScheduled = true;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _innerScrollScheduled = false;
+      if (!mounted || !_innerScrollController.hasClients) return;
+      try {
+        final position = _innerScrollController.position;
+        _innerScrollController.jumpTo(position.maxScrollExtent);
+      } catch (_) {}
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         ValueListenableBuilder<String>(
-          valueListenable: streamingTextNotifier,
+          valueListenable: widget.streamingTextNotifier,
           builder: (context, text, _) {
             return Row(
               crossAxisAlignment: CrossAxisAlignment.center,
@@ -48,7 +82,7 @@ class AnalyzeLoadingWidget extends StatelessWidget {
           },
         ),
         ValueListenableBuilder<String>(
-          valueListenable: streamingTextNotifier,
+          valueListenable: widget.streamingTextNotifier,
           builder: (context, text, _) {
             if (text.isEmpty) return const SizedBox.shrink();
             return Column(
@@ -101,7 +135,7 @@ class AnalyzeLoadingWidget extends StatelessWidget {
                           borderRadius: BorderRadius.circular(6),
                         ),
                         child: SingleChildScrollView(
-                          controller: scrollController,
+                          controller: _innerScrollController,
                           padding: const EdgeInsets.all(8),
                           child: Text(
                             text,

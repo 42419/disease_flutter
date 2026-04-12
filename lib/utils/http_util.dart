@@ -63,6 +63,31 @@ class HttpUtil {
     }
   }
 
+  static Future<Response<ResponseBody>> postStream(
+    String url,
+    Map data, {
+    Map<String, String>? headers,
+  }) async {
+    try {
+      final response = await _client.post<ResponseBody>(
+        _buildUrl(url),
+        data: data,
+        options: Options(
+          headers: headers,
+          contentType: "application/json",
+          responseType: ResponseType.stream,
+        ),
+      );
+      if (response.statusCode! < 200 || response.statusCode! > 300) {
+        throw Exception("请求失败, ${response.statusCode}");
+      }
+      return response;
+    } catch (e) {
+      if (e is DioException) rethrow; // 抛出异常让外层处理
+      throw Exception("POST Stream 请求失败, $e");
+    }
+  }
+
   static Future<Map<String, dynamic>> postFile(
     String url,
     List<String> filePaths, {

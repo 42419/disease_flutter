@@ -698,14 +698,19 @@ class _UploadWidgetState extends State<UploadWidget> {
                   backgroundColor: Colors.white,
                   foregroundColor: Colors.black,
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12)
-                  )
+                    borderRadius: BorderRadius.circular(12),
+                  ),
                 ),
 
                 onPressed: () {
-                  Navigator.pushNamed(context, "/analyze", arguments: "$_result");
+                  Navigator.pushNamed(
+                    context,
+                    "/analyze",
+                    // arguments: "$_result",
+                    arguments: "苹果黑斑病"
+                  );
                 },
-                child: Text("详细分析", style: TextStyle(fontSize: 20)),
+                child: Text("详细分析", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
               ),
             ),
           ],

@@ -1,5 +1,5 @@
-import 'package:farm_flutter/pages/widgets/analyzePage/highlight_utils.dart';
-import 'package:farm_flutter/pages/widgets/analyzePage/suggestion_item.dart';
+import 'package:farm_flutter/pages/widgets/analyzePage/components/highlight_utils.dart';
+import 'package:farm_flutter/pages/widgets/analyzePage/components/suggestion_item.dart';
 import 'package:farm_flutter/utils/app_colors.dart';
 import 'package:flutter/material.dart';
 
