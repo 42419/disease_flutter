@@ -16,10 +16,10 @@ class HttpUtil {
     if (url.startsWith("http://") || url.startsWith("https://")) {
       return url;
     }
-    if (baseUrl.endsWith("/") && url.endsWith("/")) {
+    if (baseUrl.endsWith("/") && url.startsWith("/")) {
       return baseUrl + url.substring(1);
     }
-    if (!baseUrl.endsWith("/") && !url.endsWith("/")) {
+    if (!baseUrl.endsWith("/") && !url.startsWith("/")) {
       return "$baseUrl/$url";
     }
     return baseUrl + url;
