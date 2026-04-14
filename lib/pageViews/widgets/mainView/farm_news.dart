@@ -10,7 +10,7 @@ class FarmNews extends StatefulWidget {
 }
 
 class _FarmNewsState extends State<FarmNews> {
-  List<Map<String, dynamic>> _getNews = [
+  final List<Map<String, dynamic>> _getNews = [
     {
       "picture": "https://picsum.photos/400/200?random=1",
       "title": "夏季蔬菜病虫害防治要点与管理技巧",

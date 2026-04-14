@@ -1,9 +1,7 @@
-import 'dart:convert';
-
 import 'package:dio/dio.dart';
 
 class HttpUtil {
-  static String baseUrl = "";
+  static String _baseUrl = "";
 
   static final Dio _client = Dio(
     BaseOptions(
@@ -12,54 +10,61 @@ class HttpUtil {
     ),
   );
 
-  static String _buildUrl(String url) {
+  static void init({required String baseUrl}) {
+    _baseUrl = baseUrl;
+  }
+
+  static String buildUrl(String url) {
     if (url.startsWith("http://") || url.startsWith("https://")) {
       return url;
     }
-    if (baseUrl.endsWith("/") && url.startsWith("/")) {
-      return baseUrl + url.substring(1);
+    if (_baseUrl.isEmpty) {
+      throw Exception("请先调用HttpUtil.init()设置baseUrl");
     }
-    if (!baseUrl.endsWith("/") && !url.startsWith("/")) {
-      return "$baseUrl/$url";
+    if (_baseUrl.endsWith("/") && url.startsWith("/")) {
+      return _baseUrl + url.substring(1);
     }
-    return baseUrl + url;
+    if (!_baseUrl.endsWith("/") && !url.startsWith("/")) {
+      return "$_baseUrl/$url";
+    }
+    return _baseUrl + url;
   }
 
-  static Future<Map<String, dynamic>> get(
+  static Future<dynamic> get(
     String url, {
     Map<String, String>? headers,
   }) async {
     try {
       final response = await _client.get(
-        _buildUrl(url),
+        buildUrl(url),
         options: Options(headers: headers),
       );
-      if (response.statusCode != 200) {
-        throw Exception("请求失败, ${response.statusCode}");
+      if (response.statusCode! < 200 || response.statusCode! >= 300) {
+        throw Exception("请求失败: ${response.statusCode}");
       }
-      return response.data as Map<String, dynamic>;
+      return response.data;
     } catch (e) {
-      throw Exception("GET 请求失败, $e");
+      throw Exception("GET 请求失败: $e");
     }
   }
 
-  static Future<Map<String, dynamic>> post(
+  static Future<dynamic> post(
     String url,
-    Map data, {
+    dynamic data, {
     Map<String, String>? headers,
   }) async {
     try {
       final response = await _client.post(
-        _buildUrl(url),
+        buildUrl(url),
         data: data,
         options: Options(headers: headers, contentType: "application/json"),
       );
-      if (response.statusCode! < 200 || response.statusCode! > 300) {
-        throw Exception("请求失败, ${response.statusCode}");
+      if (response.statusCode! < 200 || response.statusCode! >= 300) {
+        throw Exception("请求失败: ${response.statusCode}");
       }
-      return response.data as Map<String, dynamic>;
+      return response.data;
     } catch (e) {
-      throw Exception("POST 请求失败, $e");
+      throw Exception("POST 请求失败: $e");
     }
   }
 
@@ -70,7 +75,7 @@ class HttpUtil {
   }) async {
     try {
       final response = await _client.post<ResponseBody>(
-        _buildUrl(url),
+        buildUrl(url),
         data: data,
         options: Options(
           headers: headers,
@@ -78,13 +83,13 @@ class HttpUtil {
           responseType: ResponseType.stream,
         ),
       );
-      if (response.statusCode! < 200 || response.statusCode! > 300) {
-        throw Exception("请求失败, ${response.statusCode}");
+      if (response.statusCode! < 200 || response.statusCode! >= 300) {
+        throw Exception("请求失败: ${response.statusCode}");
       }
       return response;
     } catch (e) {
       if (e is DioException) rethrow; // 抛出异常让外层处理
-      throw Exception("POST Stream 请求失败, $e");
+      throw Exception("POST Stream 请求失败: $e");
     }
   }
 
@@ -102,7 +107,7 @@ class HttpUtil {
       for (int i = 0; i < filePaths.length; i++) {
         formData.files.add(
           MapEntry(
-            '${fileField}${i > 0 ? i : ''}',
+            '$fileField${i > 0 ? i : ''}',
             await MultipartFile.fromFile(filePaths[i]),
           ),
         );
@@ -116,22 +121,22 @@ class HttpUtil {
       }
 
       final response = await _client.post(
-        _buildUrl(url),
+        buildUrl(url),
         data: formData,
         options: Options(headers: headers),
       );
 
-      if (response.statusCode! < 200 || response.statusCode! > 300) {
-        throw Exception("请求失败, ${response.statusCode}");
+      if (response.statusCode! < 200 || response.statusCode! >= 300) {
+        throw Exception("请求失败: ${response.statusCode}");
       }
 
       return response.data as Map<String, dynamic>;
     } catch (e) {
-      throw Exception("文件上传失败, $e");
+      throw Exception("文件上传失败: $e");
     }
   }
 
   static void close() {
-    _client.close();
+    _client.close(force: true);
   }
 }

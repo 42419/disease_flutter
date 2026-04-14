@@ -336,7 +336,7 @@ class _UploadWidgetState extends State<UploadWidget> {
     });
 
     try {
-      HttpUtil.baseUrl = ApiConfig.apiUrl;
+      HttpUtil.init(baseUrl: ApiConfig.apiUrl);
 
       final headers = {"X-API-Token": ApiConfig.apiToken};
 
@@ -346,7 +346,6 @@ class _UploadWidgetState extends State<UploadWidget> {
         headers: headers,
         fileField: "image",
       );
-      print(response);
 
       if (mounted) {
         String? successValue;
@@ -367,7 +366,6 @@ class _UploadWidgetState extends State<UploadWidget> {
         setState(() {
           _isUploading = false;
           _result = "上传失败: $e";
-          print(e);
         });
       }
     }
@@ -451,7 +449,7 @@ class _UploadWidgetState extends State<UploadWidget> {
             ),
           ),
           SizedBox(width: 8),
-          Container(
+          SizedBox(
             width: 60,
             child: Text(
               "$percentage %",

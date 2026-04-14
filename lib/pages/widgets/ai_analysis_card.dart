@@ -72,7 +72,7 @@ class _AiAnalysisCardState extends State<AiAnalysisCard>
                 height: 100,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: AppColors.primaryLight.withOpacity(0.15),
+                  color: AppColors.primaryLight.withValues(alpha: 0.15),
                 ),
               ),
             ),
@@ -88,7 +88,7 @@ class _AiAnalysisCardState extends State<AiAnalysisCard>
                     decoration: BoxDecoration(
                       // 3. 设置半透明颜色，让模糊的内容透出来
                       // 0.5 是透明度，颜色可以根据需要改成白色或黑色
-                      color: Colors.white.withOpacity(0.2),
+                      color: Colors.white.withValues(alpha: 0.2),
                       borderRadius: BorderRadius.circular(16),
                       border: Border.all(color: AppColors.cardBorder), // 可选：加个边框更有质感
                     ),
@@ -149,7 +149,7 @@ class _AiAnalysisCardState extends State<AiAnalysisCard>
                     style: TextStyle(
                       fontSize: 12,
                       fontWeight: FontWeight.w500,
-                      color: AppColors.textPrimary.withOpacity(0.8),
+                      color: AppColors.textPrimary.withValues(alpha: 0.8),
                     ),
                   ),
                   const SizedBox(height: 16),

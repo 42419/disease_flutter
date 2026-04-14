@@ -9,7 +9,7 @@ class FunctionCards extends StatefulWidget {
 }
 
 class _FunctionCardsState extends State<FunctionCards> {
-  List<Map<String, dynamic>> _getCardsInfo = [
+  final List<Map<String, dynamic>> _getCardsInfo = [
     {
       "icon": Icons.history,
       "iconColor": Color(0xFFD97706),
