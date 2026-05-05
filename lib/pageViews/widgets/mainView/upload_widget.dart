@@ -336,7 +336,7 @@ class _UploadWidgetState extends State<UploadWidget> {
     });
 
     try {
-      HttpUtil.init(baseUrl: ApiConfig.apiUrl);
+      HttpUtil.init(baseUrl: ApiConfig.baseUrl);
 
       final headers = {"X-API-Token": ApiConfig.apiToken};
 
@@ -428,22 +428,23 @@ class _UploadWidgetState extends State<UploadWidget> {
             ),
           ),
           SizedBox(width: 8),
-          Container(
-            width: 130,
-            height: 6,
-            decoration: BoxDecoration(
-              color: AppColors.primaryLightest,
-              borderRadius: BorderRadius.circular(4),
-            ),
-            child: FractionallySizedBox(
-              widthFactor: percent,
-              alignment: Alignment.centerLeft,
-              child: Container(
-                decoration: BoxDecoration(
-                  color: index == 0
-                      ? AppColors.primary
-                      : AppColors.primaryLightest,
-                  borderRadius: BorderRadius.circular(4),
+          Expanded(
+            child: Container(
+              height: 6,
+              decoration: BoxDecoration(
+                color: AppColors.primaryLightest,
+                borderRadius: BorderRadius.circular(4),
+              ),
+              child: FractionallySizedBox(
+                widthFactor: percent,
+                alignment: Alignment.centerLeft,
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: index == 0
+                        ? AppColors.primary
+                        : AppColors.primaryLightest,
+                    borderRadius: BorderRadius.circular(4),
+                  ),
                 ),
               ),
             ),
@@ -454,7 +455,7 @@ class _UploadWidgetState extends State<UploadWidget> {
             child: Text(
               "$percentage %",
               textAlign: TextAlign.right,
-              style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
+              style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
             ),
           ),
         ],
@@ -652,7 +653,7 @@ class _UploadWidgetState extends State<UploadWidget> {
             ),
             SizedBox(height: 30),
             Container(
-              height: 340,
+              height: 360,
               width: double.infinity,
               padding: EdgeInsets.all(15),
               decoration: BoxDecoration(
@@ -705,10 +706,13 @@ class _UploadWidgetState extends State<UploadWidget> {
                     context,
                     "/analyze",
                     // arguments: "$_result",
-                    arguments: "苹果黑斑病"
+                    arguments: "苹果黑斑病",
                   );
                 },
-                child: Text("详细分析", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                child: Text(
+                  "详细分析",
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                ),
               ),
             ),
           ],

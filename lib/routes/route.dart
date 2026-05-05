@@ -3,11 +3,12 @@ import 'package:flutter/material.dart';
 
 import '../pages/login_page.dart';
 import '../pages/main_page.dart';
+import '../pages/admin_main_page.dart';
 
 Widget getRootWidget() {
   return MaterialApp(
-    // initialRoute: "/login",
-    initialRoute: "/",
+    initialRoute: "/login",
+    // initialRoute: "/",
     routes: _getRoutes(),
     debugShowCheckedModeBanner: false,
     theme: ThemeData(
@@ -19,7 +20,8 @@ Widget getRootWidget() {
 Map<String, Widget Function(BuildContext)> _getRoutes() {
   return {
     "/login" : (context) => LoginPage(),
-    "/" : (context) => MainPage(),
+    "/main" : (context) => MainPage(),
+    "/admin_main": (context) => AdminMainPage(),
     "/analyze": (context) => DiseaseAnalyzePage(),
   };
 }

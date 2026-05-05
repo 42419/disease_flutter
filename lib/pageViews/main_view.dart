@@ -4,6 +4,8 @@ import 'package:farm_flutter/pageViews/widgets/mainView/upload_widget.dart';
 import 'package:farm_flutter/utils/app_colors.dart';
 import 'package:flutter/material.dart';
 
+import '../utils/global.dart';
+
 class MainView extends StatefulWidget {
   const MainView({super.key});
 
@@ -19,18 +21,30 @@ class _MainViewState extends State<MainView> {
     return Scaffold(
       backgroundColor: AppColors.backgroundLight,
       appBar: AppBar(
-        title: const Text(
-          '病理分析',
-          style: TextStyle(
-            fontSize: 23,
-            color: AppColors.primary,
-            fontWeight: FontWeight.bold,
-          ),
+        title: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            const Text(
+              '病理分析',
+              style: TextStyle(
+                fontSize: 23,
+                color: AppColors.primary,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            Text(
+              Global.user.nickName,
+              style: TextStyle(
+                color: Colors.black54,
+                fontSize: 16,
+                fontWeight: FontWeight.normal,
+              ),
+            ),
+          ],
         ),
         titleSpacing: 20,
         centerTitle: false,
         backgroundColor: AppColors.backgroundLight,
-        // scrolledUnderElevation: 0,
         surfaceTintColor: Colors.black,
         elevation: 0,
       ),
@@ -54,9 +68,8 @@ class _MainViewState extends State<MainView> {
                     FunctionCards(),
                     const SizedBox(height: 30),
                     FarmNews(),
-                  ] else ...[
-
-                  ],
+                  ] else
+                    ...[],
                 ],
               ),
             ),
