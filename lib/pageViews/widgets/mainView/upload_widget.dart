@@ -335,6 +335,9 @@ class _UploadWidgetState extends State<UploadWidget> {
       _isUploading = true;
     });
 
+    // 上传图片的同时获取adcode
+    _fetchAdcode();
+
     try {
       HttpUtil.init(baseUrl: ApiConfig.baseUrl);
 
@@ -371,6 +374,23 @@ class _UploadWidgetState extends State<UploadWidget> {
     }
   }
 
+  Future<void> _fetchAdcode() async {
+    try {
+      final response = await HttpUtil.get(
+        '/v3/ip?key=${ApiConfig.amapKey}',
+        baseUrl: 'https://restapi.amap.com',
+      );
+
+      if (response is Map && response['adcode'] != null) {
+        debugPrint('test：adcode=${response['adcode']}');
+      } else {
+        debugPrint('test：adcode获取失败，响应: $response');
+      }
+    } catch (e) {
+      debugPrint('test：adcode请求异常: $e');
+    }
+  }
+
   Widget _getCardTitle(String title) {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.center,
@@ -394,7 +414,6 @@ class _UploadWidgetState extends State<UploadWidget> {
 
   Widget _buildProbabilityItem(int index, String name, double percent) {
     final percentage = (percent * 100).toStringAsFixed(2);
-    final progressWidth = percentage * 220;
     return Padding(
       padding: EdgeInsets.symmetric(vertical: 8),
       child: Row(
@@ -701,14 +720,15 @@ class _UploadWidgetState extends State<UploadWidget> {
                   ),
                 ),
 
-                onPressed: () {
-                  Navigator.pushNamed(
-                    context,
-                    "/analyze",
-                    // arguments: "$_result",
-                    arguments: "苹果黑斑病",
-                  );
-                },
+                onPressed: _result == null || _result!.trim().isEmpty
+                    ? null
+                    : () {
+                        Navigator.pushNamed(
+                          context,
+                          "/analyze",
+                          arguments: _result!.trim(),
+                        );
+                      },
                 child: Text(
                   "详细分析",
                   style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),

@@ -7,4 +7,7 @@ class ApiConfig {
   static const String botId = "xxxxxxxxxxxxxxxxxx";
   static const String userId = "xxxxxx";
   static const String cozeToken = "Bearer pat_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx";
+  // 高德地图Web API
+  static const String amapKey = "xxxxxxxxxxxxxxxxxxxxx";
+  static const String amapIpConfigUrl = "https://restapi.amap.com/v3/ip/config";
 }

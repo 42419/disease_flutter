@@ -33,6 +33,7 @@ class _DiseaseAnalyzeWidgetState extends State<DiseaseAnalyzeWidget> {
 
   String? _diseaseType;
   String? _causeAnalysis;
+  int _symptomCount = 0;
   List<String>? _suggestions;
 
   bool _showInput = false;
@@ -41,11 +42,13 @@ class _DiseaseAnalyzeWidgetState extends State<DiseaseAnalyzeWidget> {
   final TextEditingController _inputController = TextEditingController();
   final ScrollController _internalScrollController = ScrollController();
 
-  ScrollController get _effectiveScrollController => widget.scrollController ?? _internalScrollController;
+  ScrollController get _effectiveScrollController =>
+      widget.scrollController ?? _internalScrollController;
 
   final ValueNotifier<String> _streamingTextNotifier = ValueNotifier('');
   final ValueNotifier<String> _displayedAnalysisNotifier = ValueNotifier('');
-  final ValueNotifier<List<String>> _displayedSuggestionsNotifier = ValueNotifier([]);
+  final ValueNotifier<List<String>> _displayedSuggestionsNotifier =
+      ValueNotifier([]);
   final ValueNotifier<bool> _isTypingNotifier = ValueNotifier(false);
 
   Timer? _typewriterTimer;
@@ -55,7 +58,8 @@ class _DiseaseAnalyzeWidgetState extends State<DiseaseAnalyzeWidget> {
   @override
   void initState() {
     super.initState();
-    if (widget.initialDiseaseName.isEmpty || widget.initialDiseaseName == 'null') {
+    if (widget.initialDiseaseName.isEmpty ||
+        widget.initialDiseaseName == 'null') {
       _showInput = true;
     } else {
       _diseaseName = widget.initialDiseaseName;
@@ -98,21 +102,14 @@ class _DiseaseAnalyzeWidgetState extends State<DiseaseAnalyzeWidget> {
           'user_id': ApiConfig.userId,
           'stream': true,
           'additional_messages': [
-            {
-              'role': 'user',
-              'content': _diseaseName,
-              'content_type': 'text',
-            },
+            {'role': 'user', 'content': _diseaseName, 'content_type': 'text'},
           ],
         },
-        headers: {
-          'Authorization': ApiConfig.cozeToken,
-        },
+        headers: {'Authorization': ApiConfig.cozeToken},
       );
 
       final stream = response.data!.stream;
       final deltaBuffer = StringBuffer();
-      String? completedContent;
       String lineBuffer = '';
       String currentEvent = '';
       int processedLines = 0;
@@ -136,8 +133,6 @@ class _DiseaseAnalyzeWidgetState extends State<DiseaseAnalyzeWidget> {
                 if (currentEvent == 'conversation.message.delta') {
                   deltaBuffer.write(content);
                   _pushStreamingText(deltaBuffer.toString());
-                } else if (currentEvent == 'conversation.message.completed') {
-                  completedContent = content;
                 }
               }
             } catch (_) {}
@@ -152,7 +147,7 @@ class _DiseaseAnalyzeWidgetState extends State<DiseaseAnalyzeWidget> {
 
       _pushStreamingText(deltaBuffer.toString(), force: true);
 
-      final fullContent = completedContent ?? deltaBuffer.toString();
+      final fullContent = deltaBuffer.toString();
       if (fullContent.isNotEmpty) {
         _parseResult(fullContent);
       } else if (mounted) {
@@ -217,14 +212,19 @@ class _DiseaseAnalyzeWidgetState extends State<DiseaseAnalyzeWidget> {
               as Map<String, dynamic>;
 
       final diseaseType = json['病害类型']?.toString();
-      final causeAnalysis = json['病因分析']?.toString();
-      final suggRaw = json['防治建议'];
-      final suggestions =
-          suggRaw is List ? List<String>.from(suggRaw) : null;
+      final causeAnalysis = _buildCauseAnalysisFromJson(json);
+      final suggestions = _buildSuggestionsFromJson(json);
+
+      int symptomCount = 0;
+      final symptomsJson = json['病害症状'];
+      if (symptomsJson is Map && symptomsJson.isNotEmpty) {
+        symptomCount = symptomsJson.length;
+      }
 
       setState(() {
         _diseaseType = diseaseType;
         _causeAnalysis = causeAnalysis;
+        _symptomCount = symptomCount;
         _suggestions = suggestions;
         _isLoading = false;
       });
@@ -241,6 +241,70 @@ class _DiseaseAnalyzeWidgetState extends State<DiseaseAnalyzeWidget> {
     }
   }
 
+  String? _buildCauseAnalysisFromJson(Map<String, dynamic> json) {
+    final sections = <String>[];
+
+    void addLine(String label, dynamic value) {
+      final text = value?.toString().trim();
+      if (text != null && text.isNotEmpty) {
+        sections.add('$label：$text');
+      }
+    }
+
+    addLine('致病病原', json['致病病原']);
+    addLine('危害部位', json['危害部位']);
+
+    final symptoms = json['病害症状'];
+    if (symptoms is Map) {
+      final symptomLines = <String>[];
+      symptoms.forEach((key, value) {
+        final label = key.toString().trim();
+        final text = value?.toString().trim();
+        if (label.isNotEmpty && text != null && text.isNotEmpty) {
+          symptomLines.add('$label：$text');
+        }
+      });
+      if (symptomLines.isNotEmpty) {
+        sections.add('病害症状');
+        sections.addAll(symptomLines);
+      }
+    }
+
+    addLine('发病规律', json['发病规律']);
+
+    if (sections.isEmpty) return null;
+    return sections.join('\n');
+  }
+
+  List<String>? _buildSuggestionsFromJson(Map<String, dynamic> json) {
+    final methods = json['防治方法'];
+    if (methods is! Map) return null;
+
+    final suggestions = <String>[];
+    methods.forEach((key, value) {
+      final label = key.toString().trim();
+      final text = _sanitizeSuggestionText(value?.toString());
+      if (label.isNotEmpty && text != null && text.isNotEmpty) {
+        suggestions.add('$label：$text');
+      }
+    });
+
+    return suggestions.isEmpty ? null : suggestions;
+  }
+
+  String? _sanitizeSuggestionText(String? text) {
+    if (text == null) return null;
+
+    var sanitized = text.trim();
+    if (sanitized.startsWith('[') || sanitized.startsWith('［')) {
+      sanitized = sanitized.substring(1).trimLeft();
+    }
+    if (sanitized.endsWith(']') || sanitized.endsWith('］')) {
+      sanitized = sanitized.substring(0, sanitized.length - 1).trimRight();
+    }
+    return sanitized;
+  }
+
   void _startTypewriterEffect() {
     _typewriterTimer?.cancel();
 
@@ -255,25 +319,26 @@ class _DiseaseAnalyzeWidgetState extends State<DiseaseAnalyzeWidget> {
       int index = 0;
       final buffer = StringBuffer();
 
-      _typewriterTimer =
-          Timer.periodic(const Duration(milliseconds: 30), (timer) {
-            if (!mounted) {
-              timer.cancel();
-              return;
-            }
-            for (int i = 0; i < 2 && index < chars.length; i++) {
-              buffer.write(chars[index++]);
-            }
-            _displayedAnalysisNotifier.value = buffer.toString();
+      _typewriterTimer = Timer.periodic(const Duration(milliseconds: 30), (
+        timer,
+      ) {
+        if (!mounted) {
+          timer.cancel();
+          return;
+        }
+        for (int i = 0; i < 2 && index < chars.length; i++) {
+          buffer.write(chars[index++]);
+        }
+        _displayedAnalysisNotifier.value = buffer.toString();
 
-            if (index >= chars.length) {
-              timer.cancel();
-              _typewriterTimer = Timer(
-                const Duration(milliseconds: 300),
-                () => _startSuggestionTypewriter(),
-              );
-            }
-          });
+        if (index >= chars.length) {
+          timer.cancel();
+          _typewriterTimer = Timer(
+            const Duration(milliseconds: 300),
+            () => _startSuggestionTypewriter(),
+          );
+        }
+      });
     } else {
       _startSuggestionTypewriter();
     }
@@ -295,39 +360,37 @@ class _DiseaseAnalyzeWidgetState extends State<DiseaseAnalyzeWidget> {
         return;
       }
 
-      _typewriterTimer = Timer(
-        const Duration(milliseconds: 200),
-        () {
-          if (!mounted) return;
+      _typewriterTimer = Timer(const Duration(milliseconds: 200), () {
+        if (!mounted) return;
 
-          final chars = _suggestions![sugIndex].split('');
-          int index = 0;
-          final buffer = StringBuffer();
+        final chars = _suggestions![sugIndex].split('');
+        int index = 0;
+        final buffer = StringBuffer();
 
-          _typewriterTimer =
-              Timer.periodic(const Duration(milliseconds: 30), (timer) {
-                if (!mounted) {
-                  timer.cancel();
-                  return;
-                }
-                for (int i = 0; i < 2 && index < chars.length; i++) {
-                  buffer.write(chars[index++]);
-                }
-                final list = List<String>.filled(_suggestions!.length, '');
-                for (int j = 0; j < sugIndex; j++) {
-                  list[j] = _suggestions![j];
-                }
-                list[sugIndex] = buffer.toString();
-                _displayedSuggestionsNotifier.value = list;
+        _typewriterTimer = Timer.periodic(const Duration(milliseconds: 30), (
+          timer,
+        ) {
+          if (!mounted) {
+            timer.cancel();
+            return;
+          }
+          for (int i = 0; i < 2 && index < chars.length; i++) {
+            buffer.write(chars[index++]);
+          }
+          final list = List<String>.filled(_suggestions!.length, '');
+          for (int j = 0; j < sugIndex; j++) {
+            list[j] = _suggestions![j];
+          }
+          list[sugIndex] = buffer.toString();
+          _displayedSuggestionsNotifier.value = list;
 
-                if (index >= chars.length) {
-                  timer.cancel();
-                  sugIndex++;
-                  showNextSuggestion();
-                }
-              });
-        },
-      );
+          if (index >= chars.length) {
+            timer.cancel();
+            sugIndex++;
+            showNextSuggestion();
+          }
+        });
+      });
     }
 
     showNextSuggestion();
@@ -449,10 +512,7 @@ class _DiseaseAnalyzeWidgetState extends State<DiseaseAnalyzeWidget> {
           TextField(
             controller: _inputController,
             autofocus: true,
-            style: const TextStyle(
-              fontSize: 16,
-              color: AppColors.textPrimary,
-            ),
+            style: const TextStyle(fontSize: 16, color: AppColors.textPrimary),
             decoration: InputDecoration(
               hintText: '例如：苹果黑斑病',
               hintStyle: const TextStyle(
@@ -537,12 +597,19 @@ class _DiseaseAnalyzeWidgetState extends State<DiseaseAnalyzeWidget> {
             SizedBox(height: 2),
             Text(
               '基于多维数据的智能推断',
-              style: TextStyle(
-                fontSize: 13,
-                color: AppColors.textSecondary,
-              ),
+              style: TextStyle(fontSize: 13, color: AppColors.textSecondary),
             ),
           ],
+        ),
+        const Spacer(),
+        Container(
+          width: 28,
+          height: 28,
+          decoration: BoxDecoration(
+            color: AppColors.primaryLightest,
+            borderRadius: BorderRadius.circular(6),
+          ),
+          child: const Icon(Icons.auto_awesome, size: 16, color: AppColors.primary),
         ),
       ],
     );
@@ -597,6 +664,7 @@ class _DiseaseAnalyzeWidgetState extends State<DiseaseAnalyzeWidget> {
                       child: AnalyzeResultWidget(
                         diseaseType: _diseaseType,
                         causeAnalysis: _causeAnalysis,
+                        symptomCount: _symptomCount,
                         displayedAnalysisNotifier: _displayedAnalysisNotifier,
                         isTypingNotifier: _isTypingNotifier,
                         displayedSuggestionsNotifier:
@@ -610,4 +678,3 @@ class _DiseaseAnalyzeWidgetState extends State<DiseaseAnalyzeWidget> {
     );
   }
 }
-

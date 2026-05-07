@@ -18,77 +18,89 @@ class SuggestionItem extends StatelessWidget {
     String body = suggestion;
 
     final colonIdx = suggestion.indexOf('：');
-    final commaIdx = suggestion.indexOf('，');
-    int splitIdx = -1;
     if (colonIdx > 0 && colonIdx <= 10) {
-      splitIdx = colonIdx;
-    } else if (commaIdx > 0 && commaIdx <= 12) {
-      splitIdx = commaIdx;
-    }
-    if (splitIdx > 0) {
-      title = suggestion.substring(0, splitIdx);
-      body = suggestion.substring(splitIdx + 1);
+      title = suggestion.substring(0, colonIdx);
+      body = suggestion.substring(colonIdx + 1).trimLeft();
     }
 
     return Padding(
-      padding: const EdgeInsets.only(bottom: 14),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Padding(
-            padding: const EdgeInsets.only(top: 5),
-            child: Container(
-              width: 10,
-              height: 10,
-              decoration: const BoxDecoration(
-                color: AppColors.primary,
-                shape: BoxShape.circle,
+      padding: const EdgeInsets.only(bottom: 8),
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: AppColors.success.withAlpha(10),
+          borderRadius: BorderRadius.circular(8),
+          border: Border(
+            left: BorderSide(
+              color: AppColors.success.withAlpha(60),
+              width: 3,
+            ),
+          ),
+          boxShadow: const [
+            BoxShadow(
+              color: AppColors.shadow,
+              blurRadius: 3,
+              offset: Offset(0, 1),
+            ),
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            if (title != null) ...[
+              Row(
+                children: [
+                  Container(
+                    width: 8,
+                    height: 8,
+                    decoration: const BoxDecoration(
+                      color: AppColors.success,
+                      shape: BoxShape.circle,
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: RichText(
+                      text: TextSpan(
+                        style: const TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.w700,
+                          color: AppColors.textPrimary,
+                        ),
+                        children: buildHighlightedSpans(title),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 6),
+            ],
+            RichText(
+              text: TextSpan(
+                style: TextStyle(
+                  fontSize: 13.5,
+                  color: title != null
+                      ? AppColors.textSecondary
+                      : AppColors.textPrimary,
+                  height: 1.55,
+                ),
+                children: [
+                  ...buildHighlightedSpans(body),
+                  if (showCursor)
+                    const TextSpan(
+                      text: '▎',
+                      style: TextStyle(
+                        color: AppColors.danger,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 14,
+                      ),
+                    ),
+                ],
               ),
             ),
-          ),
-          const SizedBox(width: 10),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                if (title != null)
-                  RichText(
-                    text: TextSpan(
-                      style: const TextStyle(
-                        fontSize: 15,
-                        fontWeight: FontWeight.bold,
-                        color: AppColors.textPrimary,
-                      ),
-                      children: buildHighlightedSpans(title),
-                    ),
-                  ),
-                RichText(
-                  text: TextSpan(
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: title != null
-                          ? AppColors.textSecondary
-                          : AppColors.textPrimary,
-                      height: 1.5,
-                    ),
-                    children: [
-                      ...buildHighlightedSpans(body),
-                      if (showCursor)
-                        const TextSpan(
-                          text: '▎',
-                          style: TextStyle(
-                            color: AppColors.danger,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 14,
-                          ),
-                        ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

@@ -8,7 +8,7 @@ import '../pages/admin_main_page.dart';
 Widget getRootWidget() {
   return MaterialApp(
     initialRoute: "/login",
-    // initialRoute: "/",
+    // initialRoute: "/main",
     routes: _getRoutes(),
     debugShowCheckedModeBanner: false,
     theme: ThemeData(

@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 class AnalyzeResultWidget extends StatelessWidget {
   final String? diseaseType;
   final String? causeAnalysis;
+  final int symptomCount;
   final ValueNotifier<String> displayedAnalysisNotifier;
   final ValueNotifier<bool> isTypingNotifier;
   final ValueNotifier<List<String>> displayedSuggestionsNotifier;
@@ -14,6 +15,7 @@ class AnalyzeResultWidget extends StatelessWidget {
     super.key,
     this.diseaseType,
     this.causeAnalysis,
+    this.symptomCount = 0,
     required this.displayedAnalysisNotifier,
     required this.isTypingNotifier,
     required this.displayedSuggestionsNotifier,
@@ -27,30 +29,23 @@ class AnalyzeResultWidget extends StatelessWidget {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                _buildAiIcon(),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: _buildAnalysisParagraph(
-                    diseaseType,
-                    causeAnalysis,
-                    displayedAnalysisNotifier,
-                    isTypingNotifier,
-                  ),
-                ),
-              ],
+            _buildAnalysisParagraph(
+              diseaseType,
+              causeAnalysis,
+              displayedAnalysisNotifier,
+              isTypingNotifier,
             ),
             if (suggestions.isNotEmpty) ...[
               const SizedBox(height: 16),
+              _buildSectionHeader('防治建议'),
+              const SizedBox(height: 8),
               ...suggestions
                   .asMap()
                   .entries
                   .where((e) => e.value.isNotEmpty)
                   .map((entry) {
-                    final isLast =
-                        entry.key == suggestions.lastIndexWhere((s) => s.isNotEmpty);
+                    final isLast = entry.key ==
+                        suggestions.lastIndexWhere((s) => s.isNotEmpty);
                     return ValueListenableBuilder<bool>(
                       valueListenable: isTypingNotifier,
                       builder: (context, isTyping, _) {
@@ -78,14 +73,9 @@ class AnalyzeResultWidget extends StatelessWidget {
       return ValueListenableBuilder<String>(
         valueListenable: displayedNotifier,
         builder: (context, displayed, _) {
-          return Text(
-            displayed.isNotEmpty ? displayed : (causeAnalysis ?? ''),
-            style: const TextStyle(
-              fontSize: 15,
-              color: AppColors.textPrimary,
-              height: 1.7,
-            ),
-          );
+          final content =
+              displayed.isNotEmpty ? displayed : (causeAnalysis ?? '');
+          return _buildStructuredAnalysisContent(content);
         },
       );
     }
@@ -96,67 +86,51 @@ class AnalyzeResultWidget extends StatelessWidget {
         return ValueListenableBuilder<bool>(
           valueListenable: isTypingNotifier,
           builder: (context, isTyping, _) {
-            if (isTyping && displayed.isNotEmpty) {
-              return RichText(
-                text: TextSpan(
-                  style: const TextStyle(
-                    fontSize: 15,
-                    color: AppColors.textPrimary,
-                    height: 1.7,
-                  ),
-                  children: [
-                    const TextSpan(
-                      text: '根据图像特征与数据分析，当前作物感染的病害为 ',
-                    ),
-                    TextSpan(
-                      text: diseaseType,
-                      style: const TextStyle(
-                        color: AppColors.danger,
-                        fontWeight: FontWeight.w600,
-                        decoration: TextDecoration.underline,
-                        decorationColor: AppColors.danger,
-                      ),
-                    ),
-                    const TextSpan(text: '。\n\n'),
-                    TextSpan(text: displayed),
-                    if (displayedNotifier.value != causeAnalysis)
-                      const TextSpan(
-                        text: '▎',
-                        style: TextStyle(
-                          color: AppColors.danger,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                  ],
-                ),
-              );
-            }
+            final content = isTyping && displayed.isNotEmpty
+                ? displayed
+                : (causeAnalysis ?? '');
+            final showCursor =
+                isTyping && displayedNotifier.value != causeAnalysis;
 
-            return RichText(
-              text: TextSpan(
-                style: const TextStyle(
-                  fontSize: 15,
-                  color: AppColors.textPrimary,
-                  height: 1.7,
-                ),
-                children: [
-                  const TextSpan(
-                    text: '根据图像特征与数据分析，当前作物感染的病害为 ',
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                  decoration: BoxDecoration(
+                    color: AppColors.danger.withAlpha(18),
+                    borderRadius: BorderRadius.circular(6),
                   ),
-                  TextSpan(
-                    text: diseaseType,
-                    style: const TextStyle(
-                      color: AppColors.danger,
-                      fontWeight: FontWeight.w600,
-                      decoration: TextDecoration.underline,
-                      decorationColor: AppColors.danger,
+                  child: RichText(
+                    text: TextSpan(
+                      style: const TextStyle(
+                        fontSize: 13.5,
+                        color: AppColors.textPrimary,
+                      ),
+                      children: [
+                        const TextSpan(
+                          text: '病害类型  ',
+                          style: TextStyle(fontWeight: FontWeight.w600),
+                        ),
+                        TextSpan(
+                          text: diseaseType,
+                          style: const TextStyle(
+                            color: AppColors.danger,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
-                  const TextSpan(text: '。\n\n'),
-                  if (causeAnalysis != null)
-                    ...buildHighlightedSpans(causeAnalysis),
-                ],
-              ),
+                ),
+                if (content.isNotEmpty) const SizedBox(height: 8),
+                if (content.isNotEmpty)
+                  _buildStructuredAnalysisContent(
+                    content,
+                    showCursor: showCursor,
+                  ),
+              ],
             );
           },
         );
@@ -164,18 +138,370 @@ class AnalyzeResultWidget extends StatelessWidget {
     );
   }
 
-  Widget _buildAiIcon() {
-    return Container(
-      width: 26,
-      height: 26,
-      decoration: BoxDecoration(
-        color: AppColors.primaryLightest,
-        borderRadius: BorderRadius.circular(6),
+  Widget _buildSectionHeader(String title) {
+    return Row(
+      children: [
+        Container(
+          width: 4,
+          height: 18,
+          decoration: BoxDecoration(
+            color: AppColors.success,
+            borderRadius: BorderRadius.circular(2),
+          ),
+        ),
+        const SizedBox(width: 10),
+        Text(
+          title,
+          style: const TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.w700,
+            color: AppColors.textPrimary,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildStructuredAnalysisContent(
+    String content, {
+    bool showCursor = false,
+  }) {
+    final rawLines = content
+        .split('\n')
+        .map((line) => line.trim())
+        .where((line) => line.isNotEmpty)
+        .toList();
+
+    if (rawLines.isEmpty) {
+      return const SizedBox.shrink();
+    }
+
+    final symptomStart = rawLines.indexWhere((l) => l == '病害症状');
+    final hasSymptomSection = symptomStart >= 0;
+
+    if (!hasSymptomSection) {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: rawLines.asMap().entries.map((entry) {
+          final isLast = entry.key == rawLines.length - 1;
+          return _buildAnalysisRow(
+            entry.value,
+            showCursor: showCursor && isLast,
+            isLast: isLast,
+          );
+        }).toList(),
+      );
+    }
+
+    final List<Widget> widgets = [];
+
+    for (int i = 0; i < rawLines.length; i++) {
+      if (i == symptomStart) {
+        final symptomLines = <String>[];
+        int j = i + 1;
+        if (showCursor) {
+          while (j < rawLines.length) {
+            symptomLines.add(rawLines[j]);
+            j++;
+          }
+        } else {
+          while (j < rawLines.length &&
+              j <= i + symptomCount &&
+              rawLines[j].contains('：')) {
+            symptomLines.add(rawLines[j]);
+            j++;
+          }
+        }
+        final cursorOnSymptom =
+            showCursor && i + symptomLines.length == rawLines.length - 1;
+        widgets.add(_buildSymptomTimeline(
+          rawLines[i],
+          symptomLines,
+          showCursor: cursorOnSymptom,
+        ));
+        i = j - 1;
+      } else {
+        final isLast = i == rawLines.length - 1;
+        widgets.add(_buildAnalysisRow(
+          rawLines[i],
+          showCursor: showCursor && isLast,
+          isLast: isLast,
+        ));
+      }
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: widgets,
+    );
+  }
+
+  Widget _buildAnalysisRow(
+    String line, {
+    bool showCursor = false,
+    bool isLast = false,
+  }) {
+    final colonIndex = line.indexOf('：');
+
+    final bool isSectionHeader =
+        colonIndex <= 0 || colonIndex >= line.length - 1;
+
+    if (isSectionHeader) {
+      return Padding(
+        padding: const EdgeInsets.only(top: 12, bottom: 2),
+        child: Row(
+          children: [
+            Container(
+              width: 4,
+              height: 18,
+              decoration: BoxDecoration(
+                color: AppColors.danger,
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: RichText(
+                text: TextSpan(
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w700,
+                    color: AppColors.textPrimary,
+                  ),
+                  children: [
+                    TextSpan(text: line),
+                    if (showCursor)
+                      const TextSpan(
+                        text: '▎',
+                        style: TextStyle(
+                          color: AppColors.danger,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 14,
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    final label = line.substring(0, colonIndex);
+    final body = line.substring(colonIndex + 1).trimLeft();
+
+    return Padding(
+      padding: EdgeInsets.only(bottom: isLast ? 0 : 6),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                width: 3,
+                height: 14,
+                decoration: BoxDecoration(
+                  color: AppColors.primary.withAlpha(70),
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+              const SizedBox(width: 8),
+              Text(
+                label,
+                style: const TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w700,
+                  color: AppColors.textPrimary,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 4),
+          Padding(
+            padding: const EdgeInsets.only(left: 11),
+            child: RichText(
+              text: TextSpan(
+                style: const TextStyle(
+                  fontSize: 14,
+                  color: AppColors.textPrimary,
+                  height: 1.55,
+                ),
+                children: [
+                  ...buildHighlightedSpans(body),
+                  if (showCursor)
+                    const TextSpan(
+                      text: '▎',
+                      style: TextStyle(
+                        color: AppColors.danger,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                ],
+              ),
+            ),
+          ),
+        ],
       ),
-      child: const Icon(
-        Icons.auto_awesome,
-        size: 14,
-        color: AppColors.primary,
+    );
+  }
+
+  Widget _buildSymptomTimeline(String header, List<String> stages,
+      {bool showCursor = false}) {
+    const lineWidth = 2.0;
+    const dotSize = 10.0;
+    const leftPad = 14.0;
+
+    return Padding(
+      padding: const EdgeInsets.only(top: 4),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                width: 4,
+                height: 18,
+                decoration: BoxDecoration(
+                  color: AppColors.danger,
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+              const SizedBox(width: 10),
+              Text(
+                header,
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w700,
+                  color: AppColors.textPrimary,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 4),
+          if (stages.isEmpty && showCursor)
+            Padding(
+              padding: const EdgeInsets.only(left: leftPad + 10),
+              child: const Text(
+                '▎',
+                style: TextStyle(
+                  color: AppColors.danger,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 18,
+                ),
+              ),
+            ),
+          ...List.generate(stages.length, (i) {
+            final isFirst = i == 0;
+            final isLast = i == stages.length - 1;
+            final stageLine = stages[i];
+            final colonIdx = stageLine.indexOf('：');
+            final hasColon = colonIdx > 0;
+            final label = hasColon
+                ? stageLine.substring(0, colonIdx)
+                : stageLine;
+            final body =
+                hasColon ? stageLine.substring(colonIdx + 1).trimLeft() : '';
+            final showStageCursor = showCursor && isLast;
+
+            return IntrinsicHeight(
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  SizedBox(
+                    width: leftPad,
+                    child: Column(
+                      children: [
+                        if (!isFirst)
+                          Container(
+                            width: lineWidth,
+                            height: 4,
+                            color: AppColors.cardBorder,
+                          ),
+                        const SizedBox(height: 2),
+                        Container(
+                          width: dotSize,
+                          height: dotSize,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: AppColors.success,
+                            boxShadow: [
+                              BoxShadow(
+                                color: AppColors.success.withAlpha(60),
+                                blurRadius: 4,
+                                spreadRadius: 1,
+                              ),
+                            ],
+                          ),
+                        ),
+                        if (!isLast)
+                          Expanded(
+                            child: Container(
+                              width: lineWidth,
+                              color: AppColors.cardBorder,
+                            ),
+                          ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Padding(
+                      padding: EdgeInsets.only(bottom: isLast ? 0 : 6),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          RichText(
+                            text: TextSpan(
+                              style: const TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w700,
+                                color: AppColors.textPrimary,
+                              ),
+                              children: [
+                                TextSpan(text: label),
+                                if (showStageCursor && !hasColon)
+                                  const TextSpan(
+                                    text: '▎',
+                                    style: TextStyle(
+                                      color: AppColors.danger,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                              ],
+                            ),
+                          ),
+                          if (hasColon) const SizedBox(height: 4),
+                          if (hasColon)
+                            RichText(
+                              text: TextSpan(
+                                style: const TextStyle(
+                                  fontSize: 13.5,
+                                  color: AppColors.textSecondary,
+                                  height: 1.55,
+                                ),
+                                children: [
+                                  ...buildHighlightedSpans(body),
+                                  if (showStageCursor)
+                                    const TextSpan(
+                                      text: '▎',
+                                      style: TextStyle(
+                                        color: AppColors.danger,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                ],
+                              ),
+                            ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            );
+          }),
+        ],
       ),
     );
   }
