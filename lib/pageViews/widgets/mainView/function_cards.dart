@@ -14,7 +14,7 @@ class _FunctionCardsState extends State<FunctionCards> {
       "icon": Icons.history,
       "iconColor": Color(0xFFD97706),
       "iconBackgroundColor": Color(0xFFFEF3C7),
-      "title": "诊断历史",
+      "title": "诊断记录",
       "subtitle": "查看以往的病理诊断记录与治疗方案",
     },
     {
@@ -44,6 +44,10 @@ class _FunctionCardsState extends State<FunctionCards> {
               color: AppColors.cardBackground,
               child: ListTile(
                 onTap: () {
+                  if (item["title"] == "诊断历史") {
+                    Navigator.pushNamed(context, "/diagnosis_records");
+                    return;
+                  }
                   ScaffoldMessenger.of(context).clearSnackBars();
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(

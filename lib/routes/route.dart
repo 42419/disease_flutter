@@ -1,3 +1,4 @@
+import 'package:farm_flutter/pages/diagnosis_records_page.dart';
 import 'package:farm_flutter/pages/disease_analyze_page.dart';
 import 'package:flutter/material.dart';
 
@@ -22,6 +23,7 @@ Map<String, Widget Function(BuildContext)> _getRoutes() {
     "/login" : (context) => LoginPage(),
     "/main" : (context) => MainPage(),
     "/admin_main": (context) => AdminMainPage(),
+    "/diagnosis_records": (context) => DiagnosisRecordsPage(),
     "/analyze": (context) => DiseaseAnalyzePage(),
   };
 }

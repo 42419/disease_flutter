@@ -2,8 +2,10 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:farm_flutter/utils/api_config.dart';
+import 'package:farm_flutter/utils/global.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:farm_flutter/utils/app_colors.dart';
 import 'package:farm_flutter/utils/http_util.dart';
@@ -321,6 +323,7 @@ class _UploadWidgetState extends State<UploadWidget> {
         _result = null;
         _heatmapData = null;
       });
+      Global.uploadImageName = pickedFile.name;
       // 通知父组件图片已选择
       widget.onImageSelected?.call();
       // 选图后自动上传
@@ -376,18 +379,42 @@ class _UploadWidgetState extends State<UploadWidget> {
 
   Future<void> _fetchAdcode() async {
     try {
-      final response = await HttpUtil.get(
-        '/v3/ip?key=${ApiConfig.amapKey}',
-        baseUrl: 'https://restapi.amap.com',
+      LocationPermission permission = await Geolocator.checkPermission();
+      if (permission == LocationPermission.denied) {
+        permission = await Geolocator.requestPermission();
+        if (permission == LocationPermission.denied) {
+          debugPrint('test：定位权限被拒绝');
+          return;
+        }
+      }
+      if (permission == LocationPermission.deniedForever) {
+        debugPrint('test：定位权限被永久拒绝');
+        return;
+      }
+
+      final position = await Geolocator.getCurrentPosition(
+        locationSettings: const LocationSettings(
+          accuracy: LocationAccuracy.high,
+          timeLimit: Duration(seconds: 10),
+        ),
       );
 
-      if (response is Map && response['adcode'] != null) {
-        debugPrint('test：adcode=${response['adcode']}');
+      final resp = await HttpUtil.get(
+        '/v3/geocode/regeo?key=${ApiConfig.amapKey}&location=${position.longitude},${position.latitude}',
+        baseUrl: ApiConfig.amapBaseUrl,
+      );
+
+      if (resp is Map &&
+          resp['regeocode'] != null &&
+          resp['regeocode']['addressComponent'] != null) {
+        Global.amapAdcode =
+            resp['regeocode']['addressComponent']['adcode'].toString();
+        // debugPrint('test：adcode=${Global.amapAdcode}');
       } else {
-        debugPrint('test：adcode获取失败，响应: $response');
+        debugPrint('test：逆地理编码失败，响应: $resp');
       }
     } catch (e) {
-      debugPrint('test：adcode请求异常: $e');
+      debugPrint('test：GPS 定位/逆地理编码异常: $e');
     }
   }
 

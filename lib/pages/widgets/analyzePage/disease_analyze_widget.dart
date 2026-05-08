@@ -6,6 +6,7 @@ import 'package:farm_flutter/pages/widgets/analyzePage/components/analyze_loadin
 import 'package:farm_flutter/pages/widgets/analyzePage/components/analyze_result_widget.dart';
 import 'package:farm_flutter/utils/api_config.dart';
 import 'package:farm_flutter/utils/app_colors.dart';
+import 'package:farm_flutter/utils/global.dart';
 import 'package:farm_flutter/utils/http_util.dart';
 import 'package:flutter/material.dart';
 
@@ -233,12 +234,56 @@ class _DiseaseAnalyzeWidgetState extends State<DiseaseAnalyzeWidget> {
       _displayedSuggestionsNotifier.value = [];
 
       _startTypewriterEffect();
+
+      _savePredictionResult(json);
     } catch (_) {
       setState(() {
         _causeAnalysis = rawContent;
         _isLoading = false;
       });
     }
+  }
+
+  Future<void> _savePredictionResult(Map<String, dynamic> json) async {
+    try {
+      final bhreason = (json['致病病原']?.toString().trim()) ?? '';
+
+      final bhAdviceParts = <String>[];
+      final methods = json['防治方法'];
+      if (methods is Map) {
+        methods.forEach((k, v) {
+          final val = v?.toString().trim();
+          if (val != null && val.isNotEmpty) bhAdviceParts.add('$k：$val');
+        });
+      }
+
+      final payload = {
+        'imgname': Global.uploadImageName,
+        'bhname': _diseaseName,
+        'bhreason': bhreason,
+        'bhadvice': bhAdviceParts.join('\n'),
+        'username': Global.user.nickName,
+        'location': Global.amapAdcode,
+        'dtime': _nowString(),
+      };
+      // debugPrint('savepredict payload: $payload');
+
+      HttpUtil.init(baseUrl: ApiConfig.baseUrl);
+      await HttpUtil.post(
+        '/savepredict',
+        payload,
+        headers: {'X-API-Token': ApiConfig.apiToken},
+      );
+      // debugPrint('savepredict response: $resp');
+    } catch (e) {
+      debugPrint('savepredict failed: $e');
+    }
+  }
+
+  String _nowString() {
+    final n = DateTime.now();
+    return '${n.year}-${n.month.toString().padLeft(2, '0')}-${n.day.toString().padLeft(2, '0')} '
+        '${n.hour.toString().padLeft(2, '0')}:${n.minute.toString().padLeft(2, '0')}:${n.second.toString().padLeft(2, '0')}';
   }
 
   String? _buildCauseAnalysisFromJson(Map<String, dynamic> json) {
@@ -609,7 +654,11 @@ class _DiseaseAnalyzeWidgetState extends State<DiseaseAnalyzeWidget> {
             color: AppColors.primaryLightest,
             borderRadius: BorderRadius.circular(6),
           ),
-          child: const Icon(Icons.auto_awesome, size: 16, color: AppColors.primary),
+          child: const Icon(
+            Icons.auto_awesome,
+            size: 16,
+            color: AppColors.primary,
+          ),
         ),
       ],
     );

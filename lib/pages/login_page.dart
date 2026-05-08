@@ -4,7 +4,6 @@ import 'package:farm_flutter/utils/http_util.dart';
 import 'package:farm_flutter/utils/global.dart';
 import 'package:farm_flutter/utils/app_colors.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class LoginPage extends StatefulWidget {
@@ -120,7 +119,6 @@ class _LoginPageState extends State<LoginPage> {
         },
         headers: {"X-API-Token": ApiConfig.apiToken},
       );
-      print("LOGIN_TEST: $response");
       if (mounted) Navigator.pop(context);
       if (response["msg"] == "success") {
         Global.user.nickName = response["username"] ?? _usernameController.text;
@@ -291,7 +289,7 @@ class _LoginPageState extends State<LoginPage> {
                               flex: 9,
                               child: DropdownButtonFormField<String>(
                                 isExpanded: true,
-                                value: _selectedRole,
+                                initialValue: _selectedRole,
                                 validator: _validateRole,
                                 onChanged: (String? newValue) {
                                   setState(() {
