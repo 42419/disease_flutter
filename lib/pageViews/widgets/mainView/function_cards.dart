@@ -38,58 +38,83 @@ class _FunctionCardsState extends State<FunctionCards> {
     return Column(
       children: List.generate(_getCardsInfo.length, (index) {
         final item = _getCardsInfo[index];
-        return Column(
-          children: [
-            Card(
-              color: AppColors.cardBackground,
-              child: ListTile(
-                onTap: () {
-                  if (item["title"] == "诊断历史") {
-                    Navigator.pushNamed(context, "/diagnosis_records");
-                    return;
-                  }
-                  ScaffoldMessenger.of(context).clearSnackBars();
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text("跳转 ${item["title"]}"),
-                      duration: Duration(milliseconds: 500),
-                      backgroundColor: AppColors.info,
-                    ),
-                  );
-                },
-                title: Column(
-                  children: [
-                    SizedBox(height: 5),
-                    Row(
-                      children: [
-                        Container(
-                          width: 45,
-                          height: 45,
-                          decoration: BoxDecoration(
-                            color: item["iconBackgroundColor"],
-                            borderRadius: BorderRadius.circular(15),
-                          ),
-                          child: Icon(item["icon"], color: item["iconColor"]),
-                        ),
-                        SizedBox(width: 10),
-                        Text(
-                          item["title"],
-                          style: TextStyle(fontWeight: FontWeight.bold),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-                subtitle: Padding(
-                  padding: EdgeInsets.only(top: 10),
-                  child: Text(item["subtitle"]),
-                ),
-                // leading: Icon(Icons.history),
-                trailing: Icon(Icons.arrow_forward_ios_outlined, size: 18),
+        return InkWell(
+          onTap: () {
+            if (item["title"] == "诊断记录" || item["title"] == "诊断历史") {
+              Navigator.pushNamed(context, "/diagnosis_records");
+              return;
+            }
+            ScaffoldMessenger.of(context).clearSnackBars();
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text("跳转 ${item["title"]}"),
+                duration: Duration(milliseconds: 500),
+                backgroundColor: AppColors.ink,
+              ),
+            );
+          },
+          child: Container(
+            decoration: BoxDecoration(
+              border: Border(
+                top: BorderSide(color: index == 0 ? AppColors.hairline : Colors.transparent),
+                bottom: BorderSide(color: AppColors.hairline),
               ),
             ),
-            SizedBox(height: 5),
-          ],
+            padding: const EdgeInsets.symmetric(vertical: 24),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Container(
+                  width: 40,
+                  height: 40,
+                  decoration: BoxDecoration(
+                    color: Colors.transparent,
+                    border: Border.all(color: AppColors.ink),
+                  ),
+                  child: Icon(
+                    item["icon"], 
+                    color: AppColors.ink,
+                    size: 20,
+                  ),
+                ),
+                SizedBox(width: 20),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        item["title"],
+                        style: TextStyle(
+                          fontFamily: "serif",
+                          fontSize: 18,
+                          fontWeight: FontWeight.w600,
+                          color: AppColors.ink,
+                        ),
+                      ),
+                      SizedBox(height: 8),
+                      Text(
+                        item["subtitle"],
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: AppColors.muted,
+                          height: 1.5,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                SizedBox(width: 16),
+                Padding(
+                  padding: const EdgeInsets.only(top: 8.0),
+                  child: Icon(
+                    Icons.arrow_forward_rounded, 
+                    size: 20, 
+                    color: AppColors.ink,
+                  ),
+                ),
+              ],
+            ),
+          ),
         );
       }),
     );

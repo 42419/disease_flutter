@@ -24,33 +24,40 @@ class _DiseaseAnalyzePageState extends State<DiseaseAnalyzePage> {
     final args = ModalRoute.of(context)?.settings.arguments?.toString() ?? '';
 
     return Scaffold(
-      backgroundColor: AppColors.backgroundLight,
+      backgroundColor: AppColors.canvas,
       appBar: AppBar(
-        backgroundColor: AppColors.backgroundLight,
+        backgroundColor: AppColors.canvas,
+        surfaceTintColor: Colors.transparent,
         elevation: 0,
         scrolledUnderElevation: 0,
         leading: IconButton(
           icon: const Icon(
             Icons.arrow_back_ios_new,
-            color: AppColors.textPrimary,
+            color: AppColors.ink,
           ),
           onPressed: () => Navigator.pop(context),
         ),
         title: const Text(
           '智能病因分析',
           style: TextStyle(
-            color: AppColors.textPrimary,
+            fontFamily: "serif",
+            fontSize: 22,
+            color: AppColors.ink,
             fontWeight: FontWeight.w600,
           ),
+        ),
+        bottom: const PreferredSize(
+          preferredSize: Size.fromHeight(1.0),
+          child: Divider(height: 1, color: AppColors.hairline),
         ),
       ),
       body: SingleChildScrollView(
         controller: _scrollController,
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+        padding: const EdgeInsets.all(24),
         child: Column(
           children: [
             if (args.isNotEmpty) AiAnalysisCard(diseaseName: args),
-            if (args.isNotEmpty) const SizedBox(height: 25),
+            if (args.isNotEmpty) const SizedBox(height: 24),
             DiseaseAnalyzeWidget(
               initialDiseaseName: args,
               scrollController: _scrollController,

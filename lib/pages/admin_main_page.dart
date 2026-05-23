@@ -41,28 +41,33 @@ class _AdminMainPageState extends State<AdminMainPage> {
         data: Theme.of(context).copyWith(
           navigationBarTheme: NavigationBarThemeData(
             backgroundColor: AppColors.white,
-            elevation: 8,
+            elevation: 0,
             indicatorColor: AppColors.primaryLightest,
             labelTextStyle: WidgetStateProperty.resolveWith((states) {
               if (states.contains(WidgetState.selected)) {
-                return const TextStyle(
+                return TextStyle(
+                  fontFamily: "serif",
                   color: AppColors.primary,
                   fontSize: 12,
-                  fontWeight: FontWeight.bold,
+                  fontWeight: FontWeight.w600,
+                  letterSpacing: 1.0,
                 );
               }
-              return const TextStyle(
+              return TextStyle(
+                fontFamily: "serif",
                 color: AppColors.bottomNavUnselected,
                 fontSize: 12,
+                fontWeight: FontWeight.w500,
+                letterSpacing: 0.5,
               );
             }),
             iconTheme: WidgetStateProperty.resolveWith((states) {
               if (states.contains(WidgetState.selected)) {
-                return const IconThemeData(color: AppColors.primary, size: 24);
+                return IconThemeData(color: AppColors.primary, size: 22);
               }
-              return const IconThemeData(
+              return IconThemeData(
                 color: AppColors.bottomNavUnselected,
-                size: 24,
+                size: 22,
               );
             }),
           ),

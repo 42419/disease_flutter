@@ -458,8 +458,7 @@ class _DiseaseAnalyzeWidgetState extends State<DiseaseAnalyzeWidget> {
     if (_hasError) {
       return Center(
         child: Padding(
-          // padding: const EdgeInsets.all(24),
-          padding: const EdgeInsets.all(0),
+          padding: const EdgeInsets.symmetric(vertical: 48),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
@@ -472,6 +471,7 @@ class _DiseaseAnalyzeWidgetState extends State<DiseaseAnalyzeWidget> {
               const Text(
                 '分析失败',
                 style: TextStyle(
+                  fontFamily: "serif",
                   fontSize: 18,
                   fontWeight: FontWeight.w600,
                   color: AppColors.textPrimary,
@@ -490,14 +490,19 @@ class _DiseaseAnalyzeWidgetState extends State<DiseaseAnalyzeWidget> {
               ElevatedButton(
                 onPressed: _startAnalysis,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.primary,
+                  backgroundColor: AppColors.ink,
+                  foregroundColor: AppColors.canvas,
+                  elevation: 0,
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
+                    borderRadius: BorderRadius.zero,
                   ),
                 ),
                 child: const Text(
                   '重试',
-                  style: TextStyle(color: AppColors.white),
+                  style: TextStyle(
+                    fontWeight: FontWeight.w500,
+                    letterSpacing: 2.0,
+                  ),
                 ),
               ),
             ],
@@ -532,17 +537,18 @@ class _DiseaseAnalyzeWidgetState extends State<DiseaseAnalyzeWidget> {
               const SizedBox(width: 12),
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text(
+                children: const [
+                  Text(
                     '输入病害名称',
                     style: TextStyle(
+                      fontFamily: "serif",
                       fontSize: 20,
-                      fontWeight: FontWeight.bold,
+                      fontWeight: FontWeight.w600,
                       color: AppColors.textPrimary,
                     ),
                   ),
-                  const SizedBox(height: 2),
-                  const Text(
+                  SizedBox(height: 2),
+                  Text(
                     '识别结果为空，请手动输入以模拟',
                     style: TextStyle(
                       fontSize: 13,
@@ -565,21 +571,21 @@ class _DiseaseAnalyzeWidgetState extends State<DiseaseAnalyzeWidget> {
                 fontSize: 15,
               ),
               filled: true,
-              fillColor: AppColors.inputBackground,
+              fillColor: AppColors.surfaceSoft,
               contentPadding: const EdgeInsets.symmetric(
                 horizontal: 16,
                 vertical: 14,
               ),
               border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(10),
-                borderSide: const BorderSide(color: AppColors.inputBorder),
+                borderRadius: BorderRadius.circular(2),
+                borderSide: const BorderSide(color: AppColors.hairline),
               ),
               enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(10),
-                borderSide: const BorderSide(color: AppColors.inputBorder),
+                borderRadius: BorderRadius.circular(2),
+                borderSide: const BorderSide(color: AppColors.hairline),
               ),
               focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(10),
+                borderRadius: BorderRadius.circular(2),
                 borderSide: const BorderSide(
                   color: AppColors.inputBorderFocused,
                   width: 1.5,
@@ -591,21 +597,23 @@ class _DiseaseAnalyzeWidgetState extends State<DiseaseAnalyzeWidget> {
           const SizedBox(height: 16),
           SizedBox(
             width: double.infinity,
-            height: 50,
+            height: 48,
             child: ElevatedButton(
               onPressed: _submitInput,
               style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.primary,
+                backgroundColor: AppColors.ink,
+                foregroundColor: AppColors.canvas,
+                elevation: 0,
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10),
+                  borderRadius: BorderRadius.zero,
                 ),
               ),
               child: const Text(
                 '开始分析',
                 style: TextStyle(
-                  color: AppColors.white,
                   fontSize: 16,
-                  fontWeight: FontWeight.w600,
+                  fontWeight: FontWeight.w500,
+                  letterSpacing: 2.0,
                 ),
               ),
             ),
@@ -634,8 +642,9 @@ class _DiseaseAnalyzeWidgetState extends State<DiseaseAnalyzeWidget> {
             Text(
               '病因分析',
               style: TextStyle(
+                fontFamily: "serif",
                 fontSize: 20,
-                fontWeight: FontWeight.bold,
+                fontWeight: FontWeight.w600,
                 color: AppColors.textPrimary,
               ),
             ),
@@ -646,20 +655,6 @@ class _DiseaseAnalyzeWidgetState extends State<DiseaseAnalyzeWidget> {
             ),
           ],
         ),
-        const Spacer(),
-        Container(
-          width: 28,
-          height: 28,
-          decoration: BoxDecoration(
-            color: AppColors.primaryLightest,
-            borderRadius: BorderRadius.circular(6),
-          ),
-          child: const Icon(
-            Icons.auto_awesome,
-            size: 16,
-            color: AppColors.primary,
-          ),
-        ),
       ],
     );
   }
@@ -667,18 +662,11 @@ class _DiseaseAnalyzeWidgetState extends State<DiseaseAnalyzeWidget> {
   Widget _buildMainCard() {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: AppColors.cardBackground,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.cardBorder),
-        boxShadow: const [
-          BoxShadow(
-            color: AppColors.shadow,
-            blurRadius: 6,
-            offset: Offset(0, 2),
-          ),
-        ],
+        color: AppColors.canvas,
+        border: Border.all(color: AppColors.hairline),
+        borderRadius: BorderRadius.circular(2),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -689,9 +677,8 @@ class _DiseaseAnalyzeWidgetState extends State<DiseaseAnalyzeWidget> {
             width: double.infinity,
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: AppColors.backgroundLight,
-              borderRadius: BorderRadius.circular(10),
-              border: Border.all(color: AppColors.cardBorder),
+              color: AppColors.surfaceSoft,
+              borderRadius: BorderRadius.circular(2),
             ),
             child: AnimatedSwitcher(
               duration: const Duration(milliseconds: 500),

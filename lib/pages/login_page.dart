@@ -151,7 +151,11 @@ class _LoginPageState extends State<LoginPage> {
         );
 
         if (Global.user.role == "1") {
-          Navigator.pushNamedAndRemoveUntil(context, "/admin_main", (route) => false);
+          Navigator.pushNamedAndRemoveUntil(
+            context,
+            "/admin_main",
+            (route) => false,
+          );
         } else {
           Navigator.pushNamedAndRemoveUntil(context, "/main", (route) => false);
         }
@@ -192,501 +196,367 @@ class _LoginPageState extends State<LoginPage> {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: () {
-        FocusScope.of(context).unfocus();
-      },
+      onTap: () => FocusScope.of(context).unfocus(),
       child: Scaffold(
-        backgroundColor: AppColors.backgroundLight,
-        body: SingleChildScrollView(
-          child: Padding(
-            padding: EdgeInsets.only(left: 20, right: 20, top: 150),
-            child: SizedBox(
-              width: double.infinity,
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Image.asset("assets/img/logo.png", width: 110),
-                  SizedBox(height: 20),
-                  Text(
-                    "慧田良方",
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 28,
-                      color: AppColors.primary,
-                    ),
-                  ),
-                  SizedBox(height: 30),
-                  Form(
-                    key: _formKey,
-                    child: Column(
-                      children: [
-                        Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Expanded(
-                              flex: 11,
-                              child: TextFormField(
-                                maxLines: 1,
-                                textInputAction: TextInputAction.next,
-                                validator: _validateUsername,
-                                controller: _usernameController,
-                                decoration: InputDecoration(
-                                  hintText: "请输入用户名",
-                                  labelText: "用户名",
-                                  prefixIcon: Icon(
-                                    Icons.account_circle_outlined,
-                                    color: AppColors.iconDefault,
-                                  ),
-                                  hintStyle: TextStyle(
-                                    color: AppColors.textTertiary,
-                                  ),
-                                  labelStyle: TextStyle(
-                                    color: AppColors.textSecondary,
-                                  ),
-                                  filled: true,
-                                  fillColor: AppColors.inputBackground,
-                                  enabledBorder: OutlineInputBorder(
-                                    borderSide: BorderSide(
-                                      color: AppColors.inputBorder,
-                                      width: 1,
-                                    ),
-                                    borderRadius: BorderRadius.only(
-                                      topLeft: Radius.circular(8),
-                                    ),
-                                  ),
-                                  focusedBorder: OutlineInputBorder(
-                                    borderSide: BorderSide(
-                                      color: AppColors.inputBorderFocused,
-                                      width: 2,
-                                    ),
-                                    borderRadius: BorderRadius.only(
-                                      topLeft: Radius.circular(8),
-                                    ),
-                                  ),
-                                  errorBorder: OutlineInputBorder(
-                                    borderSide: BorderSide(
-                                      color: AppColors.error,
-                                      width: 1,
-                                    ),
-                                    borderRadius: BorderRadius.only(
-                                      topLeft: Radius.circular(8),
-                                    ),
-                                  ),
-                                  focusedErrorBorder: OutlineInputBorder(
-                                    borderSide: BorderSide(
-                                      color: AppColors.error,
-                                      width: 2,
-                                    ),
-                                    borderRadius: BorderRadius.only(
-                                      topLeft: Radius.circular(8),
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ),
-                            SizedBox(width: 12),
-                            Expanded(
-                              flex: 9,
-                              child: DropdownButtonFormField<String>(
-                                isExpanded: true,
-                                initialValue: _selectedRole,
-                                validator: _validateRole,
-                                onChanged: (String? newValue) {
-                                  setState(() {
-                                    _selectedRole = newValue;
-                                  });
-                                },
-                                items: [
-                                  DropdownMenuItem(
-                                    value: "1",
-                                    child: Text("管理员"),
-                                  ),
-                                  DropdownMenuItem(
-                                    value: "0",
-                                    child: Text("农户"),
-                                  ),
-                                ],
-                                decoration: InputDecoration(
-                                  labelText: "角色",
-                                  prefixIcon: Icon(
-                                    Icons.admin_panel_settings_outlined,
-                                    color: AppColors.iconDefault,
-                                  ),
-                                  filled: true,
-                                  fillColor: AppColors.inputBackground,
-                                  isDense: true,
-                                  contentPadding: EdgeInsets.symmetric(
-                                    horizontal: 10,
-                                    vertical: 16,
-                                  ),
-                                  enabledBorder: OutlineInputBorder(
-                                    borderSide: BorderSide(
-                                      color: AppColors.inputBorder,
-                                      width: 1,
-                                    ),
-                                    borderRadius: BorderRadius.only(
-                                      topRight: Radius.circular(8),
-                                    ),
-                                  ),
-                                  focusedBorder: OutlineInputBorder(
-                                    borderSide: BorderSide(
-                                      color: AppColors.inputBorderFocused,
-                                      width: 2,
-                                    ),
-                                    borderRadius: BorderRadius.only(
-                                      topRight: Radius.circular(8),
-                                    ),
-                                  ),
-                                  errorBorder: OutlineInputBorder(
-                                    borderSide: BorderSide(
-                                      color: AppColors.error,
-                                      width: 1,
-                                    ),
-                                    borderRadius: BorderRadius.only(
-                                      topRight: Radius.circular(8),
-                                    ),
-                                  ),
-                                  focusedErrorBorder: OutlineInputBorder(
-                                    borderSide: BorderSide(
-                                      color: AppColors.error,
-                                      width: 2,
-                                    ),
-                                    borderRadius: BorderRadius.only(
-                                      topRight: Radius.circular(8),
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                        SizedBox(height: 12),
-                        TextFormField(
-                          maxLines: 1,
-                          obscureText: true,
-                          validator: _validatePassword,
-                          controller: _passwordController,
-                          textInputAction: TextInputAction.done,
-                          onFieldSubmitted: (_) => _login(),
-                          decoration: InputDecoration(
-                            hintText: "请输入密码",
-                            labelText: "密码",
-                            prefixIcon: Icon(
-                              Icons.password_rounded,
-                              color: AppColors.iconDefault,
-                            ),
-                            hintStyle: TextStyle(color: AppColors.textTertiary),
-                            labelStyle: TextStyle(
-                              color: AppColors.textSecondary,
-                            ),
-                            filled: true,
-                            fillColor: AppColors.inputBackground,
-                            enabledBorder: OutlineInputBorder(
-                              borderSide: BorderSide(
-                                color: AppColors.inputBorder,
-                                width: 1,
-                              ),
-                              borderRadius: BorderRadius.only(
-                                bottomLeft: Radius.circular(8),
-                                bottomRight: Radius.circular(8),
-                              ),
-                            ),
-                            focusedBorder: OutlineInputBorder(
-                              borderSide: BorderSide(
-                                color: AppColors.inputBorderFocused,
-                                width: 2,
-                              ),
-                              borderRadius: BorderRadius.only(
-                                bottomLeft: Radius.circular(8),
-                                bottomRight: Radius.circular(8),
-                              ),
-                            ),
-                            errorBorder: OutlineInputBorder(
-                              borderSide: BorderSide(
-                                color: AppColors.error,
-                                width: 1,
-                              ),
-                              borderRadius: BorderRadius.only(
-                                bottomLeft: Radius.circular(8),
-                                bottomRight: Radius.circular(8),
-                              ),
-                            ),
-                            focusedErrorBorder: OutlineInputBorder(
-                              borderSide: BorderSide(
-                                color: AppColors.error,
-                                width: 2,
-                              ),
-                              borderRadius: BorderRadius.only(
-                                bottomLeft: Radius.circular(8),
-                                bottomRight: Radius.circular(8),
-                              ),
-                            ),
-                          ),
-                        ),
-                        SizedBox(height: 5),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.start,
-                          children: [
-                            Checkbox(
-                              value: _rememberMe,
-                              visualDensity: VisualDensity(
-                                horizontal: -4,
-                                vertical: -3,
-                              ),
-                              onChanged: (newValue) {
-                                setState(() {
-                                  _rememberMe = newValue ?? false;
-                                });
-                              },
-                              activeColor: AppColors.primary,
-                              checkColor: AppColors.white,
-                              fillColor: WidgetStateProperty.resolveWith((
-                                states,
-                              ) {
-                                if (states.contains(WidgetState.selected)) {
-                                  return AppColors.primary;
-                                }
-                                return AppColors.inputBorder;
-                              }),
-                            ),
-                            SizedBox(width: 8),
-                            GestureDetector(
-                              onTap: () {
-                                setState(() {
-                                  _rememberMe = !_rememberMe;
-                                });
-                              },
-                              child: Text(
-                                "自动登录",
-                                style: TextStyle(
-                                  color: AppColors.textSecondary,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.start,
-                          children: [
-                            Checkbox(
-                              value: _isSelected,
-                              visualDensity: VisualDensity(
-                                horizontal: -4,
-                                vertical: -3,
-                              ),
-                              onChanged: (newValue) {
-                                setState(() {
-                                  _isSelected = newValue ?? false;
-                                });
-                              },
-                              activeColor: AppColors.primary,
-                              checkColor: AppColors.white,
-                              fillColor: WidgetStateProperty.resolveWith((
-                                states,
-                              ) {
-                                if (states.contains(WidgetState.selected)) {
-                                  return AppColors.primary;
-                                }
-                                return AppColors.inputBorder;
-                              }),
-                            ),
-                            SizedBox(width: 8),
-                            GestureDetector(
-                              onTap: () {
-                                setState(() {
-                                  _isSelected = !_isSelected;
-                                });
-                              },
-                              child: Text(
-                                "勾选即代表您已同意",
-                                style: TextStyle(
-                                  color: AppColors.textSecondary,
-                                ),
-                              ),
-                            ),
-                            GestureDetector(
-                              onTap: () {
-                                ScaffoldMessenger.of(context).clearSnackBars();
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(
-                                    content: Text("跳转《用户协议》"),
-                                    duration: Duration(milliseconds: 500),
-                                    backgroundColor: AppColors.info,
-                                  ),
-                                );
-                              },
-                              child: Text(
-                                "《用户协议》",
-                                style: TextStyle(color: AppColors.primary),
-                              ),
-                            ),
-                            Text(
-                              "和",
-                              style: TextStyle(color: AppColors.textSecondary),
-                            ),
-                            GestureDetector(
-                              onTap: () {
-                                ScaffoldMessenger.of(context).clearSnackBars();
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(
-                                    content: Text("跳转《隐私政策》"),
-                                    duration: Duration(milliseconds: 500),
-                                    backgroundColor: AppColors.info,
-                                  ),
-                                );
-                              },
-                              child: Text(
-                                "《隐私政策》",
-                                style: TextStyle(color: AppColors.primary),
-                              ),
-                            ),
-                          ],
-                        ),
-                        SizedBox(height: 5),
-                        SizedBox(
-                          height: 60,
-                          width: double.infinity,
-                          child: ElevatedButton(
-                            onPressed: _isLoggingIn
-                                ? null
-                                : () {
-                                    _login();
-                                    FocusScope.of(context).unfocus();
-                                  },
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: AppColors.primary,
-                              foregroundColor: AppColors.buttonText,
-                              elevation: 2,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                            ),
-                            child: Text(
-                              "登录",
-                              style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  SizedBox(height: 40),
-                  Row(
+        backgroundColor: AppColors.canvas,
+        body: SafeArea(
+          child: Column(
+            children: [
+              Expanded(
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.symmetric(horizontal: 40),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Expanded(
-                        child: Divider(
-                          endIndent: 10,
-                          thickness: 1,
-                          color: AppColors.divider,
+                      const SizedBox(height: 56),
+
+                      // Logo & Editorial Title
+                      Hero(
+                        tag: 'app_logo',
+                        child: Icon(
+                          Icons.spa_rounded,
+                          size: 48,
+                          color: AppColors.primary,
                         ),
                       ),
+                      const SizedBox(height: 24),
                       Text(
-                        "其他登录方式",
-                        style: TextStyle(color: AppColors.textSecondary),
-                      ),
-                      Expanded(
-                        child: Divider(
-                          indent: 10,
-                          thickness: 1,
-                          color: AppColors.divider,
+                        "Sign in to\ncontinue.",
+                        style: TextStyle(
+                          fontFamily: "serif",
+                          fontWeight: FontWeight.w400,
+                          fontSize: 48,
+                          height: 1.1,
+                          color: AppColors.ink,
+                          letterSpacing: -1.0,
                         ),
                       ),
-                    ],
-                  ),
-                  SizedBox(height: 30),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      GestureDetector(
-                        onTap: () {
-                          ScaffoldMessenger.of(context).clearSnackBars();
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text("微信登录"),
-                              duration: Duration(milliseconds: 500),
-                              backgroundColor: AppColors.success,
-                            ),
-                          );
-                        },
-                        child: CircleAvatar(
-                          backgroundColor: AppColors.primaryLightest,
-                          radius: 28,
-                          child: Icon(
-                            Icons.wechat_rounded,
-                            color: AppColors.primary,
-                            size: 28,
-                          ),
+                      const SizedBox(height: 24),
+                      Text(
+                        "欢迎回到慧田良方",
+                        style: TextStyle(
+                          fontSize: 16,
+                          color: AppColors.muted,
+                          letterSpacing: 1.5,
+                          fontWeight: FontWeight.w400,
                         ),
                       ),
-                      SizedBox(width: 70),
-                      GestureDetector(
-                        onTap: () {
-                          ScaffoldMessenger.of(context).clearSnackBars();
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text("手机号登录"),
-                              duration: Duration(milliseconds: 500),
-                              backgroundColor: AppColors.info,
-                            ),
-                          );
-                        },
-                        child: CircleAvatar(
-                          backgroundColor: AppColors.primaryLightest,
-                          radius: 28,
-                          child: Icon(
-                            Icons.phone_rounded,
-                            color: AppColors.primary,
-                            size: 28,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                  SizedBox(height: 40),
-                  Container(
-                    margin: EdgeInsets.only(bottom: 20),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Text(
-                          "还没有账号? ",
-                          style: TextStyle(color: AppColors.textSecondary),
-                        ),
-                        TextButton(
-                          onPressed: () {
-                            ScaffoldMessenger.of(context).clearSnackBars();
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text("跳转注册"),
-                                duration: Duration(milliseconds: 500),
-                                backgroundColor: AppColors.info,
+                      const SizedBox(height: 64),
+
+                      // Minimalist Form
+                      Form(
+                        key: _formKey,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            // Username Input (Underline only)
+                            TextFormField(
+                              controller: _usernameController,
+                              textInputAction: TextInputAction.next,
+                              validator: _validateUsername,
+                              style: TextStyle(
+                                color: AppColors.ink,
+                                fontSize: 18,
                               ),
-                            );
-                          },
-                          style: ButtonStyle(
-                            overlayColor: WidgetStateProperty.all(
-                              Colors.transparent,
+                              decoration: _buildMinimalInputDecoration(
+                                hintText: "用户名",
+                                icon: Icons.person_outline,
+                              ),
                             ),
-                            padding: WidgetStateProperty.all(EdgeInsets.zero),
-                            minimumSize: WidgetStateProperty.all(Size.zero),
-                            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                          ),
-                          child: Text(
-                            "立即注册",
-                            style: TextStyle(color: AppColors.primary),
-                          ),
+                            const SizedBox(height: 16),
+
+                            // Password Input
+                            TextFormField(
+                              controller: _passwordController,
+                              obscureText: true,
+                              textInputAction: TextInputAction.done,
+                              validator: _validatePassword,
+                              onFieldSubmitted: (_) => _login(),
+                              style: TextStyle(
+                                color: AppColors.ink,
+                                fontSize: 18,
+                              ),
+                              decoration: _buildMinimalInputDecoration(
+                                hintText: "密码",
+                                icon: Icons.lock_outline,
+                              ),
+                            ),
+                            const SizedBox(height: 16),
+
+                            // Role Selection
+                            DropdownButtonFormField<String>(
+                              value: _selectedRole,
+                              isExpanded: true,
+                              validator: _validateRole,
+                              style: TextStyle(
+                                color: AppColors.ink,
+                                fontSize: 18,
+                              ),
+                              dropdownColor: AppColors.canvas,
+                              icon: Icon(
+                                Icons.keyboard_arrow_down_rounded,
+                                color: AppColors.muted,
+                              ),
+                              onChanged: (String? newValue) {
+                                setState(() => _selectedRole = newValue);
+                              },
+                              items: const [
+                                DropdownMenuItem(
+                                  value: "1",
+                                  child: Text("管理员"),
+                                ),
+                                DropdownMenuItem(value: "0", child: Text("农户")),
+                              ],
+                              decoration: _buildMinimalInputDecoration(
+                                hintText: "角色",
+                                icon: Icons.switch_account_outlined,
+                              ),
+                            ),
+
+                            const SizedBox(height: 32),
+
+                            // Options
+                            Row(
+                              children: [
+                                _buildCheckbox(
+                                  _rememberMe,
+                                  (v) => setState(() => _rememberMe = v!),
+                                ),
+                                const SizedBox(width: 12),
+                                GestureDetector(
+                                  onTap: () => setState(
+                                    () => _rememberMe = !_rememberMe,
+                                  ),
+                                  child: Text(
+                                    "保持登录状态",
+                                    style: TextStyle(
+                                      color: AppColors.body,
+                                      fontSize: 15,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 16),
+
+                            // Agreement
+                            Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                _buildCheckbox(
+                                  _isSelected,
+                                  (v) => setState(() => _isSelected = v!),
+                                ),
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: Wrap(
+                                    crossAxisAlignment:
+                                        WrapCrossAlignment.center,
+                                    children: [
+                                      GestureDetector(
+                                        onTap: () => setState(
+                                          () => _isSelected = !_isSelected,
+                                        ),
+                                        child: Text(
+                                          "已阅读并同意",
+                                          style: TextStyle(
+                                            color: AppColors.muted,
+                                            fontSize: 14,
+                                            height: 1.5,
+                                          ),
+                                        ),
+                                      ),
+                                      GestureDetector(
+                                        onTap: () => _showSnack('跳转《用户协议》'),
+                                        child: Text(
+                                          "《用户协议》",
+                                          style: TextStyle(
+                                            color: AppColors.primary,
+                                            fontSize: 14,
+                                            height: 1.5,
+                                          ),
+                                        ),
+                                      ),
+                                      Text(
+                                        "和",
+                                        style: TextStyle(
+                                          color: AppColors.muted,
+                                          fontSize: 14,
+                                          height: 1.5,
+                                        ),
+                                      ),
+                                      GestureDetector(
+                                        onTap: () => _showSnack('跳转《隐私政策》'),
+                                        child: Text(
+                                          "《隐私政策》",
+                                          style: TextStyle(
+                                            color: AppColors.primary,
+                                            fontSize: 14,
+                                            height: 1.5,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 48),
+
+                            // Login Button
+                            SizedBox(
+                              height: 56,
+                              width: double.infinity,
+                              child: ElevatedButton(
+                                onPressed: _isLoggingIn
+                                    ? null
+                                    : () {
+                                        FocusScope.of(context).unfocus();
+                                        _login();
+                                      },
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: AppColors.ink,
+                                  foregroundColor: AppColors.canvas,
+                                  disabledBackgroundColor: AppColors.hairline,
+                                  disabledForegroundColor: AppColors.muted,
+                                  elevation: 0,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(
+                                      0,
+                                    ), // Sharp brutalist corner
+                                  ),
+                                ),
+                                child: _isLoggingIn
+                                    ? SizedBox(
+                                        height: 20,
+                                        width: 20,
+                                        child: CircularProgressIndicator(
+                                          color: AppColors.canvas,
+                                          strokeWidth: 2,
+                                        ),
+                                      )
+                                    : const Text(
+                                        "登 录",
+                                        style: TextStyle(
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.normal,
+                                          letterSpacing: 4,
+                                        ),
+                                      ),
+                              ),
+                            ),
+                            const SizedBox(height: 32),
+
+                            // Bottom Action
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                _buildTextButton(
+                                  "忘记密码",
+                                  () => _showSnack("忘记密码"),
+                                ),
+                                Container(
+                                  height: 12,
+                                  width: 1,
+                                  color: AppColors.hairline,
+                                  margin: const EdgeInsets.symmetric(
+                                    horizontal: 16,
+                                  ),
+                                ),
+                                _buildTextButton(
+                                  "注册账户",
+                                  () => _showSnack("跳转注册"),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 48),
+                          ],
                         ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
-                ],
+                ),
               ),
-            ),
+            ],
           ),
         ),
+      ),
+    );
+  }
+
+  void _showSnack(String msg) {
+    ScaffoldMessenger.of(context).clearSnackBars();
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(msg),
+        duration: const Duration(milliseconds: 1000),
+        backgroundColor: AppColors.ink,
+      ),
+    );
+  }
+
+  Widget _buildTextButton(String text, VoidCallback onTap) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Text(
+        text,
+        style: TextStyle(
+          color: AppColors.muted,
+          fontSize: 13,
+          fontWeight: FontWeight.w500,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildCheckbox(bool value, ValueChanged<bool?> onChanged) {
+    return SizedBox(
+      width: 20,
+      height: 20,
+      child: Checkbox(
+        value: value,
+        onChanged: onChanged,
+        activeColor: AppColors.ink,
+        checkColor: AppColors.canvas,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(0)),
+        // Sharp checkbox
+        side: BorderSide(color: AppColors.muted.withOpacity(0.5), width: 1.5),
+      ),
+    );
+  }
+
+  InputDecoration _buildMinimalInputDecoration({
+    required String hintText,
+    required IconData icon,
+  }) {
+    return InputDecoration(
+      hintText: hintText,
+      prefixIcon: Padding(
+        padding: const EdgeInsets.only(right: 16),
+        child: Icon(icon, color: AppColors.muted, size: 24),
+      ),
+      prefixIconConstraints: const BoxConstraints(minWidth: 0, minHeight: 0),
+      hintStyle: TextStyle(
+        color: AppColors.muted.withOpacity(0.6),
+        fontSize: 18,
+        fontWeight: FontWeight.w400,
+      ),
+      filled: false,
+      contentPadding: const EdgeInsets.symmetric(vertical: 16),
+      border: UnderlineInputBorder(
+        borderSide: BorderSide(color: AppColors.hairline, width: 1),
+      ),
+      enabledBorder: UnderlineInputBorder(
+        borderSide: BorderSide(color: AppColors.hairline, width: 1),
+      ),
+      focusedBorder: UnderlineInputBorder(
+        borderSide: BorderSide(
+          color: AppColors.ink,
+          width: 2,
+        ), // Underline highlight in ink
+      ),
+      errorBorder: UnderlineInputBorder(
+        borderSide: BorderSide(color: AppColors.error, width: 1),
       ),
     );
   }

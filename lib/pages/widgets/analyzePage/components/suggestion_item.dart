@@ -29,21 +29,9 @@ class SuggestionItem extends StatelessWidget {
         width: double.infinity,
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
-          color: AppColors.success.withAlpha(10),
-          borderRadius: BorderRadius.circular(8),
-          border: Border(
-            left: BorderSide(
-              color: AppColors.success.withAlpha(60),
-              width: 3,
-            ),
-          ),
-          boxShadow: const [
-            BoxShadow(
-              color: AppColors.shadow,
-              blurRadius: 3,
-              offset: Offset(0, 1),
-            ),
-          ],
+          color: AppColors.canvas,
+          borderRadius: BorderRadius.circular(2),
+          border: Border.all(color: AppColors.hairline),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -64,8 +52,9 @@ class SuggestionItem extends StatelessWidget {
                     child: RichText(
                       text: TextSpan(
                         style: const TextStyle(
+                          fontFamily: "serif",
                           fontSize: 15,
-                          fontWeight: FontWeight.w700,
+                          fontWeight: FontWeight.w600,
                           color: AppColors.textPrimary,
                         ),
                         children: buildHighlightedSpans(title),
@@ -89,7 +78,7 @@ class SuggestionItem extends StatelessWidget {
                   ...buildHighlightedSpans(body),
                   if (showCursor)
                     const TextSpan(
-                      text: '▎',
+                      text: '\u258E',
                       style: TextStyle(
                         color: AppColors.danger,
                         fontWeight: FontWeight.bold,

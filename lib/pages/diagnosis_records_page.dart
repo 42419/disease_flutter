@@ -22,13 +22,13 @@ class _DiagnosisRecordsPageState extends State<DiagnosisRecordsPage> {
   List<MapEntry<String, int>> _stats = [];
 
   static const _barColors = [
-    Color(0xFFB71C1C),
-    Color(0xFFD35400),
-    Color(0xFFE67E22),
-    Color(0xFF689F38),
-    Color(0xFF2E7D32),
-    Color(0xFF5A8F7B),
-    Color(0xFF4F7A6B),
+    AppColors.error,
+    AppColors.warning,
+    AppColors.accentAmber,
+    AppColors.accentTeal,
+    AppColors.success,
+    AppColors.muted,
+    AppColors.body,
   ];
 
   @override
@@ -94,9 +94,9 @@ class _DiagnosisRecordsPageState extends State<DiagnosisRecordsPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.backgroundLight,
+      backgroundColor: AppColors.canvas,
       appBar: AppBar(
-        backgroundColor: AppColors.backgroundLight,
+        backgroundColor: AppColors.canvas,
         surfaceTintColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
@@ -105,21 +105,25 @@ class _DiagnosisRecordsPageState extends State<DiagnosisRecordsPage> {
         ),
         title: Column(
           children: [
-            const Text(
+            Text(
               '诊断记录',
               style: TextStyle(
-                color: AppColors.textPrimary,
-                fontWeight: FontWeight.w700,
-                fontSize: 18,
+                fontFamily: "serif",
+                color: AppColors.ink,
+                fontWeight: FontWeight.w600,
+                fontSize: 20,
+                letterSpacing: 1.5,
               ),
             ),
             if (!_isLoading && _records.isNotEmpty)
               Text(
                 '共 ${_records.length} 条记录',
-                style: const TextStyle(
-                  color: AppColors.textTertiary,
+                style: TextStyle(
+                  fontFamily: "serif",
+                  color: AppColors.muted,
                   fontSize: 12,
                   fontWeight: FontWeight.w400,
+                  fontStyle: FontStyle.italic,
                 ),
               ),
           ],
@@ -145,11 +149,13 @@ class _DiagnosisRecordsPageState extends State<DiagnosisRecordsPage> {
               ),
             ),
             const SizedBox(height: 20),
-            const Text(
+            Text(
               '加载中...',
               style: TextStyle(
-                color: AppColors.textTertiary,
+                fontFamily: "serif",
+                color: AppColors.muted,
                 fontSize: 14,
+                fontStyle: FontStyle.italic,
               ),
             ),
           ],
@@ -204,7 +210,7 @@ class _DiagnosisRecordsPageState extends State<DiagnosisRecordsPage> {
                     backgroundColor: AppColors.primary,
                     foregroundColor: Colors.white,
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(21),
+                      borderRadius: BorderRadius.circular(2),
                     ),
                     elevation: 0,
                   ),
@@ -235,20 +241,24 @@ class _DiagnosisRecordsPageState extends State<DiagnosisRecordsPage> {
               ),
             ),
             const SizedBox(height: 20),
-            const Text(
+            Text(
               '暂无诊断记录',
               style: TextStyle(
+                fontFamily: "serif",
                 fontSize: 17,
                 fontWeight: FontWeight.w600,
-                color: AppColors.textPrimary,
+                color: AppColors.ink,
+                letterSpacing: 0.5,
               ),
             ),
             const SizedBox(height: 8),
-            const Text(
+            Text(
               '完成一次诊断后，记录将显示在此',
               style: TextStyle(
-                color: AppColors.textTertiary,
+                fontFamily: "serif",
+                color: AppColors.muted,
                 fontSize: 13,
+                fontStyle: FontStyle.italic,
               ),
             ),
           ],
@@ -278,16 +288,9 @@ class _DiagnosisRecordsPageState extends State<DiagnosisRecordsPage> {
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.fromLTRB(20, 20, 20, 12),
       decoration: BoxDecoration(
-        color: AppColors.cardBackground,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.cardBorder),
-        boxShadow: const [
-          BoxShadow(
-            color: Color(0x08000000),
-            blurRadius: 12,
-            offset: Offset(0, 2),
-          ),
-        ],
+        color: AppColors.canvas,
+borderRadius: BorderRadius.circular(2),
+        border: Border.all(color: AppColors.hairline),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -298,31 +301,34 @@ class _DiagnosisRecordsPageState extends State<DiagnosisRecordsPage> {
                 width: 3,
                 height: 18,
                 decoration: BoxDecoration(
-                  color: AppColors.primaryLight,
+                  color: AppColors.primary,
                   borderRadius: BorderRadius.circular(2),
                 ),
               ),
               const SizedBox(width: 10),
-              const Text(
+              Text(
                 '病害分布',
                 style: TextStyle(
+                  fontFamily: "serif",
                   fontSize: 16,
                   fontWeight: FontWeight.w600,
-                  color: AppColors.textPrimary,
+                  color: AppColors.ink,
+                  letterSpacing: 0.5,
                 ),
               ),
               const Spacer(),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                 decoration: BoxDecoration(
-                  color: AppColors.primaryLightest.withAlpha(80),
-                  borderRadius: BorderRadius.circular(10),
+                  color: AppColors.surfaceSoft,
+                  borderRadius: BorderRadius.circular(2),
                 ),
                 child: Text(
                   '${_stats.length} 种',
-                  style: const TextStyle(
+                  style: TextStyle(
+                    fontFamily: "serif",
                     fontSize: 12,
-                    color: AppColors.textSecondary,
+                    color: AppColors.muted,
                     fontWeight: FontWeight.w500,
                   ),
                 ),
@@ -346,8 +352,8 @@ class _DiagnosisRecordsPageState extends State<DiagnosisRecordsPage> {
                         color: _barColors[i % _barColors.length],
                         width: 32,
                         borderRadius: const BorderRadius.only(
-                          topLeft: Radius.circular(6),
-                          topRight: Radius.circular(6),
+                          topLeft: Radius.circular(2),
+                          topRight: Radius.circular(2),
                         ),
                         backDrawRodData: BackgroundBarChartRodData(
                           show: true,
@@ -481,22 +487,15 @@ class _DiagnosisRecordsPageState extends State<DiagnosisRecordsPage> {
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
-        color: AppColors.cardBackground,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.cardBorder),
-        boxShadow: const [
-          BoxShadow(
-            color: AppColors.shadow,
-            blurRadius: 6,
-            offset: Offset(0, 2),
-          ),
-        ],
+        color: AppColors.canvas,
+        borderRadius: BorderRadius.circular(2),
+        border: Border.all(color: AppColors.hairline),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           InkWell(
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(2),
             onTap: () {
               setState(() {
                 _expandedId = isExpanded ? null : record.id;
@@ -522,10 +521,11 @@ class _DiagnosisRecordsPageState extends State<DiagnosisRecordsPage> {
                       Expanded(
                         child: Text(
                           record.bhname,
-                          style: const TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                            color: AppColors.textPrimary,
+                          style: TextStyle(
+                            fontFamily: "serif",
+                            fontSize: 17,
+                            fontWeight: FontWeight.w600,
+                            color: AppColors.ink,
                           ),
                           maxLines: 2,
                           overflow: TextOverflow.ellipsis,
@@ -537,7 +537,7 @@ class _DiagnosisRecordsPageState extends State<DiagnosisRecordsPage> {
                           padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                           decoration: BoxDecoration(
                             color: badgeColor.withAlpha(20),
-                            borderRadius: BorderRadius.circular(4),
+borderRadius: BorderRadius.circular(2),
                           ),
                           child: Text(
                             badgeLabel,
@@ -567,7 +567,7 @@ class _DiagnosisRecordsPageState extends State<DiagnosisRecordsPage> {
                       const SizedBox(width: 6),
                       Text(
                         record.formattedTime,
-                        style: const TextStyle(fontSize: 13, color: AppColors.textSecondary),
+                        style: TextStyle(fontFamily: "serif", fontSize: 13, color: AppColors.muted, fontStyle: FontStyle.italic),
                       ),
                       const SizedBox(width: 16),
                       const Spacer(),
@@ -576,11 +576,11 @@ class _DiagnosisRecordsPageState extends State<DiagnosisRecordsPage> {
                           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                           decoration: BoxDecoration(
                             color: AppColors.primaryLightest.withAlpha(60),
-                            borderRadius: BorderRadius.circular(6),
+                            borderRadius: BorderRadius.circular(2),
                           ),
                           child: Text(
                             record.username,
-                            style: const TextStyle(fontSize: 12, color: AppColors.textSecondary),
+                            style: TextStyle(fontFamily: "serif", fontSize: 12, color: AppColors.muted, fontStyle: FontStyle.italic),
                           ),
                         ),
                       ],
@@ -642,7 +642,7 @@ class _DiagnosisRecordsPageState extends State<DiagnosisRecordsPage> {
               height: 24,
               decoration: BoxDecoration(
                 color: color.withAlpha(20),
-                borderRadius: BorderRadius.circular(6),
+                borderRadius: BorderRadius.circular(2),
               ),
               child: Icon(icon, size: 14, color: color),
             ),
@@ -650,9 +650,11 @@ class _DiagnosisRecordsPageState extends State<DiagnosisRecordsPage> {
             Text(
               title,
               style: TextStyle(
+                fontFamily: "serif",
                 fontSize: 14,
                 fontWeight: FontWeight.w600,
                 color: color,
+                letterSpacing: 0.5,
               ),
             ),
           ],
@@ -662,16 +664,17 @@ class _DiagnosisRecordsPageState extends State<DiagnosisRecordsPage> {
           width: double.infinity,
           padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(
-            color: AppColors.backgroundLight,
-            borderRadius: BorderRadius.circular(8),
+            color: AppColors.canvas,
+            borderRadius: BorderRadius.circular(2),
           ),
           child: Text.rich(
             TextSpan(
               children: buildHighlightedSpans(content.isEmpty ? '暂无' : content),
             ),
-            style: const TextStyle(
+            style: TextStyle(
+              fontFamily: "serif",
               fontSize: 14,
-              color: AppColors.textSecondary,
+              color: AppColors.ink,
               height: 1.7,
             ),
           ),

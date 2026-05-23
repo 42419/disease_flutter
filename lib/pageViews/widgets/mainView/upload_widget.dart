@@ -144,26 +144,20 @@ class _UploadWidgetState extends State<UploadWidget> {
         child: Container(
           margin: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
           decoration: BoxDecoration(
-            color: AppColors.white,
-            borderRadius: BorderRadius.circular(20),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: 0.08),
-                blurRadius: 20,
-                offset: Offset(0, -4),
-              ),
-            ],
+            color: AppColors.canvas,
+            borderRadius: BorderRadius.circular(4),
+            border: Border.all(color: AppColors.hairline),
           ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               // 顶部指示器
               Container(
-                margin: EdgeInsets.only(top: 12, bottom: 8),
-                width: 40,
-                height: 4,
+                margin: EdgeInsets.only(top: 10, bottom: 6),
+                width: 32,
+                height: 3,
                 decoration: BoxDecoration(
-                  color: AppColors.textTertiary.withValues(alpha: 0.3),
+                  color: AppColors.hairline,
                   borderRadius: BorderRadius.circular(2),
                 ),
               ),
@@ -174,14 +168,16 @@ class _UploadWidgetState extends State<UploadWidget> {
                 child: Text(
                   "选择图片",
                   style: TextStyle(
+                    fontFamily: "serif",
                     fontSize: 18,
                     fontWeight: FontWeight.w600,
-                    color: AppColors.textPrimary,
+                    color: AppColors.ink,
+                    letterSpacing: 0.5,
                   ),
                 ),
               ),
 
-              Divider(color: AppColors.divider, height: 1),
+              Divider(color: AppColors.hairline, height: 1),
 
               // 拍照上传选项
               _buildOptionItem(
@@ -196,7 +192,7 @@ class _UploadWidgetState extends State<UploadWidget> {
 
               // 分割线
               Divider(
-                color: AppColors.divider,
+                color: AppColors.hairline,
                 height: 1,
                 indent: 20,
                 endIndent: 20,
@@ -216,24 +212,15 @@ class _UploadWidgetState extends State<UploadWidget> {
               // 取消按钮
               Padding(
                 padding: EdgeInsets.all(16),
-                child: SizedBox(
-                  width: double.infinity,
-                  height: 48,
-                  child: OutlinedButton(
-                    onPressed: () => Navigator.pop(context),
-                    style: OutlinedButton.styleFrom(
-                      side: BorderSide(color: AppColors.divider),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                    ),
-                    child: Text(
-                      "取消",
-                      style: TextStyle(
-                        color: AppColors.textSecondary,
-                        fontSize: 16,
-                        fontWeight: FontWeight.w500,
-                      ),
+                child: TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: Text(
+                    "取消",
+                    style: TextStyle(
+                      fontFamily: "serif",
+                      color: AppColors.muted,
+                      fontSize: 14,
+                      fontWeight: FontWeight.w500,
                     ),
                   ),
                 ),
@@ -253,29 +240,22 @@ class _UploadWidgetState extends State<UploadWidget> {
   }) {
     return InkWell(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(12),
       child: Padding(
-        padding: EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+        padding: EdgeInsets.symmetric(horizontal: 20, vertical: 14),
         child: Row(
           children: [
             // 图标容器
             Container(
-              width: 52,
-              height: 52,
+              width: 44,
+              height: 44,
               decoration: BoxDecoration(
-                gradient: AppColors.primaryGradient,
-                borderRadius: BorderRadius.circular(14),
-                boxShadow: [
-                  BoxShadow(
-                    color: AppColors.primary.withValues(alpha: 0.2),
-                    blurRadius: 8,
-                    offset: Offset(0, 2),
-                  ),
-                ],
+                color: AppColors.surfaceSoft,
+                borderRadius: BorderRadius.circular(2),
+                border: Border.all(color: AppColors.hairline),
               ),
-              child: Icon(icon, color: AppColors.white, size: 26),
+              child: Icon(icon, color: AppColors.ink, size: 22),
             ),
-            SizedBox(width: 16),
+            SizedBox(width: 14),
 
             // 文字部分
             Expanded(
@@ -285,17 +265,20 @@ class _UploadWidgetState extends State<UploadWidget> {
                   Text(
                     title,
                     style: TextStyle(
-                      fontSize: 16,
+                      fontFamily: "serif",
+                      fontSize: 15,
                       fontWeight: FontWeight.w600,
-                      color: AppColors.textPrimary,
+                      color: AppColors.ink,
                     ),
                   ),
-                  SizedBox(height: 4),
+                  SizedBox(height: 2),
                   Text(
                     subtitle,
                     style: TextStyle(
-                      fontSize: 13,
-                      color: AppColors.textSecondary,
+                      fontFamily: "serif",
+                      fontSize: 12,
+                      color: AppColors.muted,
+                      fontStyle: FontStyle.italic,
                     ),
                   ),
                 ],
@@ -305,8 +288,8 @@ class _UploadWidgetState extends State<UploadWidget> {
             // 箭头图标
             Icon(
               Icons.chevron_right_rounded,
-              color: AppColors.textTertiary,
-              size: 24,
+              color: AppColors.muted,
+              size: 20,
             ),
           ],
         ),
@@ -418,90 +401,66 @@ class _UploadWidgetState extends State<UploadWidget> {
     }
   }
 
-  Widget _getCardTitle(String title) {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.center,
-      children: [
-        Container(
-          width: 5,
-          height: 20,
-          decoration: BoxDecoration(
-            color: Colors.red,
-            borderRadius: BorderRadius.circular(20),
-          ),
-        ),
-        SizedBox(width: 15),
-        Text(
-          title,
-          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
-        ),
-      ],
-    );
-  }
-
   Widget _buildProbabilityItem(int index, String name, double percent) {
-    final percentage = (percent * 100).toStringAsFixed(2);
+    final percentage = (percent * 100).toStringAsFixed(1);
     return Padding(
-      padding: EdgeInsets.symmetric(vertical: 8),
+      padding: EdgeInsets.symmetric(vertical: 12),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          Container(
-            width: 32,
-            height: 32,
-            decoration: BoxDecoration(
-              color: index == 0 ? AppColors.primary : AppColors.primaryLightest,
-              shape: BoxShape.circle,
-            ),
-            child: Center(
-              child: Text(
-                "${index + 1}",
-                style: TextStyle(
-                  color: index == 0 ? Colors.white : AppColors.textPrimary,
-                  fontSize: 14,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ),
-          ),
-          SizedBox(width: 8),
           SizedBox(
-            width: 90,
+            width: 24,
             child: Text(
-              name,
-              style: TextStyle(fontSize: 15),
-              overflow: TextOverflow.ellipsis,
+              "0${index + 1}",
+              style: TextStyle(
+                fontFamily: "serif",
+                color: index == 0 ? AppColors.ink : AppColors.muted,
+                fontSize: 16,
+                fontWeight: index == 0 ? FontWeight.w600 : FontWeight.normal,
+              ),
             ),
           ),
           SizedBox(width: 8),
           Expanded(
-            child: Container(
-              height: 6,
-              decoration: BoxDecoration(
-                color: AppColors.primaryLightest,
-                borderRadius: BorderRadius.circular(4),
+            flex: 2,
+            child: Text(
+              name,
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: index == 0 ? FontWeight.w600 : FontWeight.normal,
+                color: AppColors.ink,
               ),
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+          SizedBox(width: 16),
+          Expanded(
+            flex: 3,
+            child: Container(
+              height: 3,
+              color: AppColors.hairline,
+              alignment: Alignment.centerLeft,
               child: FractionallySizedBox(
                 widthFactor: percent,
-                alignment: Alignment.centerLeft,
                 child: Container(
-                  decoration: BoxDecoration(
-                    color: index == 0
-                        ? AppColors.primary
-                        : AppColors.primaryLightest,
-                    borderRadius: BorderRadius.circular(4),
-                  ),
+                  height: 3,
+                  color: index == 0 ? AppColors.ink : AppColors.muted,
                 ),
               ),
             ),
           ),
-          SizedBox(width: 8),
+          SizedBox(width: 16),
           SizedBox(
             width: 60,
             child: Text(
-              "$percentage %",
+              "$percentage%",
               textAlign: TextAlign.right,
-              style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+              style: TextStyle(
+                fontFamily: "serif",
+                fontSize: 16,
+                color: index == 0 ? AppColors.ink : AppColors.muted,
+                fontWeight: index == 0 ? FontWeight.w600 : FontWeight.normal,
+              ),
             ),
           ),
         ],
@@ -516,119 +475,94 @@ class _UploadWidgetState extends State<UploadWidget> {
       padding: EdgeInsets.only(left: 0, right: 0, top: 0),
       child: Column(
         children: [
-          // 上传区域 - 完整圆角，完整边框
+          // 上传区域 - editorial style
           GestureDetector(
             onTap: _isUploading ? null : _showPickOptions,
             child: Container(
               width: double.infinity,
-              height: 200,
+              height: 180,
               decoration: BoxDecoration(
-                color: AppColors.uploadAreaBackground,
-                borderRadius: BorderRadius.only(
-                  topLeft: Radius.circular(12),
-                  topRight: Radius.circular(12),
-                  bottomLeft: Radius.circular(12),
-                ),
-                border: Border.all(color: AppColors.uploadAreaBorder, width: 2),
+                color: Colors.transparent,
+                border: Border.all(color: AppColors.ink, width: 1.5),
               ),
-              child: ClipRRect(
-                borderRadius: BorderRadius.only(
-                  topLeft: Radius.circular(12),
-                  topRight: Radius.circular(12),
-                  bottomLeft: Radius.circular(12),
-                ),
-                child: _selectedImage != null
-                    ? Image.file(_selectedImage!, fit: BoxFit.contain)
-                    : Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(
-                            Icons.camera_alt_outlined,
-                            size: 50,
-                            color: AppColors.primary,
+              child: _selectedImage != null
+                  ? Image.file(_selectedImage!, fit: BoxFit.contain)
+                  : Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          Icons.camera_alt_outlined,
+                          size: 48,
+                          color: AppColors.ink,
+                        ),
+                        SizedBox(height: 16),
+                        Text(
+                          "拍照 / 上传",
+                          style: TextStyle(
+                            fontFamily: "serif",
+                            color: AppColors.ink,
+                            fontSize: 18,
+                            fontWeight: FontWeight.w600,
+                            letterSpacing: 2.0,
                           ),
-                          SizedBox(height: 8),
-                          Text(
-                            "拍照上传",
-                            style: TextStyle(
-                              color: AppColors.textPrimary,
-                              fontSize: 16,
-                              fontWeight: FontWeight.w500,
-                            ),
-                          ),
-                        ],
-                      ),
-              ),
+                        ),
+                      ],
+                    ),
             ),
           ),
 
-          // 类别选择框 - 悬浮在右下角外侧，与上传框底部对齐
-          Align(
-            alignment: Alignment.centerRight,
-            child: Container(
-              // margin: EdgeInsets.only(top: 8),
-              padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+          // 类别选择框 - inline editorial style
+          if (_isUploading || _result != null)
+            Container(
+              margin: EdgeInsets.only(top: 24),
+              padding: EdgeInsets.symmetric(horizontal: 16, vertical: 16),
               decoration: BoxDecoration(
-                color: AppColors.white,
-                borderRadius: BorderRadius.only(
-                  bottomLeft: Radius.circular(12),
-                  bottomRight: Radius.circular(12),
+                border: Border(
+                  top: BorderSide(color: AppColors.hairline),
+                  bottom: BorderSide(color: AppColors.hairline),
                 ),
-                border: Border.all(
-                  color: AppColors.uploadAreaBorder,
-                  width: 1.5,
-                ),
-                boxShadow: [
-                  BoxShadow(
-                    color: AppColors.shadow,
-                    blurRadius: 8,
-                    offset: Offset(0, 4),
-                  ),
-                ],
               ),
-              constraints: BoxConstraints(maxWidth: double.infinity),
+              width: double.infinity,
               child: Row(
-                mainAxisSize: MainAxisSize.min,
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   if (_isUploading) ...[
-                    SizedBox(
-                      width: 14,
-                      height: 14,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2,
-                        color: AppColors.primary,
-                      ),
-                    ),
-                    SizedBox(width: 6),
                     Text(
                       "识别中...",
                       style: TextStyle(
-                        fontSize: 15,
-                        color: AppColors.textSecondary,
+                        fontFamily: "serif",
+                        fontSize: 18,
+                        color: AppColors.muted,
+                        fontStyle: FontStyle.italic,
                       ),
-                      overflow: TextOverflow.ellipsis,
+                    ),
+                    SizedBox(
+                      width: 16,
+                      height: 16,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: AppColors.ink,
+                      ),
                     ),
                   ] else ...[
-                    Flexible(
+                    Expanded(
                       child: Text.rich(
                         TextSpan(
-                          text: "类别：",
+                          text: "识别类别   ",
                           style: TextStyle(
-                            fontSize: 15,
-                            color: AppColors.textSecondary,
+                            fontFamily: "serif",
+                            fontSize: 16,
+                            color: AppColors.muted,
                           ),
                           children: [
                             TextSpan(
-                              text: _result ?? "请上传图片",
-                              style: _result != null
-                                  ? TextStyle(
-                                      fontSize: 17,
-                                      color: AppColors.danger,
-                                    )
-                                  : TextStyle(
-                                      fontSize: 15,
-                                      color: AppColors.textSecondary,
-                                    ),
+                              text: _result ?? "未知",
+                              style: TextStyle(
+                                fontFamily: "serif",
+                                fontSize: 20,
+                                color: AppColors.ink,
+                                fontWeight: FontWeight.w600,
+                              ),
                             ),
                           ],
                         ),
@@ -636,60 +570,74 @@ class _UploadWidgetState extends State<UploadWidget> {
                         overflow: TextOverflow.ellipsis,
                       ),
                     ),
-                    SizedBox(width: 6),
                     GestureDetector(
                       onTap: _result != null ? _showCategoryDetails : null,
                       child: Icon(
-                        Icons.arrow_drop_down,
+                        Icons.arrow_forward_rounded,
                         size: 20,
-                        color: _result != null
-                            ? AppColors.primary
-                            : AppColors.textTertiary,
+                        color: AppColors.ink,
                       ),
                     ),
                   ],
                 ],
               ),
             ),
-          ),
           if (_selectedImage != null) ...[
-            SizedBox(height: 30),
+            SizedBox(height: 40),
             Container(
-              height: 200,
               width: double.infinity,
-              padding: EdgeInsets.all(15),
+              padding: EdgeInsets.symmetric(vertical: 24),
               decoration: BoxDecoration(
-                color: AppColors.cardBackground,
-                borderRadius: BorderRadius.circular(12),
+                border: Border(
+                  bottom: BorderSide(color: AppColors.hairline),
+                ),
               ),
               child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  _getCardTitle("智能诊断分析"),
-                  SizedBox(height: 12),
+                  Text(
+                    "诊断热力图",
+                    style: TextStyle(
+                      fontFamily: "serif",
+                      fontSize: 20,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.ink,
+                    ),
+                  ),
+                  SizedBox(height: 24),
                   Row(
                     children: [
                       if (_selectedImage != null)
-                        ClipRRect(
-                          borderRadius: BorderRadius.circular(12),
-                          child: Image.file(
-                            _selectedImage!,
-                            fit: BoxFit.cover,
-                            width: 120,
-                            height: 120,
+                        Expanded(
+                          child: Container(
+                            decoration: BoxDecoration(
+                              border: Border.all(color: AppColors.hairline),
+                            ),
+                            child: Image.file(
+                              _selectedImage!,
+                              fit: BoxFit.cover,
+                              height: 140,
+                            ),
                           ),
                         ),
                       if (_selectedImage != null &&
                           _heatmapData != null &&
                           _heatmapData!.isNotEmpty)
-                        Expanded(child: Icon(Icons.arrow_forward_ios)),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 16),
+                          child: Icon(Icons.arrow_forward_rounded, color: AppColors.muted),
+                        ),
                       if (_heatmapData != null && _heatmapData!.isNotEmpty)
-                        ClipRRect(
-                          borderRadius: BorderRadius.circular(12),
-                          child: Image.memory(
-                            base64Decode(_heatmapData!),
-                            fit: BoxFit.cover,
-                            width: 120,
-                            height: 120,
+                        Expanded(
+                          child: Container(
+                            decoration: BoxDecoration(
+                              border: Border.all(color: AppColors.hairline),
+                            ),
+                            child: Image.memory(
+                              base64Decode(_heatmapData!),
+                              fit: BoxFit.cover,
+                              height: 140,
+                            ),
                           ),
                         ),
                     ],
@@ -697,30 +645,23 @@ class _UploadWidgetState extends State<UploadWidget> {
                 ],
               ),
             ),
-            SizedBox(height: 30),
+            SizedBox(height: 48),
             Container(
-              height: 360,
               width: double.infinity,
-              padding: EdgeInsets.all(15),
-              decoration: BoxDecoration(
-                color: AppColors.cardBackground,
-                borderRadius: BorderRadius.circular(12),
-              ),
+              padding: EdgeInsets.symmetric(vertical: 24),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  _getCardTitle("诊断结果"),
-                  Padding(
-                    padding: EdgeInsets.only(left: 22, top: 5),
-                    child: Text(
-                      "病害概率 TOP5",
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w500,
-                      ),
+                  Text(
+                    "病害概率排行",
+                    style: TextStyle(
+                      fontFamily: "serif",
+                      fontSize: 20,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.ink,
                     ),
                   ),
-                  SizedBox(height: 15),
+                  SizedBox(height: 24),
                   if (_top5Classes != null && _predictTop5 != null)
                     Column(
                       children: List.generate(_top5Classes!.length, (index) {
@@ -734,19 +675,19 @@ class _UploadWidgetState extends State<UploadWidget> {
                 ],
               ),
             ),
-            SizedBox(height: 25),
+            SizedBox(height: 32),
             SizedBox(
-              height: 55,
+              height: 52,
               width: double.infinity,
               child: ElevatedButton(
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.white,
-                  foregroundColor: Colors.black,
+                  backgroundColor: AppColors.ink,
+                  foregroundColor: AppColors.canvas,
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.zero,
                   ),
+                  elevation: 0,
                 ),
-
                 onPressed: _result == null || _result!.trim().isEmpty
                     ? null
                     : () {
@@ -757,8 +698,12 @@ class _UploadWidgetState extends State<UploadWidget> {
                         );
                       },
                 child: Text(
-                  "详细分析",
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  "详细分析报告",
+                  style: TextStyle(
+                    fontSize: 16, 
+                    fontWeight: FontWeight.w500,
+                    letterSpacing: 2.0,
+                  ),
                 ),
               ),
             ),

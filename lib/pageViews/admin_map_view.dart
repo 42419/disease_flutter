@@ -391,8 +391,8 @@ class AdminMapViewState extends State<AdminMapView> {
                   color: isSelected
                       ? AppColors.danger
                       : dim
-                          ? AppColors.textDisabled
-                          : AppColors.textPrimary,
+                          ? AppColors.mutedSoft
+                          : AppColors.ink,
                 ),
               ),
             ),
@@ -494,10 +494,10 @@ class AdminMapViewState extends State<AdminMapView> {
                             softWrap: true,
                             overflow: TextOverflow.ellipsis,
                             textAlign: TextAlign.center,
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontSize: 9,
                               fontWeight: FontWeight.w500,
-                              color: AppColors.textSecondary,
+                              color: AppColors.muted,
                             ),
                           ),
                         ),
@@ -678,8 +678,9 @@ class AdminMapViewState extends State<AdminMapView> {
               padding: const EdgeInsets.all(24),
               child: Text(
                 _errorMessage!,
-                style: const TextStyle(
-                  color: AppColors.textPrimary,
+                style: TextStyle(
+                  fontFamily: "serif",
+                  color: AppColors.ink,
                   fontSize: 15,
                 ),
                 textAlign: TextAlign.center,
@@ -697,17 +698,20 @@ class AdminMapViewState extends State<AdminMapView> {
         : (_showDistrictLayer ? '当前精度：区县级' : '当前精度：地市级');
 
     return Scaffold(
-      backgroundColor: AppColors.backgroundLight,
+      backgroundColor: AppColors.canvas,
       appBar: AppBar(
-        backgroundColor: AppColors.backgroundLight,
+        backgroundColor: AppColors.canvas,
         surfaceTintColor: Colors.transparent,
         elevation: 0,
         titleSpacing: 20,
-        title: const Text(
+        title: Text(
           '管理员首页',
           style: TextStyle(
-            color: AppColors.textPrimary,
-            fontWeight: FontWeight.w700,
+            fontFamily: "serif",
+            color: AppColors.ink,
+            fontWeight: FontWeight.w600,
+            fontSize: 20,
+            letterSpacing: 1.5,
           ),
         ),
       ),
@@ -719,16 +723,9 @@ class AdminMapViewState extends State<AdminMapView> {
               width: double.infinity,
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: AppColors.cardBackground,
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: AppColors.cardBorder),
-                boxShadow: const [
-                  BoxShadow(
-                    color: AppColors.shadow,
-                    blurRadius: 8,
-                    offset: Offset(0, 2),
-                  ),
-                ],
+                color: AppColors.canvas,
+                borderRadius: BorderRadius.circular(2),
+                border: Border.all(color: AppColors.hairline),
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -736,10 +733,12 @@ class AdminMapViewState extends State<AdminMapView> {
                   Text(
                     selectedRegion?.name ??
                         (_showDistrictLayer ? '河南省县区' : '河南省地市'),
-                    style: const TextStyle(
-                      fontSize: 22,
-                      fontWeight: FontWeight.w700,
-                      color: AppColors.textPrimary,
+                    style: TextStyle(
+                      fontFamily: "serif",
+                      fontSize: 20,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.ink,
+                      letterSpacing: 0.5,
                     ),
                   ),
                   if (selectedRegion != null &&
@@ -748,9 +747,11 @@ class AdminMapViewState extends State<AdminMapView> {
                       const SizedBox(height: 4),
                       Text(
                         '当前选中${_showDistrictLayer ? '区县' : '地市'}',
-                        style: const TextStyle(
-                          fontSize: 13,
-                          color: AppColors.textSecondary,
+                        style: TextStyle(
+                          fontFamily: "serif",
+                          fontSize: 12,
+                          color: AppColors.muted,
+                          fontStyle: FontStyle.italic,
                         ),
                       ),
                     ],
@@ -762,9 +763,11 @@ class AdminMapViewState extends State<AdminMapView> {
                         selectedRegion == null
                             ? detailLevelText
                             : '当前选中${_showDistrictLayer ? '区县' : '地市'} — 暂无病害数据',
-                        style: const TextStyle(
-                          fontSize: 13,
-                          color: AppColors.textSecondary,
+                        style: TextStyle(
+                          fontFamily: "serif",
+                          fontSize: 12,
+                          color: AppColors.muted,
+                          fontStyle: FontStyle.italic,
                         ),
                       ),
                     ],
@@ -776,9 +779,9 @@ class AdminMapViewState extends State<AdminMapView> {
               child: Container(
                 clipBehavior: Clip.antiAlias,
                 decoration: BoxDecoration(
-                  color: AppColors.cardBackground,
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: AppColors.cardBorder),
+                  color: AppColors.canvas,
+                  borderRadius: BorderRadius.circular(2),
+                  border: Border.all(color: AppColors.hairline),
                 ),
                 child: Stack(
                   children: [
@@ -883,16 +886,17 @@ class AdminMapViewState extends State<AdminMapView> {
                           vertical: 8,
                         ),
                         decoration: BoxDecoration(
-                          color: Colors.white.withValues(alpha: 0.96),
-                          borderRadius: BorderRadius.circular(10),
-                          border: Border.all(color: AppColors.cardBorder),
+                          color: AppColors.surfaceSoft,
+                          borderRadius: BorderRadius.circular(2),
+                          border: Border.all(color: AppColors.hairline),
                         ),
-                        child: const Text(
+                        child: Text(
                           '默认显示市级，放大后切换到县区级',
                           style: TextStyle(
+                            fontFamily: "serif",
                             fontSize: 12,
-                            color: AppColors.textSecondary,
-                            fontWeight: FontWeight.w600,
+                            color: AppColors.muted,
+                            fontWeight: FontWeight.w500,
                           ),
                         ),
                       ),

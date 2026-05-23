@@ -5,7 +5,7 @@ class User {
 
   User({
     this.nickName = "",
-    this.userAvatarUrl = "https://rin-img.liyunfei.eu.org/douyin-hono-images/u1_1767694990248_p4bduq.jpg",
+    this.userAvatarUrl = "https://hx.yunov.top/img1917448866_1743579037214.jpg",
     this.role = "0",
   });
 }

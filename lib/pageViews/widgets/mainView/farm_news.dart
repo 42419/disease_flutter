@@ -29,68 +29,72 @@ class _FarmNewsState extends State<FarmNews> {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        Row(
-          children: [
-            SizedBox(width: 10),
-            Expanded(
-              child: Text(
-                "农技资讯",
-                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
-              ),
-            ),
-            TextButton(
-              onPressed: () {
-                ScaffoldMessenger.of(context).clearSnackBars();
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text("跳转更多资讯"),
-                    duration: Duration(milliseconds: 500),
-                    backgroundColor: AppColors.info,
-                  ),
-                );
-              },
-              style: ButtonStyle(
-                overlayColor: WidgetStateProperty.all(Colors.transparent),
-                padding: WidgetStateProperty.all(EdgeInsets.zero),
-                minimumSize: WidgetStateProperty.all(Size.zero),
-                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-              ),
-              child: Text("查看更多", style: TextStyle(color: AppColors.primary)),
-            ),
-            SizedBox(width: 10),
-          ],
-        ),
-        SizedBox(height: 15),
         Column(
           children: List.generate(_getNews.length, (index) {
             final item = _getNews[index];
-            return Card(
-              color: AppColors.cardBackground,
-              child: ListTile(
-                onTap: () {
-                  ScaffoldMessenger.of(context).clearSnackBars();
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text("跳转 ${item["title"]}"),
-                      duration: Duration(milliseconds: 500),
-                      backgroundColor: AppColors.info,
-                    ),
-                  );
-                },
-                leading: ClipRRect(
-                  borderRadius: BorderRadius.circular(5),
-                  child: Image.network(item["picture"], fit: BoxFit.contain),
+            return InkWell(
+              onTap: () {
+                ScaffoldMessenger.of(context).clearSnackBars();
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text("跳转 ${item["title"]}"),
+                    duration: Duration(milliseconds: 500),
+                    backgroundColor: AppColors.ink,
+                  ),
+                );
+              },
+              child: Container(
+                decoration: BoxDecoration(
+                  border: Border(
+                    top: BorderSide(color: index == 0 ? AppColors.hairline : Colors.transparent),
+                    bottom: BorderSide(color: AppColors.hairline),
+                  ),
                 ),
-                title: Column(
+                padding: EdgeInsets.symmetric(vertical: 24),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      item["title"],
-                      style: TextStyle(fontWeight: FontWeight.bold),
+                    Container(
+                      width: 80,
+                      height: 80,
+                      decoration: BoxDecoration(
+                        border: Border.all(color: AppColors.hairline),
+                      ),
+                      child: Image.network(
+                        item["picture"], 
+                        fit: BoxFit.cover,
+                      ),
                     ),
-                    SizedBox(height: 5),
+                    SizedBox(width: 20),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            item["title"],
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                              color: AppColors.ink,
+                            ),
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          SizedBox(height: 12),
+                          Text(
+                            "${item["time"]}   ·   ${item["watched"]}",
+                            style: TextStyle(
+                              fontFamily: "serif",
+                              color: AppColors.muted,
+                              fontSize: 13,
+                              fontStyle: FontStyle.italic,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
                   ],
                 ),
-                subtitle: Text("${item["time"]} · ${item["watched"]}"),
               ),
             );
           }),

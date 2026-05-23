@@ -62,6 +62,7 @@ class _AnalyzeLoadingWidgetState extends State<AnalyzeLoadingWidget> {
                 Text(
                   text.isEmpty ? '分析中' : '思考中',
                   style: TextStyle(
+                    fontFamily: "serif",
                     fontSize: 14,
                     fontWeight: FontWeight.w500,
                     color: text.isEmpty
@@ -93,9 +94,9 @@ class _AnalyzeLoadingWidgetState extends State<AnalyzeLoadingWidget> {
                   width: double.infinity,
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color: AppColors.backgroundLight,
-                    borderRadius: BorderRadius.circular(8),
-                    border: Border.all(color: AppColors.cardBorder),
+                    color: AppColors.canvas,
+                    borderRadius: BorderRadius.circular(2),
+                    border: Border.all(color: AppColors.hairline),
                   ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -111,6 +112,7 @@ class _AnalyzeLoadingWidgetState extends State<AnalyzeLoadingWidget> {
                           Text(
                             '推理过程',
                             style: TextStyle(
+                              fontFamily: "serif",
                               fontSize: 12,
                               color: AppColors.textTertiary,
                               fontWeight: FontWeight.w500,
@@ -131,8 +133,8 @@ class _AnalyzeLoadingWidgetState extends State<AnalyzeLoadingWidget> {
                       Container(
                         height: 140,
                         decoration: BoxDecoration(
-                          color: AppColors.white,
-                          borderRadius: BorderRadius.circular(6),
+                          color: AppColors.surfaceSoft,
+                          borderRadius: BorderRadius.circular(2),
                         ),
                         child: SingleChildScrollView(
                           controller: _innerScrollController,

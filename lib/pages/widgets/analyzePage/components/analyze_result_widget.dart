@@ -153,8 +153,9 @@ class AnalyzeResultWidget extends StatelessWidget {
         Text(
           title,
           style: const TextStyle(
+            fontFamily: "serif",
             fontSize: 16,
-            fontWeight: FontWeight.w700,
+            fontWeight: FontWeight.w600,
             color: AppColors.textPrimary,
           ),
         ),
@@ -264,8 +265,9 @@ class AnalyzeResultWidget extends StatelessWidget {
               child: RichText(
                 text: TextSpan(
                   style: const TextStyle(
+                    fontFamily: "serif",
                     fontSize: 16,
-                    fontWeight: FontWeight.w700,
+                    fontWeight: FontWeight.w600,
                     color: AppColors.textPrimary,
                   ),
                   children: [
@@ -371,8 +373,9 @@ class AnalyzeResultWidget extends StatelessWidget {
               Text(
                 header,
                 style: const TextStyle(
+                  fontFamily: "serif",
                   fontSize: 16,
-                  fontWeight: FontWeight.w700,
+                  fontWeight: FontWeight.w600,
                   color: AppColors.textPrimary,
                 ),
               ),
