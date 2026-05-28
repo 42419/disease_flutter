@@ -1,3 +1,4 @@
+import 'package:farm_flutter/pages/app_init_page.dart';
 import 'package:farm_flutter/pages/diagnosis_records_page.dart';
 import 'package:farm_flutter/pages/disease_analyze_page.dart';
 import 'package:farm_flutter/pages/register_page.dart';
@@ -9,8 +10,7 @@ import '../pages/admin_main_page.dart';
 
 Widget getRootWidget() {
   return MaterialApp(
-    initialRoute: "/login",
-    // initialRoute: "/main",
+    initialRoute: "/init",
     routes: _getRoutes(),
     debugShowCheckedModeBanner: false,
     theme: ThemeData(
@@ -21,6 +21,7 @@ Widget getRootWidget() {
 
 Map<String, Widget Function(BuildContext)> _getRoutes() {
   return {
+    "/init": (context) => AppInitPage(),
     "/login" : (context) => LoginPage(),
     "/registration": (context) => RegisterPage(),
     "/main" : (context) => MainPage(),

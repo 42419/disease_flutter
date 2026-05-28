@@ -39,15 +39,6 @@ class _LoginPageState extends State<LoginPage> {
         _isSelected = true;
       }
     });
-
-    if (_rememberMe &&
-        _usernameController.text.isNotEmpty &&
-        _passwordController.text.isNotEmpty) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        FocusScope.of(context).unfocus();
-        _login();
-      });
-    }
   }
 
   String? _validateUsername(String? value) {

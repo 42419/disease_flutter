@@ -286,11 +286,7 @@ class _UploadWidgetState extends State<UploadWidget> {
             ),
 
             // 箭头图标
-            Icon(
-              Icons.chevron_right_rounded,
-              color: AppColors.muted,
-              size: 20,
-            ),
+            Icon(Icons.chevron_right_rounded, color: AppColors.muted, size: 20),
           ],
         ),
       ),
@@ -390,8 +386,8 @@ class _UploadWidgetState extends State<UploadWidget> {
       if (resp is Map &&
           resp['regeocode'] != null &&
           resp['regeocode']['addressComponent'] != null) {
-        Global.amapAdcode =
-            resp['regeocode']['addressComponent']['adcode'].toString();
+        Global.amapAdcode = resp['regeocode']['addressComponent']['adcode']
+            .toString();
         // debugPrint('test：adcode=${Global.amapAdcode}');
       } else {
         debugPrint('test：逆地理编码失败，响应: $resp');
@@ -423,14 +419,31 @@ class _UploadWidgetState extends State<UploadWidget> {
           SizedBox(width: 8),
           Expanded(
             flex: 2,
-            child: Text(
-              name,
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: index == 0 ? FontWeight.w600 : FontWeight.normal,
+            child: Tooltip(
+              message: name,
+              triggerMode: TooltipTriggerMode.longPress,
+              showDuration: Duration(seconds: 3),
+              padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              margin: EdgeInsets.symmetric(horizontal: 24),
+              decoration: BoxDecoration(
                 color: AppColors.ink,
+                borderRadius: BorderRadius.circular(4),
               ),
-              overflow: TextOverflow.ellipsis,
+              textStyle: TextStyle(
+                color: AppColors.canvas,
+                fontSize: 14,
+                height: 1.4,
+              ),
+              child: Text(
+                name,
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: index == 0 ? FontWeight.w600 : FontWeight.normal,
+                  color: AppColors.ink,
+                ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
             ),
           ),
           SizedBox(width: 16),
@@ -588,9 +601,7 @@ class _UploadWidgetState extends State<UploadWidget> {
               width: double.infinity,
               padding: EdgeInsets.symmetric(vertical: 24),
               decoration: BoxDecoration(
-                border: Border(
-                  bottom: BorderSide(color: AppColors.hairline),
-                ),
+                border: Border(bottom: BorderSide(color: AppColors.hairline)),
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -625,7 +636,10 @@ class _UploadWidgetState extends State<UploadWidget> {
                           _heatmapData!.isNotEmpty)
                         Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 16),
-                          child: Icon(Icons.arrow_forward_rounded, color: AppColors.muted),
+                          child: Icon(
+                            Icons.arrow_forward_rounded,
+                            color: AppColors.muted,
+                          ),
                         ),
                       if (_heatmapData != null && _heatmapData!.isNotEmpty)
                         Expanded(
@@ -700,7 +714,7 @@ class _UploadWidgetState extends State<UploadWidget> {
                 child: Text(
                   "详细分析报告",
                   style: TextStyle(
-                    fontSize: 16, 
+                    fontSize: 16,
                     fontWeight: FontWeight.w500,
                     letterSpacing: 2.0,
                   ),

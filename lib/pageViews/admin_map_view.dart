@@ -4,6 +4,7 @@ import 'dart:convert';
 import 'package:farm_flutter/utils/api_config.dart';
 import 'package:farm_flutter/utils/app_colors.dart';
 import 'package:farm_flutter/utils/http_util.dart';
+import 'package:fl_chart/fl_chart.dart';
 import 'package:farm_flutter/models/map_models.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -26,6 +27,15 @@ class AdminMapViewState extends State<AdminMapView> {
   static const double _districtDetailZoom = 9.6;
   static const double _minZoom = 5.0;
   static const double _maxZoom = 10.2;
+  static const _barColors = [
+    AppColors.error,
+    AppColors.warning,
+    AppColors.accentAmber,
+    AppColors.accentTeal,
+    AppColors.success,
+    AppColors.muted,
+    AppColors.body,
+  ];
 
   final MapController _mapController = MapController();
   final LayerHitNotifier<String> _hitNotifier = ValueNotifier(null);
@@ -158,6 +168,54 @@ class AdminMapViewState extends State<AdminMapView> {
       }
     }
     return total;
+  }
+
+  Color _regionFillColor({
+    required bool hasGeoData,
+    required bool hasData,
+    required bool isSelected,
+    required double severityRatio,
+  }) {
+    // 无病害：绿色；有病害：按强度从浅红到深红渐变。
+    if (hasGeoData && !hasData) {
+      return isSelected
+          ? AppColors.success.withValues(alpha: 0.46)
+          : AppColors.success.withValues(alpha: 0.30);
+    }
+    if (!hasGeoData) {
+      return isSelected
+          ? AppColors.success.withValues(alpha: 0.24)
+          : AppColors.success.withValues(alpha: 0.16);
+    }
+
+    final baseRed = Color.lerp(
+      AppColors.error.withValues(alpha: 0.24),
+      AppColors.error.withValues(alpha: 0.68),
+      severityRatio,
+    )!;
+    return isSelected
+        ? Color.lerp(baseRed, AppColors.error.withValues(alpha: 0.82), 0.35)!
+        : baseRed;
+  }
+
+  Color _regionBorderColor({
+    required bool hasGeoData,
+    required bool hasData,
+    required bool isSelected,
+    required double severityRatio,
+  }) {
+    if (isSelected) return AppColors.error;
+    if (hasGeoData && !hasData) {
+      return AppColors.success.withValues(alpha: 0.82);
+    }
+    if (!hasGeoData) {
+      return AppColors.success.withValues(alpha: 0.60);
+    }
+    return Color.lerp(
+      AppColors.error.withValues(alpha: 0.58),
+      AppColors.error.withValues(alpha: 0.92),
+      severityRatio,
+    )!;
   }
 
   List<MapEntry<String, int>> _getDiseaseSummary(String regionId) {
@@ -312,32 +370,18 @@ class AdminMapViewState extends State<AdminMapView> {
       final ratio = maxCount > 1 ? (count / maxCount).clamp(0.0, 1.0) : 0.0;
 
       for (final shape in region.polygons) {
-        Color fillColor;
-        Color borderColor;
-
-        if (hasGeoData && hasData) {
-          final opacity = 0.10 + ratio * 0.38;
-          fillColor = isSelected
-              ? AppColors.warning.withValues(alpha: opacity + 0.10)
-              : AppColors.warning.withValues(alpha: opacity);
-          borderColor = isSelected
-              ? AppColors.danger
-              : AppColors.warning.withValues(alpha: 0.55 + ratio * 0.30);
-        } else if (hasGeoData) {
-          fillColor = isSelected
-              ? AppColors.primary.withValues(alpha: 0.10)
-              : AppColors.primary.withValues(alpha: 0.04);
-          borderColor = isSelected
-              ? AppColors.danger
-              : AppColors.divider.withValues(alpha: 0.50);
-        } else {
-          fillColor = isSelected
-              ? AppColors.primary.withValues(alpha: 0.34)
-              : AppColors.primary.withValues(alpha: 0.14);
-          borderColor = isSelected
-              ? AppColors.danger
-              : AppColors.primary.withValues(alpha: 0.70);
-        }
+        final fillColor = _regionFillColor(
+          hasGeoData: hasGeoData,
+          hasData: hasData,
+          isSelected: isSelected,
+          severityRatio: ratio,
+        );
+        final borderColor = _regionBorderColor(
+          hasGeoData: hasGeoData,
+          hasData: hasData,
+          isSelected: isSelected,
+          severityRatio: ratio,
+        );
 
         polygons.add(
           Polygon<String>(
@@ -348,8 +392,8 @@ class AdminMapViewState extends State<AdminMapView> {
             borderStrokeWidth: isSelected
                 ? (showStrongDetail ? 3.2 : 2.8)
                 : (hasGeoData && hasData
-                    ? (showStrongDetail ? 2.2 : 1.6)
-                    : (showStrongDetail ? 1.8 : 1.1)),
+                      ? (showStrongDetail ? 2.2 : 1.6)
+                      : (showStrongDetail ? 1.8 : 1.1)),
             hitValue: region.id,
             label: null,
           ),
@@ -391,8 +435,8 @@ class AdminMapViewState extends State<AdminMapView> {
                   color: isSelected
                       ? AppColors.danger
                       : dim
-                          ? AppColors.mutedSoft
-                          : AppColors.ink,
+                      ? AppColors.mutedSoft
+                      : AppColors.ink,
                 ),
               ),
             ),
@@ -408,101 +452,203 @@ class AdminMapViewState extends State<AdminMapView> {
     final summary = _getDiseaseSummary(region.id);
     if (summary.isEmpty) return [];
 
-    final maxCount = summary.first.value;
-    final barCount = summary.length;
-    const barMaxHeight = 56.0;
-    const innerGap = 8.0;
-    final barWidth = _barWidthForNames(summary.map((e) => e.key).toList());
-    final cardWidth = barCount * (barWidth + innerGap) - innerGap + 28;
-    final markerHeight = barMaxHeight + 84;
+    final displayStats = summary.take(7).toList();
+    final maxCount = displayStats.first.value;
+    const cardWidth = 300.0;
+    const markerHeight = 226.0;
+    final chartMaxY = (maxCount < 3) ? 3.0 : (maxCount * 1.2).ceilToDouble();
+    final yInterval = maxCount <= 3
+        ? 1.0
+        : (maxCount / 3).ceilToDouble().clamp(1.0, double.infinity);
 
     return [
       Marker(
-        point: _smartOffset(region.center, 0.12, 0),
+        point: _popupAnchorForRegion(region),
         width: cardWidth + 20,
         height: markerHeight,
         child: IgnorePointer(
           child: Center(
             child: Container(
-              padding: const EdgeInsets.fromLTRB(14, 8, 14, 6),
+              width: cardWidth,
+              padding: const EdgeInsets.fromLTRB(16, 14, 16, 10),
               decoration: BoxDecoration(
-                color: Colors.white.withAlpha(240),
-                borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: AppColors.warning.withAlpha(110)),
-                boxShadow: const [
-                  BoxShadow(
-                    color: AppColors.shadow,
-                    blurRadius: 6,
-                    offset: Offset(0, 2),
-                  ),
-                ],
+                color: AppColors.canvas.withAlpha(244),
+                borderRadius: BorderRadius.circular(2),
+                border: Border.all(color: AppColors.hairline),
               ),
               child: Column(
-                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.end,
-                    children: summary.map((entry) {
-                      final barHeight =
-                          (entry.value / maxCount) * barMaxHeight;
-                      return Padding(
-                        padding: EdgeInsets.only(
-                          left: entry == summary.first ? 0 : innerGap,
+                    children: [
+                      Container(
+                        width: 3,
+                        height: 16,
+                        decoration: BoxDecoration(
+                          color: AppColors.primary,
+                          borderRadius: BorderRadius.circular(2),
                         ),
-                        child: SizedBox(
-                          width: barWidth,
-                          child: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Text(
-                                '${entry.value}',
-                                style: const TextStyle(
-                                  fontSize: 11,
-                                  fontWeight: FontWeight.w700,
-                                  color: AppColors.warning,
+                      ),
+                      const SizedBox(width: 8),
+                      Text(
+                        '病害分布',
+                        style: TextStyle(
+                          fontFamily: "serif",
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                          color: AppColors.ink,
+                          letterSpacing: 0.5,
+                        ),
+                      ),
+                      const Spacer(),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 3,
+                        ),
+                        decoration: BoxDecoration(
+                          color: AppColors.surfaceSoft,
+                          borderRadius: BorderRadius.circular(2),
+                        ),
+                        child: Text(
+                          '${summary.length} 种',
+                          style: TextStyle(
+                            fontFamily: "serif",
+                            fontSize: 11,
+                            color: AppColors.muted,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  SizedBox(
+                    height: 152,
+                    child: BarChart(
+                      BarChartData(
+                        alignment: BarChartAlignment.spaceAround,
+                        maxY: chartMaxY,
+                        minY: 0,
+                        barGroups: List.generate(displayStats.length, (i) {
+                          return BarChartGroupData(
+                            x: i,
+                            barRods: [
+                              BarChartRodData(
+                                toY: displayStats[i].value.toDouble(),
+                                color: _barColors[i % _barColors.length],
+                                width: 20,
+                                borderRadius: const BorderRadius.only(
+                                  topLeft: Radius.circular(2),
+                                  topRight: Radius.circular(2),
                                 ),
-                              ),
-                              const SizedBox(height: 2),
-                              Container(
-                                width: barWidth,
-                                height: barHeight.clamp(14, barMaxHeight),
-                                decoration: BoxDecoration(
-                                  color: AppColors.warning.withAlpha(180),
-                                  borderRadius: BorderRadius.circular(3),
+                                backDrawRodData: BackgroundBarChartRodData(
+                                  show: true,
+                                  toY: chartMaxY,
+                                  color: AppColors.backgroundDark.withAlpha(80),
                                 ),
                               ),
                             ],
-                          ),
-                        ),
-                      );
-                    }).toList(),
-                  ),
-                  const SizedBox(height: 6),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: summary.map((entry) {
-                      return Padding(
-                        padding: EdgeInsets.only(
-                          left: entry == summary.first ? 0 : innerGap,
-                        ),
-                        child: SizedBox(
-                          width: barWidth,
-                          child: Text(
-                            entry.key,
-                            maxLines: 3,
-                            softWrap: true,
-                            overflow: TextOverflow.ellipsis,
-                            textAlign: TextAlign.center,
-                            style: TextStyle(
-                              fontSize: 9,
-                              fontWeight: FontWeight.w500,
-                              color: AppColors.muted,
+                          );
+                        }),
+                        titlesData: FlTitlesData(
+                          show: true,
+                          bottomTitles: AxisTitles(
+                            sideTitles: SideTitles(
+                              showTitles: true,
+                              reservedSize: 50,
+                              getTitlesWidget: (value, meta) {
+                                final idx = value.toInt();
+                                if (idx < 0 || idx >= displayStats.length) {
+                                  return const SizedBox.shrink();
+                                }
+                                return SideTitleWidget(
+                                  meta: meta,
+                                  space: 4,
+                                  child: SizedBox(
+                                    width: 46,
+                                    child: Text(
+                                      _formatChartLabel(displayStats[idx].key),
+                                      style: const TextStyle(
+                                        fontSize: 9,
+                                        color: AppColors.textSecondary,
+                                        fontWeight: FontWeight.w500,
+                                        height: 1.15,
+                                      ),
+                                      textAlign: TextAlign.center,
+                                      maxLines: 2,
+                                      softWrap: true,
+                                      overflow: TextOverflow.visible,
+                                    ),
+                                  ),
+                                );
+                              },
                             ),
                           ),
+                          leftTitles: AxisTitles(
+                            sideTitles: SideTitles(
+                              showTitles: true,
+                              reservedSize: 24,
+                              interval: yInterval,
+                              getTitlesWidget: (value, meta) {
+                                final v = value.toInt();
+                                if (v < 0 || (maxCount > 0 && v > maxCount)) {
+                                  return const SizedBox.shrink();
+                                }
+                                return Padding(
+                                  padding: const EdgeInsets.only(right: 6),
+                                  child: Text(
+                                    '$v',
+                                    style: const TextStyle(
+                                      fontSize: 10,
+                                      color: AppColors.textTertiary,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                );
+                              },
+                            ),
+                          ),
+                          topTitles: const AxisTitles(
+                            sideTitles: SideTitles(showTitles: false),
+                          ),
+                          rightTitles: const AxisTitles(
+                            sideTitles: SideTitles(showTitles: false),
+                          ),
                         ),
-                      );
-                    }).toList(),
+                        gridData: FlGridData(
+                          show: true,
+                          drawVerticalLine: false,
+                          horizontalInterval: yInterval,
+                          getDrawingHorizontalLine: (value) => FlLine(
+                            color: AppColors.divider,
+                            strokeWidth: 0.6,
+                            dashArray: [4, 4],
+                          ),
+                        ),
+                        borderData: FlBorderData(show: false),
+                        barTouchData: BarTouchData(
+                          enabled: true,
+                          touchTooltipData: BarTouchTooltipData(
+                            tooltipPadding: const EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 8,
+                            ),
+                            tooltipMargin: 8,
+                            getTooltipItem: (group, groupIndex, rod, rodIndex) {
+                              return BarTooltipItem(
+                                '${displayStats[group.x].key}\n${rod.toY.toInt()} 条记录',
+                                const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              );
+                            },
+                          ),
+                        ),
+                      ),
+                    ),
                   ),
                 ],
               ),
@@ -513,30 +659,107 @@ class AdminMapViewState extends State<AdminMapView> {
     ];
   }
 
-  double _barWidthForNames(List<String> names) {
-    double maxLen = 0;
-    for (final n in names) {
-      double w = 0;
-      for (final rune in n.runes) {
-        w += rune > 127 ? 9 : 6;
-      }
-      if (w > maxLen) maxLen = w;
+  String _formatChartLabel(String name) {
+    final trimmed = name.trim();
+    if (trimmed.length <= 4) {
+      return trimmed;
     }
-    return maxLen.clamp(36.0, 72.0);
+    if (trimmed.length <= 8) {
+      return '${trimmed.substring(0, 4)}\n${trimmed.substring(4)}';
+    }
+    final cut = (trimmed.length / 2).ceil().clamp(4, 6);
+    return '${trimmed.substring(0, cut)}\n${trimmed.substring(cut)}';
   }
 
-  LatLng _smartOffset(LatLng regionCenter, double latOff, double lngOff) {
+  LatLng _popupAnchorForRegion(GeoRegion region) {
+    final bounds = _regionBounds(region);
     final camera = _mapController.camera;
     final vc = camera.center;
     final z = camera.zoom;
     final halfLat = 360 / z.clamp(5, 18);
     final halfLng = halfLat * 1.6;
-    final latRatio = (regionCenter.latitude - vc.latitude) / halfLat;
-    final lngRatio = (regionCenter.longitude - vc.longitude) / halfLng;
-    return LatLng(
-      regionCenter.latitude + (latOff * (latRatio > 0.1 ? -1 : 1)),
-      regionCenter.longitude + (lngOff * (lngRatio > 0.3 ? -1 : 1)),
+
+    final latMargin = ((bounds.north - bounds.south) * 0.35).clamp(0.08, 0.32);
+    final lngMargin = ((bounds.east - bounds.west) * 0.35).clamp(0.08, 0.36);
+
+    final top = LatLng(bounds.north + latMargin, region.center.longitude);
+    final bottom = LatLng(bounds.south - latMargin, region.center.longitude);
+    final right = LatLng(region.center.latitude, bounds.east + lngMargin);
+    final left = LatLng(region.center.latitude, bounds.west - lngMargin);
+    final topRight = LatLng(bounds.north + latMargin, bounds.east + lngMargin);
+    final topLeft = LatLng(bounds.north + latMargin, bounds.west - lngMargin);
+    final bottomRight = LatLng(
+      bounds.south - latMargin,
+      bounds.east + lngMargin,
     );
+    final bottomLeft = LatLng(
+      bounds.south - latMargin,
+      bounds.west - lngMargin,
+    );
+
+    final candidates = [
+      top,
+      bottom,
+      right,
+      left,
+      topRight,
+      topLeft,
+      bottomRight,
+      bottomLeft,
+    ];
+    LatLng best = topRight;
+    double bestScore = double.negativeInfinity;
+
+    // 估算弹层半尺寸（经纬度空间），用于判断是否覆盖选中区域。
+    final popupHalfLat = halfLat * 0.34;
+    final popupHalfLng = halfLng * 0.42;
+    final avoidLatPad = (bounds.north - bounds.south) * 0.08;
+    final avoidLngPad = (bounds.east - bounds.west) * 0.08;
+    final avoidNorth = bounds.north + avoidLatPad;
+    final avoidSouth = bounds.south - avoidLatPad;
+    final avoidEast = bounds.east + avoidLngPad;
+    final avoidWest = bounds.west - avoidLngPad;
+
+    for (final c in candidates) {
+      final latRatio = ((c.latitude - vc.latitude) / halfLat);
+      final lngRatio = ((c.longitude - vc.longitude) / halfLng);
+      final edgePenalty = latRatio.abs() * 1.2 + lngRatio.abs() * 1.0;
+
+      final cardNorth = c.latitude + popupHalfLat;
+      final cardSouth = c.latitude - popupHalfLat;
+      final cardEast = c.longitude + popupHalfLng;
+      final cardWest = c.longitude - popupHalfLng;
+      final overlapLat = !(cardSouth > avoidNorth || cardNorth < avoidSouth);
+      final overlapLng = !(cardWest > avoidEast || cardEast < avoidWest);
+      final overlapPenalty = (overlapLat && overlapLng) ? 5.0 : 0.0;
+
+      final distanceFromCenter =
+          (c.latitude - region.center.latitude).abs() +
+          (c.longitude - region.center.longitude).abs();
+      final centerPreference = 0.8 - (latRatio.abs() + lngRatio.abs()) * 0.35;
+      final score =
+          (distanceFromCenter * 3.2) +
+          centerPreference -
+          edgePenalty -
+          overlapPenalty;
+      if (score > bestScore) {
+        bestScore = score;
+        best = c;
+      }
+    }
+
+    return best;
+  }
+
+  LatLngBounds _regionBounds(GeoRegion region) {
+    final points = <LatLng>[];
+    for (final poly in region.polygons) {
+      points.addAll(poly.outer);
+    }
+    if (points.isEmpty) {
+      return LatLngBounds(region.center, region.center);
+    }
+    return LatLngBounds.fromPoints(points);
   }
 
   LatLngBounds? _bounceTargetBounds() {
@@ -742,35 +965,33 @@ class AdminMapViewState extends State<AdminMapView> {
                     ),
                   ),
                   if (selectedRegion != null &&
-                      _regionHasData(selectedRegion))
-                    ...[
-                      const SizedBox(height: 4),
-                      Text(
-                        '当前选中${_showDistrictLayer ? '区县' : '地市'}',
-                        style: TextStyle(
-                          fontFamily: "serif",
-                          fontSize: 12,
-                          color: AppColors.muted,
-                          fontStyle: FontStyle.italic,
-                        ),
+                      _regionHasData(selectedRegion)) ...[
+                    const SizedBox(height: 4),
+                    Text(
+                      '当前选中${_showDistrictLayer ? '区县' : '地市'}',
+                      style: TextStyle(
+                        fontFamily: "serif",
+                        fontSize: 12,
+                        color: AppColors.muted,
+                        fontStyle: FontStyle.italic,
                       ),
-                    ],
+                    ),
+                  ],
                   if (selectedRegion == null ||
-                      !_regionHasData(selectedRegion))
-                    ...[
-                      const SizedBox(height: 4),
-                      Text(
-                        selectedRegion == null
-                            ? detailLevelText
-                            : '当前选中${_showDistrictLayer ? '区县' : '地市'} — 暂无病害数据',
-                        style: TextStyle(
-                          fontFamily: "serif",
-                          fontSize: 12,
-                          color: AppColors.muted,
-                          fontStyle: FontStyle.italic,
-                        ),
+                      !_regionHasData(selectedRegion)) ...[
+                    const SizedBox(height: 4),
+                    Text(
+                      selectedRegion == null
+                          ? detailLevelText
+                          : '当前选中${_showDistrictLayer ? '区县' : '地市'} — 暂无病害数据',
+                      style: TextStyle(
+                        fontFamily: "serif",
+                        fontSize: 12,
+                        color: AppColors.muted,
+                        fontStyle: FontStyle.italic,
                       ),
-                    ],
+                    ),
+                  ],
                 ],
               ),
             ),
