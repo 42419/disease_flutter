@@ -204,13 +204,13 @@ class _LoginPageState extends State<LoginPage> {
                       // Logo & Editorial Title
                       Hero(
                         tag: 'app_logo',
-                        child: Icon(
-                          Icons.spa_rounded,
-                          size: 48,
-                          color: AppColors.primary,
+                        child: Image.asset(
+                          "assets/img/logo.png",
+                          width: 80,
+                          height: 80,
                         ),
                       ),
-                      const SizedBox(height: 24),
+                      // const SizedBox(height: 24),
                       Text(
                         "Sign in to\ncontinue.",
                         style: TextStyle(
