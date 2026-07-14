@@ -1,6 +1,6 @@
 import 'package:farm_flutter/models/diagnosis.dart';
 import 'package:farm_flutter/pages/widgets/analyzePage/components/highlight_utils.dart';
-import 'package:farm_flutter/utils/api_config.dart';
+import 'package:farm_flutter/config/config.dart';
 import 'package:farm_flutter/utils/app_colors.dart';
 import 'package:farm_flutter/utils/global.dart';
 import 'package:farm_flutter/utils/http_util.dart';
@@ -19,6 +19,7 @@ class _DiagnosisRecordsPageState extends State<DiagnosisRecordsPage> {
   bool _isLoading = true;
   String? _errorMessage;
   int? _expandedId;
+  bool _sortDescending = true;
   List<MapEntry<String, int>> _stats = [];
 
   static const _barColors = [
@@ -37,12 +38,40 @@ class _DiagnosisRecordsPageState extends State<DiagnosisRecordsPage> {
     _fetchRecords();
   }
 
+  static DateTime _parseDtime(String dtime) {
+    try {
+      return DateTime.parse(dtime);
+    } catch (_) {
+      final months = {'Jan': 1, 'Feb': 2, 'Mar': 3, 'Apr': 4, 'May': 5, 'Jun': 6, 'Jul': 7, 'Aug': 8, 'Sep': 9, 'Oct': 10, 'Nov': 11, 'Dec': 12};
+      final regex = RegExp(r'\w+,\s+(\d{1,2})\s+(\w{3})\s+(\d{4})\s+(\d{2}):(\d{2}):(\d{2})');
+      final match = regex.firstMatch(dtime);
+      if (match != null) {
+        return DateTime(
+          int.tryParse(match.group(3)!) ?? 2000,
+          months[match.group(2)!] ?? 1,
+          int.tryParse(match.group(1)!) ?? 1,
+          int.tryParse(match.group(4)!) ?? 0,
+          int.tryParse(match.group(5)!) ?? 0,
+          int.tryParse(match.group(6)!) ?? 0,
+        );
+      }
+      return DateTime(2000);
+    }
+  }
+
   List<Diagnosis> _filterRecords(List<Diagnosis> all) {
-    if (Global.user.role == '1') return all;
-    return all
-        .where((r) => r.username == Global.user.nickName)
-        .toList()
-      ..sort((a, b) => b.dtime.compareTo(a.dtime));
+    List<Diagnosis> filtered;
+    if (Global.user.role == '1') {
+      filtered = all.toList();
+    } else {
+      filtered = all.where((r) => r.username == Global.user.nickName).toList();
+    }
+    filtered.sort((a, b) {
+      final da = _parseDtime(a.dtime);
+      final db = _parseDtime(b.dtime);
+      return _sortDescending ? db.compareTo(da) : da.compareTo(db);
+    });
+    return filtered;
   }
 
   Future<void> _fetchRecords() async {
@@ -51,10 +80,10 @@ class _DiagnosisRecordsPageState extends State<DiagnosisRecordsPage> {
       _errorMessage = null;
     });
     try {
-      HttpUtil.init(baseUrl: ApiConfig.baseUrl);
+      HttpUtil.init(baseUrl: Config.baseUrl);
       final resp = await HttpUtil.get(
         '/get_all_dg',
-        headers: {'X-API-Token': ApiConfig.apiToken},
+        headers: {'X-API-Token': Config.apiToken},
       );
       if (resp is Map && resp['data'] is List) {
         final all = (resp['data'] as List)
@@ -89,6 +118,15 @@ class _DiagnosisRecordsPageState extends State<DiagnosisRecordsPage> {
         _errorMessage = '加载失败: $e';
       });
     }
+  }
+
+  void _resortRecords() {
+    _records.sort((a, b) {
+      final da = _parseDtime(a.dtime);
+      final db = _parseDtime(b.dtime);
+      return _sortDescending ? db.compareTo(da) : da.compareTo(db);
+    });
+    setState(() {});
   }
 
   @override
@@ -129,6 +167,35 @@ class _DiagnosisRecordsPageState extends State<DiagnosisRecordsPage> {
           ],
         ),
         centerTitle: true,
+        actions: [
+          PopupMenuButton<bool>(
+            icon: Icon(
+              _sortDescending ? Icons.arrow_downward_rounded : Icons.arrow_upward_rounded,
+              color: AppColors.muted,
+              size: 20,
+            ),
+            tooltip: '排序方式',
+            onSelected: (value) {
+              if (_sortDescending != value) {
+                setState(() => _sortDescending = value);
+                _resortRecords();
+              }
+            },
+            itemBuilder: (context) => [
+              CheckedPopupMenuItem<bool>(
+                value: true,
+                checked: _sortDescending,
+                child: const Text('最新在前'),
+              ),
+              CheckedPopupMenuItem<bool>(
+                value: false,
+                checked: !_sortDescending,
+                child: const Text('最早在前'),
+              ),
+            ],
+          ),
+          const SizedBox(width: 4),
+        ],
       ),
       body: _buildBody(),
     );
@@ -337,7 +404,7 @@ borderRadius: BorderRadius.circular(2),
           ),
           const SizedBox(height: 12),
           SizedBox(
-            height: 200,
+            height: 240,
             child: BarChart(
               BarChartData(
                 alignment: BarChartAlignment.spaceAround,
@@ -350,7 +417,7 @@ borderRadius: BorderRadius.circular(2),
                       BarChartRodData(
                         toY: displayStats[i].value.toDouble(),
                         color: _barColors[i % _barColors.length],
-                        width: 32,
+                        width: 20,
                         borderRadius: const BorderRadius.only(
                           topLeft: Radius.circular(2),
                           topRight: Radius.circular(2),
@@ -369,35 +436,59 @@ borderRadius: BorderRadius.circular(2),
                   bottomTitles: AxisTitles(
                     sideTitles: SideTitles(
                       showTitles: true,
-                      reservedSize: 42,
+                      reservedSize: 56,
+                      interval: 1,
                       getTitlesWidget: (value, meta) {
                         final idx = value.toInt();
                         if (idx < 0 || idx >= displayStats.length) {
                           return const SizedBox.shrink();
                         }
                         final name = displayStats[idx].key;
-                        String label = name;
-                        if (name.length > 10) {
-                          label = '${name.substring(0, 5)}\n${name.substring(5, 9)}...';
-                        } else if (name.length > 5) {
+                        String line1;
+                        String line2;
+                        if (name.length > 8) {
                           final half = (name.length / 2).ceil();
-                          label = '${name.substring(0, half)}\n${name.substring(half)}';
+                          line1 = name.substring(0, half);
+                          line2 = name.substring(half);
+                        } else if (name.length > 4) {
+                          final half = (name.length / 2).ceil();
+                          line1 = name.substring(0, half);
+                          line2 = name.substring(half);
+                        } else {
+                          line1 = name;
+                          line2 = '';
                         }
-                        
+
                         return SideTitleWidget(
                           meta: meta,
                           space: 4,
-                          child: Text(
-                            label,
-                            style: const TextStyle(
-                              fontSize: 11,
-                              color: AppColors.textSecondary,
-                              fontWeight: FontWeight.w500,
-                              height: 1.2,
-                            ),
-                            textAlign: TextAlign.center,
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text(
+                                line1,
+                                style: const TextStyle(
+                                  fontSize: 10,
+                                  color: AppColors.textSecondary,
+                                  fontWeight: FontWeight.w500,
+                                  height: 1.2,
+                                ),
+                                textAlign: TextAlign.center,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                              if (line2.isNotEmpty)
+                                Text(
+                                  line2,
+                                  style: const TextStyle(
+                                    fontSize: 10,
+                                    color: AppColors.textSecondary,
+                                    fontWeight: FontWeight.w500,
+                                    height: 1.2,
+                                  ),
+                                  textAlign: TextAlign.center,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                            ],
                           ),
                         );
                       },

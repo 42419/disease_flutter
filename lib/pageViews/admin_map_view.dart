@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 
-import 'package:farm_flutter/utils/api_config.dart';
+import 'package:farm_flutter/config/config.dart';
 import 'package:farm_flutter/utils/app_colors.dart';
 import 'package:farm_flutter/utils/http_util.dart';
 import 'package:fl_chart/fl_chart.dart';
@@ -19,14 +19,13 @@ class AdminMapView extends StatefulWidget {
 }
 
 class AdminMapViewState extends State<AdminMapView> {
-  static const String _cityGeoJsonAssetPath = 'assets/geojson/河南省_市.geojson';
-  static const String _districtGeoJsonAssetPath =
-      'assets/geojson/河南省_县区.geojson';
-  static const double _initialZoom = 6.8;
-  static const double _districtLabelZoom = 8.1;
-  static const double _districtDetailZoom = 9.6;
-  static const double _minZoom = 5.0;
-  static const double _maxZoom = 10.2;
+  static String get _cityGeoJsonAssetPath => Config.currentProvince.cityGeoJsonPath;
+  static String get _districtGeoJsonAssetPath => Config.currentProvince.districtGeoJsonPath;
+  static double get _initialZoom => Config.currentProvince.initialZoom;
+  static double get _districtLabelZoom => Config.currentProvince.districtLabelZoom;
+  static double get _districtDetailZoom => Config.currentProvince.districtDetailZoom;
+  static double get _minZoom => Config.currentProvince.minZoom;
+  static double get _maxZoom => Config.currentProvince.maxZoom;
   static const _barColors = [
     AppColors.error,
     AppColors.warning,
@@ -108,10 +107,10 @@ class AdminMapViewState extends State<AdminMapView> {
 
   Future<void> _fetchDiseaseData() async {
     try {
-      HttpUtil.init(baseUrl: ApiConfig.baseUrl);
+      HttpUtil.init(baseUrl: Config.baseUrl);
       final resp = await HttpUtil.get(
         '/get_all_dg',
-        headers: {'X-API-Token': ApiConfig.apiToken},
+        headers: {'X-API-Token': Config.apiToken},
       );
       if (resp is Map && resp['data'] is List) {
         final dataList = resp['data'] as List;
@@ -955,7 +954,7 @@ class AdminMapViewState extends State<AdminMapView> {
                 children: [
                   Text(
                     selectedRegion?.name ??
-                        (_showDistrictLayer ? '河南省县区' : '河南省地市'),
+                        (_showDistrictLayer ? '${Config.currentProvince.name}县区' : '${Config.currentProvince.name}地市'),
                     style: TextStyle(
                       fontFamily: "serif",
                       fontSize: 20,
@@ -1025,7 +1024,7 @@ class AdminMapViewState extends State<AdminMapView> {
                                   ),
                             initialCenter:
                                 selectedRegion?.center ??
-                                const LatLng(34.0, 113.0),
+                                Config.currentProvince.center,
                             initialZoom: _initialZoom,
                             minZoom: _minZoom - 2.5,
                             maxZoom: _maxZoom + 3.0,

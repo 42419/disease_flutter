@@ -5,7 +5,7 @@ class User {
 
   User({
     this.nickName = "",
-    this.userAvatarUrl = "https://hx.yunov.top/img1917448866_1743579037214.jpg",
+    this.userAvatarUrl = "assets/img/avatar.jpg",
     this.role = "0",
   });
 }

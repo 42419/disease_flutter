@@ -1,5 +1,5 @@
 import 'package:dio/dio.dart';
-import 'package:farm_flutter/utils/api_config.dart';
+import 'package:farm_flutter/config/config.dart';
 import 'package:farm_flutter/utils/http_util.dart';
 import 'package:farm_flutter/utils/global.dart';
 import 'package:farm_flutter/utils/app_colors.dart';
@@ -108,13 +108,13 @@ class _LoginPageState extends State<LoginPage> {
           "pwd": _passwordController.text,
           "role": _selectedRole,
         },
-        headers: {"X-API-Token": ApiConfig.apiToken},
+        headers: {"X-API-Token": Config.apiToken},
       );
       if (mounted) Navigator.pop(context);
       if (response["msg"] == "success") {
         Global.user.nickName = response["username"] ?? _usernameController.text;
         Global.user.role = _selectedRole ?? "1";
-        HttpUtil.init(baseUrl: ApiConfig.baseUrl);
+        HttpUtil.init(baseUrl: Config.baseUrl);
 
         final prefs = await SharedPreferences.getInstance();
         if (_rememberMe) {
@@ -131,6 +131,7 @@ class _LoginPageState extends State<LoginPage> {
 
         if (!mounted) return;
 
+        ScaffoldMessenger.of(context).clearSnackBars();
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
@@ -153,6 +154,7 @@ class _LoginPageState extends State<LoginPage> {
       } else {
         if (!mounted) return;
         setState(() => _isLoggingIn = false);
+        ScaffoldMessenger.of(context).clearSnackBars();
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text("登录失败，${response["msg"]}"),
@@ -166,6 +168,7 @@ class _LoginPageState extends State<LoginPage> {
         Navigator.pop(context);
         setState(() => _isLoggingIn = false);
       }
+      ScaffoldMessenger.of(context).clearSnackBars();
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text("网络连接失败，请检查网络和服务器"),
@@ -178,6 +181,7 @@ class _LoginPageState extends State<LoginPage> {
         Navigator.pop(context);
         setState(() => _isLoggingIn = false);
       }
+      ScaffoldMessenger.of(context).clearSnackBars();
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text("登录异常: $e"), backgroundColor: AppColors.error),
       );

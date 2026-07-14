@@ -4,7 +4,7 @@ import 'dart:convert';
 import 'package:dio/dio.dart';
 import 'package:farm_flutter/pages/widgets/analyzePage/components/analyze_loading_widget.dart';
 import 'package:farm_flutter/pages/widgets/analyzePage/components/analyze_result_widget.dart';
-import 'package:farm_flutter/utils/api_config.dart';
+import 'package:farm_flutter/config/config.dart';
 import 'package:farm_flutter/utils/app_colors.dart';
 import 'package:farm_flutter/utils/global.dart';
 import 'package:farm_flutter/utils/http_util.dart';
@@ -97,16 +97,16 @@ class _DiseaseAnalyzeWidgetState extends State<DiseaseAnalyzeWidget> {
 
     try {
       final response = await HttpUtil.postStream(
-        ApiConfig.cozeUrl,
+        Config.cozeUrl,
         {
-          'bot_id': ApiConfig.botId,
-          'user_id': ApiConfig.userId,
+          'bot_id': Config.botId,
+          'user_id': Config.userId,
           'stream': true,
           'additional_messages': [
             {'role': 'user', 'content': _diseaseName, 'content_type': 'text'},
           ],
         },
-        headers: {'Authorization': ApiConfig.cozeToken},
+        headers: {'Authorization': Config.cozeToken},
       );
 
       final stream = response.data!.stream;
@@ -268,11 +268,11 @@ class _DiseaseAnalyzeWidgetState extends State<DiseaseAnalyzeWidget> {
       };
       // debugPrint('savepredict payload: $payload');
 
-      HttpUtil.init(baseUrl: ApiConfig.baseUrl);
+      HttpUtil.init(baseUrl: Config.baseUrl);
       await HttpUtil.post(
         '/savepredict',
         payload,
-        headers: {'X-API-Token': ApiConfig.apiToken},
+        headers: {'X-API-Token': Config.apiToken},
       );
       // debugPrint('savepredict response: $resp');
     } catch (e) {

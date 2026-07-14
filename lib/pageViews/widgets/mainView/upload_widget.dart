@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:farm_flutter/utils/api_config.dart';
+import 'package:farm_flutter/config/config.dart';
 import 'package:farm_flutter/utils/global.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -102,6 +102,7 @@ class _UploadWidgetState extends State<UploadWidget> {
                           Clipboard.setData(ClipboardData(text: text));
                           Navigator.pop(dialogContext);
                           // 使用主 context 显示 SnackBar，确保其显示在最上层
+                          ScaffoldMessenger.of(context).clearSnackBars();
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(
                               content: Text("已复制到剪贴板"),
@@ -321,9 +322,9 @@ class _UploadWidgetState extends State<UploadWidget> {
     _fetchAdcode();
 
     try {
-      HttpUtil.init(baseUrl: ApiConfig.baseUrl);
+      HttpUtil.init(baseUrl: Config.baseUrl);
 
-      final headers = {"X-API-Token": ApiConfig.apiToken};
+      final headers = {"X-API-Token": Config.apiToken};
 
       final response = await HttpUtil.postFile(
         "/predict",
@@ -379,8 +380,8 @@ class _UploadWidgetState extends State<UploadWidget> {
       );
 
       final resp = await HttpUtil.get(
-        '/v3/geocode/regeo?key=${ApiConfig.amapKey}&location=${position.longitude},${position.latitude}',
-        baseUrl: ApiConfig.amapBaseUrl,
+        '/v3/geocode/regeo?key=${Config.amapKey}&location=${position.longitude},${position.latitude}',
+        baseUrl: Config.amapBaseUrl,
       );
 
       if (resp is Map &&

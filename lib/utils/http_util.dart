@@ -8,8 +8,8 @@ class HttpUtil {
     _client = Dio(
       BaseOptions(
         baseUrl: baseUrl,
-        connectTimeout: const Duration(seconds: 10),
-        receiveTimeout: const Duration(seconds: 10),
+        connectTimeout: const Duration(seconds: 20),
+        receiveTimeout: const Duration(seconds: 20),
         contentType: "application/json",
       ),
     );
@@ -20,8 +20,8 @@ class HttpUtil {
     return Dio(
       BaseOptions(
         baseUrl: baseUrl ?? _client.options.baseUrl,
-        connectTimeout: const Duration(seconds: 10),
-        receiveTimeout: const Duration(seconds: 10),
+        connectTimeout: const Duration(seconds: 20),
+        receiveTimeout: const Duration(seconds: 20),
         contentType: "application/json",
         headers: headers,
       ),

@@ -1,5 +1,5 @@
 import 'package:dio/dio.dart';
-import 'package:farm_flutter/utils/api_config.dart';
+import 'package:farm_flutter/config/config.dart';
 import 'package:farm_flutter/utils/app_colors.dart';
 import 'package:farm_flutter/utils/global.dart';
 import 'package:farm_flutter/utils/http_util.dart';
@@ -38,7 +38,7 @@ class _AppInitPageState extends State<AppInitPage> {
       final response = await HttpUtil.post(
         "/login",
         {"username": username, "pwd": password, "role": role},
-        headers: {"X-API-Token": ApiConfig.apiToken},
+        headers: {"X-API-Token": Config.apiToken},
       );
 
       if (!mounted) return;
@@ -46,7 +46,7 @@ class _AppInitPageState extends State<AppInitPage> {
       if (response["msg"] == "success") {
         Global.user.nickName = response["username"] ?? username;
         Global.user.role = role;
-        HttpUtil.init(baseUrl: ApiConfig.baseUrl);
+        HttpUtil.init(baseUrl: Config.baseUrl);
         _goTo(role == "1" ? "/admin_main" : "/main");
       } else {
         _goTo('/login');

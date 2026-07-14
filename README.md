@@ -4,13 +4,13 @@
 
 **慧田良方**（Wisdom Farm Remedy）—— 基于 AI + 地理信息系统的农作物病害智能诊断与防治决策平台
 
-| 属性 | 说明 |
-|------|------|
-| 项目代号 | `farm_flutter` |
-| 版本 | v1.0.0+1（Alpha） |
+| 属性   | 说明                         |
+|------|----------------------------|
+| 项目代号 | `farm_flutter`             |
+| 版本   | v1.0.0+1（Alpha）            |
 | 开发框架 | Flutter (Dart) SDK ^3.11.4 |
-| 目标平台 | Android / iOS |
-| 目标用户 | 农业种植户（农户）、农业管理部门（管理员） |
+| 目标平台 | Android / iOS              |
+| 目标用户 | 农业种植户（农户）、农业管理部门（管理员）      |
 
 ---
 
@@ -36,7 +36,8 @@
 
 ### 2.3 设计理念
 
-应用 UI 采用 **Anthropic Claude 设计系统**——暖色调奶油画布（`#FAF9F5`）配合珊瑚色点缀（`#CC785C`），衬线体标题搭配人文主义无衬线正文，营造**温暖、可信赖的农业科技产品气质**，区别于传统农业应用的功能堆砌风格。
+应用 UI 采用 **Anthropic Claude 设计系统**——暖色调奶油画布（`#FAF9F5`）配合珊瑚色点缀（`#CC785C`
+），衬线体标题搭配人文主义无衬线正文，营造**温暖、可信赖的农业科技产品气质**，区别于传统农业应用的功能堆砌风格。
 
 ---
 
@@ -44,27 +45,33 @@
 
 ### 3.1 "CV + LLM" 双模型协同诊断
 
-| 阶段 | 模型/服务 | 输入 | 输出 |
-|------|-----------|------|------|
-| **视觉识别** | 后端深度学习模型（图像分类） | 作物叶片照片 | Top-5 病害类别 + 置信度 + 热力图 |
-| **语义分析** | 扣子 Coze 大语言模型智能体 | 病害名称 | 结构化 JSON：病害类型、致病病原、危害部位、病害症状、发病规律、防治方法 |
+| 阶段       | 模型/服务            | 输入     | 输出                                     |
+|----------|------------------|--------|----------------------------------------|
+| **视觉识别** | 后端深度学习模型（图像分类）   | 作物叶片照片 | Top-5 病害类别 + 置信度 + 热力图                 |
+| **语义分析** | 扣子 Coze 大语言模型智能体 | 病害名称   | 结构化 JSON：病害类型、致病病原、危害部位、病害症状、发病规律、防治方法 |
 
-与传统仅输出单一分类标签的方案不同，慧田良方将 CV 模型的分类结果作为 LLM 智能体的上下文输入，触发**多维度语义推理**，一次性输出从病因到防治的完整决策链。分析结果以 SSE（Server-Sent Events）流式返回，用户可实时看到 AI 逐字生成内容，大幅降低等待焦虑。
+与传统仅输出单一分类标签的方案不同，慧田良方将 CV 模型的分类结果作为 LLM 智能体的上下文输入，触发*
+*多维度语义推理**，一次性输出从病因到防治的完整决策链。分析结果以 SSE（Server-Sent Events）流式返回，用户可实时看到
+AI 逐字生成内容，大幅降低等待焦虑。
 
 ### 3.2 空间地理可视化病害态势感知
 
-- **双层级行政区划渲染**：同时加载河南省市级与区县级两套 GeoJSON 图层，根据地图缩放级别（阈值 8.1 / 9.6）自动切换
-- **数据驱动动态着色**：从后端诊断记录中提取 `adcode` 行政编码，匹配 GeoJSON 区域，有病害数据的区域以预警色渲染，无数据区域弱化显示
+- **双层级行政区划渲染**：同时加载省市级与区县级两套 GeoJSON 图层，根据地图缩放级别（阈值 8.1 /
+  9.6）自动切换
+- **数据驱动动态着色**：从后端诊断记录中提取 `adcode` 行政编码，匹配 GeoJSON
+  区域，有病害数据的区域以预警色渲染，无数据区域弱化显示
 - **点击交互统计**：点击任意行政区弹出该地区病害分布柱状图（fl_chart），实现"宏观态势 → 微观详情"的下钻
-- **防越界约束**：地图采用弹性回弹相机约束，确保视图始终锁定在河南省范围内
+- **防越界约束**：地图采用弹性回弹相机约束，确保视图始终锁定在省级范围内
 
 ### 3.3 诊断数据与地理位置精确绑定
 
-在每次拍照诊断时，同步获取 GPS 坐标并调用高德地图 Web API 进行**逆地理编码**，将经纬度转换为标准化行政区划编码（`adcode`），随诊断记录一同存储。这种设计使每条诊断数据天然具备空间属性，为后续大屏可视化和区域统计分析奠定基础。
+在每次拍照诊断时，同步获取 GPS 坐标并调用高德地图 Web API 进行**逆地理编码**，将经纬度转换为标准化行政区划编码（
+`adcode`），随诊断记录一同存储。这种设计使每条诊断数据天然具备空间属性，为后续大屏可视化和区域统计分析奠定基础。
 
 ### 3.4 端到端流式交互体验
 
-- **流式文本推送**：Coze API SSE 事件流被实时解析，通过 `ValueNotifier` 驱动 UI 增量更新，字符以 80ms 节流刷新
+- **流式文本推送**：Coze API SSE 事件流被实时解析，通过 `ValueNotifier` 驱动 UI 增量更新，字符以 80ms
+  节流刷新
 - **打字机效果**：分析完成后，病因分析和防治建议以打字机逐字动画呈现，每条建议依次展开，增强阅读节奏
 - **高温文本高亮**：关键病害信息（严重程度、核心防治措施等）以珊瑚色自动高亮标记
 
@@ -105,7 +112,7 @@ graph TB
 
     subgraph 数据层["数据与资产"]
         D1[(诊断记录数据库)]
-        D2[河南省 GeoJSON<br/>市/区县双层级]
+        D2[省 GeoJSON<br/>市/区县双层级]
         D3[shared_preferences<br/>用户凭证本地缓存]
     end
 
@@ -114,7 +121,6 @@ graph TB
     A1 --> B6
     A2 --> B5
     A2 --> B4
-
     B1 -->|POST /predict<br/>multipart 图片| C1
     B2 -->|病害名称| B3
     B3 -->|POST SSE 流| C2
@@ -122,7 +128,6 @@ graph TB
     B1 -->|GPS → 逆地理编码| C3
     B4 -->|GET /get_all_dg| C1
     B5 -->|GET /get_all_dg| C1
-
     C1 --> D1
     B5 --> D2
     B6 -->|读写| D3
@@ -142,22 +147,21 @@ sequenceDiagram
     participant ML as CV 病害识别模型
     participant Coze as Coze 大模型
     participant Amap as 高德地图 API
-
-    农户->>App: 点击拍照/选择图片
-    App->>App: GPS 定位请求
-    App->>Amap: 逆地理编码 (经纬度 → adcode)
-    Amap-->>App: 返回行政区划编码
-    App->>Backend: POST /predict (multipart 图片)
-    Backend->>ML: 图像推理
-    ML-->>Backend: Top-5 病害 + 热力图
-    Backend-->>App: 返回识别结果
-    App->>农户: 展示病害名称 + 热力图 + Top-5 概率排行
-    农户->>App: 点击"详细分析报告"
-    App->>Coze: POST /v3/chat (SSE 流式)
-    Coze-->>App: 流式返回病害分析文本
-    App->>App: 解析 JSON 结构化结果
-    App->>Backend: POST /savepredict (诊断记录 + adcode)
-    App->>农户: 打字机动画展示分析报告
+    农户 ->> App: 点击拍照/选择图片
+    App ->> App: GPS 定位请求
+    App ->> Amap: 逆地理编码 (经纬度 → adcode)
+    Amap -->> App: 返回行政区划编码
+    App ->> Backend: POST /predict (multipart 图片)
+    Backend ->> ML: 图像推理
+    ML -->> Backend: Top-5 病害 + 热力图
+    Backend -->> App: 返回识别结果
+    App ->> 农户: 展示病害名称 + 热力图 + Top-5 概率排行
+    农户 ->> App: 点击"详细分析报告"
+    App ->> Coze: POST /v3/chat (SSE 流式)
+    Coze -->> App: 流式返回病害分析文本
+    App ->> App: 解析 JSON 结构化结果
+    App ->> Backend: POST /savepredict (诊断记录 + adcode)
+    App ->> 农户: 打字机动画展示分析报告
 ```
 
 ### 5.2 管理员地图态势感知流程
@@ -168,17 +172,16 @@ sequenceDiagram
     participant App as 慧田良方 App
     participant Backend as 后端 API
     participant GeoJSON as 本地 GeoJSON 资产
-
-    管理员->>App: 打开地图大屏
-    App->>Backend: GET /get_all_dg (全部诊断记录)
-    Backend-->>App: 返回诊断数据 (含 adcode)
-    App->>GeoJSON: 加载河南省市/区县 GeoJSON
-    App->>App: adcode 匹配 + 病害统计
-    App->>管理员: 渲染病害分布地图 (预警着色)
-    管理员->>App: 缩放地图
-    App->>App: zoom < 8.1 显示市级图层<br/>zoom ≥ 8.1 显示区县图层
-    管理员->>App: 点击目标区域
-    App->>管理员: 弹出该区域病害柱状统计图
+    管理员 ->> App: 打开地图大屏
+    App ->> Backend: GET /get_all_dg (全部诊断记录)
+    Backend -->> App: 返回诊断数据 (含 adcode)
+    App ->> GeoJSON: 加载省市/区县 GeoJSON
+    App ->> App: adcode 匹配 + 病害统计
+    App ->> 管理员: 渲染病害分布地图 (预警着色)
+    管理员 ->> App: 缩放地图
+    App ->> App: zoom < 8.1 显示市级图层<br/>zoom ≥ 8.1 显示区县图层
+    管理员 ->> App: 点击目标区域
+    App ->> 管理员: 弹出该区域病害柱状统计图
 ```
 
 ---
@@ -187,16 +190,16 @@ sequenceDiagram
 
 ### 6.1 诊断记录模型 `Diagnosis`
 
-| 字段 | 类型 | 说明 |
-|------|------|------|
-| `id` | int | 诊断记录唯一标识 |
-| `imgname` | String | 上传图片文件名 |
-| `bhname` | String | 病害名称（CV 模型识别结果） |
-| `bhreason` | String | 致病病原（Coze AI 分析结果） |
-| `bhadvice` | String | 防治建议（Coze AI 分析结果） |
-| `username` | String | 提交诊断的农户用户名 |
-| `location` | String? | 行政区划编码（高德 adcode） |
-| `dtime` | String | 诊断时间（ISO 8601 / RFC 1123） |
+| 字段         | 类型      | 说明                        |
+|------------|---------|---------------------------|
+| `id`       | int     | 诊断记录唯一标识                  |
+| `imgname`  | String  | 上传图片文件名                   |
+| `bhname`   | String  | 病害名称（CV 模型识别结果）           |
+| `bhreason` | String  | 致病病原（Coze AI 分析结果）        |
+| `bhadvice` | String  | 防治建议（Coze AI 分析结果）        |
+| `username` | String  | 提交诊断的农户用户名                |
+| `location` | String? | 行政区划编码（高德 adcode）         |
+| `dtime`    | String  | 诊断时间（ISO 8601 / RFC 1123） |
 
 ### 6.2 地图区域模型
 
@@ -240,12 +243,15 @@ GeoDataBundle
 
 ### 7.1 登录页
 
-采用 Claude 设计系统的"编辑级"极简风格：48px 衬线体双行标题（"Sign in to continue."），16px 大写字母间距副标题（"欢迎回到慧田良方"），下划线式输入框 + 零圆角黑色登录按钮。支持角色选择（管理员/农户）、记住密码自动登录。
+采用 Claude 设计系统的"编辑级"极简风格：48px 衬线体双行标题（"Sign in to continue."），16px
+大写字母间距副标题（"欢迎回到慧田良方"），下划线式输入框 + 零圆角黑色登录按钮。支持角色选择（管理员/农户）、记住密码自动登录。
 
 ### 7.2 农户首页
 
 - **顶部**：衬线体大标题"病理分析" + 右上角用户名
-- **图像诊断区**：全宽黑色边框上传容器（180px 高），点击弹出拍照/相册选择底部面板；上传后展示病害识别结果行（"识别类别 — XX病"），下方依次为原图与热力图的对比展示、Top-5 概率排行进度条、零圆角"详细分析报告"按钮
+- **图像诊断区**：全宽黑色边框上传容器（180px
+  高），点击弹出拍照/相册选择底部面板；上传后展示病害识别结果行（"识别类别 — XX病"
+  ），下方依次为原图与热力图的对比展示、Top-5 概率排行进度条、零圆角"详细分析报告"按钮
 - **功能卡片区**：三张米色功能卡片（诊断记录、病害百科、专家咨询），2px 圆角
 - **农业资讯**：图文新闻列表，含标题、时间、阅读量
 
@@ -259,19 +265,20 @@ GeoDataBundle
 ### 7.4 诊断记录页
 
 - **病害统计柱状图**：基于 fl_chart 的水平柱状图，按病害名称分组统计频次，7 种颜色轮排
-- **记录列表**：每条记录卡片含病害名称、诊断时间、严重程度徽章（高危红 / 中等琥珀 / 轻微绿），点击展开显示致病病原和防治建议详情
+- **记录列表**：每条记录卡片含病害名称、诊断时间、严重程度徽章（高危红 / 中等琥珀 /
+  轻微绿），点击展开显示致病病原和防治建议详情
 - **角色过滤**：农户仅看自己的记录，管理员可查看全部
 - **下拉刷新**支持
 
 ### 7.5 管理员地图大屏
 
 - **基础底图**：OpenStreetMap 瓦片 + flutter_map 渲染引擎
-- **GeoJSON 图层**：河南省 18 个地级市及下辖区县多边形自动分层渲染
+- **GeoJSON 图层**：省、地级市及下辖区县多边形自动分层渲染
 - **预警着色**：有病害数据的区域以珊瑚琥珀渐变色填充；无数据区域以浅灰色半透明填充
 - **缩放切换**：zoom < 8.1 显示市级图层（粗粒度），zoom ≥ 8.1 显示区县图层（细粒度），zoom ≥ 9.6 显示区县详情标签
 - **区域标签**：各行政区名称以文字标记固定在区域几何中心
 - **交互弹窗**：点击区域弹出底部面板，展示该区域病害统计柱状图
-- **防越界**：弹性回弹相机约束，视图不超出河南省边界
+- **防越界**：弹性回弹相机约束，视图不超出省级边界
 - **缩放指示器**：右下角悬浮当前缩放精度指示
 
 ### 7.6 个人中心
@@ -310,18 +317,18 @@ GeoDataBundle
 
 ## 九、技术栈详情
 
-| 类别 | 技术 | 版本 | 用途 |
-|------|------|------|------|
-| 跨平台框架 | Flutter (Dart) | SDK ^3.11.4 | 移动端 UI 与业务逻辑 |
-| HTTP 客户端 | Dio | ^5.9.2 | REST API + SSE 流式请求 |
-| 图片选择 | image_picker | ^1.2.1 | 相机拍照 / 相册选图 |
-| 本地持久化 | shared_preferences | ^2.5.5 | 用户凭证与偏好缓存 |
-| 地图引擎 | flutter_map + latlong2 | ^8.3.0 / ^0.9.1 | OpenStreetMap 底图 + GeoJSON 渲染 |
-| GPS 定位 | geolocator | ^14.0.2 | 获取设备经纬度 |
-| 数据图表 | fl_chart | ^1.2.0 | 病害分布柱状图 |
-| AI 大模型 | 扣子 Coze API | api.coze.cn/v3 | SSE 流式智能对话 |
-| 逆地理编码 | 高德地图 Web API | restapi.amap.com/v3 | 经纬度 → adcode |
-| 后端服务 | 自建 REST API | cpolar 隧道 | 用户认证、病害预测、数据存储 |
+| 类别       | 技术                     | 版本                  | 用途                            |
+|----------|------------------------|---------------------|-------------------------------|
+| 跨平台框架    | Flutter (Dart)         | SDK ^3.11.4         | 移动端 UI 与业务逻辑                  |
+| HTTP 客户端 | Dio                    | ^5.9.2              | REST API + SSE 流式请求           |
+| 图片选择     | image_picker           | ^1.2.1              | 相机拍照 / 相册选图                   |
+| 本地持久化    | shared_preferences     | ^2.5.5              | 用户凭证与偏好缓存                     |
+| 地图引擎     | flutter_map + latlong2 | ^8.3.0 / ^0.9.1     | OpenStreetMap 底图 + GeoJSON 渲染 |
+| GPS 定位   | geolocator             | ^14.0.2             | 获取设备经纬度                       |
+| 数据图表     | fl_chart               | ^1.2.0              | 病害分布柱状图                       |
+| AI 大模型   | 扣子 Coze API            | api.coze.cn/v3      | SSE 流式智能对话                    |
+| 逆地理编码    | 高德地图 Web API           | restapi.amap.com/v3 | 经纬度 → adcode                  |
+| 后端服务     | 自建 REST API            | cpolar 隧道           | 用户认证、病害预测、数据存储                |
 
 ---
 
@@ -407,28 +414,28 @@ flutter build ios --release
 
 编辑 `lib/utils/api_config.dart`：
 
-| 配置项 | 说明 |
-|--------|------|
-| `baseUrl` | 后端 REST API 地址（当前通过 cpolar 隧道） |
-| `apiToken` | 后端 API 鉴权 Token（Header: `X-API-Token`） |
-| `cozeBotId` | 扣子智能体 Bot ID |
-| `cozeUserId` | 扣子平台用户 ID |
-| `cozeToken` | 扣子 API 访问令牌（`Bearer pat_xxx`） |
-| `amapKey` | 高德地图 Web API Key |
+| 配置项          | 说明                                     |
+|--------------|----------------------------------------|
+| `baseUrl`    | 后端 REST API 地址（当前通过 cpolar 隧道）         |
+| `apiToken`   | 后端 API 鉴权 Token（Header: `X-API-Token`） |
+| `cozeBotId`  | 扣子智能体 Bot ID                           |
+| `cozeUserId` | 扣子平台用户 ID                              |
+| `cozeToken`  | 扣子 API 访问令牌（`Bearer pat_xxx`）          |
+| `amapKey`    | 高德地图 Web API Key                       |
 
 ---
 
 ## API 接口一览
 
-| 接口 | 方法 | Content-Type | 说明 |
-|------|------|-------------|------|
-| `{baseUrl}/login` | POST | JSON | 用户名 + 密码 + 角色登录 |
-| `{baseUrl}/predict` | POST | multipart/form-data | 上传图片进行 CV 病害识别 |
-| `{baseUrl}/savepredict` | POST | JSON | 保存诊断结果至后端数据库 |
-| `{baseUrl}/get_all_dg` | GET | — | 获取全部诊断记录 |
-| `api.coze.cn/v3/chat` | POST (SSE) | JSON → text/event-stream | Coze 大模型流式病害分析 |
-| `restapi.amap.com/v3/geocode/regeo` | GET | — | 高德逆地理编码 |
-| `restapi.amap.com/v3/ip/config` | GET | — | 高德 IP 定位（备用） |
+| 接口                                  | 方法         | Content-Type             | 说明              |
+|-------------------------------------|------------|--------------------------|-----------------|
+| `{baseUrl}/login`                   | POST       | JSON                     | 用户名 + 密码 + 角色登录 |
+| `{baseUrl}/predict`                 | POST       | multipart/form-data      | 上传图片进行 CV 病害识别  |
+| `{baseUrl}/savepredict`             | POST       | JSON                     | 保存诊断结果至后端数据库    |
+| `{baseUrl}/get_all_dg`              | GET        | —                        | 获取全部诊断记录        |
+| `api.coze.cn/v3/chat`               | POST (SSE) | JSON → text/event-stream | Coze 大模型流式病害分析  |
+| `restapi.amap.com/v3/geocode/regeo` | GET        | —                        | 高德逆地理编码         |
+| `restapi.amap.com/v3/ip/config`     | GET        | —                        | 高德 IP 定位（备用）    |
 
 所有后端请求携带统一 Header：`X-API-Token: {apiToken}`
 
@@ -436,20 +443,23 @@ flutter build ios --release
 
 ## 资产文件
 
-| 文件路径 | 用途 |
-|----------|------|
-| `assets/geojson/河南省_市.geojson` | 河南省 18 个地级市行政区划 GeoJSON |
+| 文件路径                            | 用途                   |
+|---------------------------------|----------------------|
+| `assets/geojson/河南省_市.geojson`  | 河南省、地级市行政区划 GeoJSON  |
 | `assets/geojson/河南省_县区.geojson` | 河南省下辖区县级行政区划 GeoJSON |
-| `assets/img/logo.png` | 应用品牌 Logo |
+| `assets/geojson/辽宁省_市.geojson`  | 辽宁省、地级市行政区划 GeoJSON  |
+| `assets/geojson/辽宁省_县区.geojson` | 辽宁省下辖区县级行政区划 GeoJSON |
+| `assets/img/logo.png`           | 应用品牌 Logo            |
+| `assets/img/avatar.jpg`         | 用户头像占位               |
 
 ---
 
 ## 相关文档
 
-| 文档 | 说明 |
-|------|------|
-| [DESIGN.md](./DESIGN.md) | Anthropic Claude 设计系统规范（颜色、字体、组件、布局） |
-| [docs/admin-map-region-highlighting.md](./docs/admin-map-region-highlighting.md) | 管理端地图区域高亮数据驱动实现方案 |
+| 文档                                                                               | 说明                                   |
+|----------------------------------------------------------------------------------|--------------------------------------|
+| [DESIGN.md](./DESIGN.md)                                                         | Anthropic Claude 设计系统规范（颜色、字体、组件、布局） |
+| [docs/admin-map-region-highlighting.md](./docs/admin-map-region-highlighting.md) | 管理端地图区域高亮数据驱动实现方案                    |
 
 ---
 

@@ -1,5 +1,5 @@
 import 'package:farm_flutter/models/diagnosis.dart';
-import 'package:farm_flutter/utils/api_config.dart';
+import 'package:farm_flutter/config/config.dart';
 import 'package:farm_flutter/utils/app_colors.dart';
 import 'package:farm_flutter/utils/http_util.dart';
 import 'package:flutter/material.dart';
@@ -31,10 +31,10 @@ class _MineViewState extends State<MineView> with AutomaticKeepAliveClientMixin 
 
   Future<void> _loadDiagnosisCount() async {
     try {
-      HttpUtil.init(baseUrl: ApiConfig.baseUrl);
+      HttpUtil.init(baseUrl: Config.baseUrl);
       final resp = await HttpUtil.get(
         '/get_all_dg',
-        headers: {'X-API-Token': ApiConfig.apiToken},
+        headers: {'X-API-Token': Config.apiToken},
       );
       if (resp is Map && resp['data'] is List) {
         final records = (resp['data'] as List)
@@ -205,7 +205,7 @@ class _MineViewState extends State<MineView> with AutomaticKeepAliveClientMixin 
                       radius: 36,
                       backgroundImage:
                           Global.user.userAvatarUrl.isNotEmpty == true
-                          ? NetworkImage(Global.user.userAvatarUrl)
+                          ? AssetImage(Global.user.userAvatarUrl)
                           : null,
                       backgroundColor: AppColors.surfaceCard,
                       child: (Global.user.userAvatarUrl.isEmpty)
