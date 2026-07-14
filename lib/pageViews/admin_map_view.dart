@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:farm_flutter/config/config.dart';
+import 'package:farm_flutter/config/province_config.dart';
 import 'package:farm_flutter/utils/app_colors.dart';
 import 'package:farm_flutter/utils/http_util.dart';
 import 'package:fl_chart/fl_chart.dart';
@@ -19,13 +20,20 @@ class AdminMapView extends StatefulWidget {
 }
 
 class AdminMapViewState extends State<AdminMapView> {
-  static String get _cityGeoJsonAssetPath => Config.currentProvince.cityGeoJsonPath;
-  static String get _districtGeoJsonAssetPath => Config.currentProvince.districtGeoJsonPath;
-  static double get _initialZoom => Config.currentProvince.initialZoom;
-  static double get _districtLabelZoom => Config.currentProvince.districtLabelZoom;
-  static double get _districtDetailZoom => Config.currentProvince.districtDetailZoom;
-  static double get _minZoom => Config.currentProvince.minZoom;
-  static double get _maxZoom => Config.currentProvince.maxZoom;
+  static String get _cityGeoJsonAssetPath => currentProvince.cityGeoJsonPath;
+
+  static String get _districtGeoJsonAssetPath =>
+      currentProvince.districtGeoJsonPath;
+
+  static double get _initialZoom => currentProvince.initialZoom;
+
+  static double get _districtLabelZoom => currentProvince.districtLabelZoom;
+
+  static double get _districtDetailZoom => currentProvince.districtDetailZoom;
+
+  static double get _minZoom => currentProvince.minZoom;
+
+  static double get _maxZoom => currentProvince.maxZoom;
   static const _barColors = [
     AppColors.error,
     AppColors.warning,
@@ -954,7 +962,9 @@ class AdminMapViewState extends State<AdminMapView> {
                 children: [
                   Text(
                     selectedRegion?.name ??
-                        (_showDistrictLayer ? '${Config.currentProvince.name}县区' : '${Config.currentProvince.name}地市'),
+                        (_showDistrictLayer
+                            ? '${currentProvince.name}县区'
+                            : '${currentProvince.name}地市'),
                     style: TextStyle(
                       fontFamily: "serif",
                       fontSize: 20,
@@ -1024,7 +1034,7 @@ class AdminMapViewState extends State<AdminMapView> {
                                   ),
                             initialCenter:
                                 selectedRegion?.center ??
-                                Config.currentProvince.center,
+                                currentProvince.center,
                             initialZoom: _initialZoom,
                             minZoom: _minZoom - 2.5,
                             maxZoom: _maxZoom + 3.0,

@@ -25,6 +25,11 @@ class ProvinceConfig {
   });
 }
 
+// ==================== 当前显示省份 ====================
+// 修改此值即可切换地图显示的省份，可选值见 Provinces 类
+const ProvinceConfig currentProvince = Provinces.henan;
+// =====================================================
+
 /// 预定义省份配置
 class Provinces {
   static const henan = ProvinceConfig(
