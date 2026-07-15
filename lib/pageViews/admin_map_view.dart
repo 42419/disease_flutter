@@ -74,6 +74,17 @@ class AdminMapViewState extends State<AdminMapView> {
     return null;
   }
 
+  String _selectedRegionFullName() {
+    final region = _selectedRegion;
+    if (region == null) return '';
+    final provinceName = currentProvince.name;
+    if (_showDistrictLayer) {
+      final city = _cityRegions.where((c) => c.id == region.parentAdcode).firstOrNull;
+      return '$provinceName${city?.name ?? ''}${region.name}';
+    }
+    return '$provinceName${region.name}';
+  }
+
   @override
   void initState() {
     super.initState();
@@ -161,6 +172,10 @@ class AdminMapViewState extends State<AdminMapView> {
       if (_dataAdcodes.contains(region.parentAdcode)) {
         return true;
       }
+    }
+    // 地市级精度下，检查该市是否下辖有病害数据的区县
+    if (!_showDistrictLayer && region.id.length == 6 && region.id.endsWith('00')) {
+      return _cityCodesWithDistrictData.contains(region.id);
     }
     return false;
   }
@@ -961,8 +976,9 @@ class AdminMapViewState extends State<AdminMapView> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    selectedRegion?.name ??
-                        (_showDistrictLayer
+                    _selectedRegionFullName().isNotEmpty
+                        ? _selectedRegionFullName()
+                        : (_showDistrictLayer
                             ? '${currentProvince.name}县区'
                             : '${currentProvince.name}地市'),
                     style: TextStyle(

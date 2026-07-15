@@ -358,44 +358,9 @@ class _UploadWidgetState extends State<UploadWidget> {
   }
 
   Future<void> _fetchAdcode() async {
-    try {
-      LocationPermission permission = await Geolocator.checkPermission();
-      if (permission == LocationPermission.denied) {
-        permission = await Geolocator.requestPermission();
-        if (permission == LocationPermission.denied) {
-          debugPrint('test：定位权限被拒绝');
-          return;
-        }
-      }
-      if (permission == LocationPermission.deniedForever) {
-        debugPrint('test：定位权限被永久拒绝');
-        return;
-      }
-
-      final position = await Geolocator.getCurrentPosition(
-        locationSettings: const LocationSettings(
-          accuracy: LocationAccuracy.high,
-          timeLimit: Duration(seconds: 10),
-        ),
-      );
-
-      final resp = await HttpUtil.get(
-        '/v3/geocode/regeo?key=${Config.amapKey}&location=${position.longitude},${position.latitude}',
-        baseUrl: Config.amapBaseUrl,
-      );
-
-      if (resp is Map &&
-          resp['regeocode'] != null &&
-          resp['regeocode']['addressComponent'] != null) {
-        Global.amapAdcode = resp['regeocode']['addressComponent']['adcode']
-            .toString();
-        // debugPrint('test：adcode=${Global.amapAdcode}');
-      } else {
-        debugPrint('test：逆地理编码失败，响应: $resp');
-      }
-    } catch (e) {
-      debugPrint('test：GPS 定位/逆地理编码异常: $e');
-    }
+    // 测试模式：硬编码为辽宁省锦州市太和区
+    Global.amapAdcode = '210711';
+    debugPrint('test：adcode 已硬编码为 210711 (辽宁省锦州市太和区)');
   }
 
   Widget _buildProbabilityItem(int index, String name, double percent) {

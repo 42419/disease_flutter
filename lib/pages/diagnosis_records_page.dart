@@ -1,3 +1,6 @@
+import 'dart:convert';
+
+import 'package:farm_flutter/config/province_config.dart';
 import 'package:farm_flutter/models/diagnosis.dart';
 import 'package:farm_flutter/pages/widgets/analyzePage/components/highlight_utils.dart';
 import 'package:farm_flutter/config/config.dart';
@@ -6,6 +9,7 @@ import 'package:farm_flutter/utils/global.dart';
 import 'package:farm_flutter/utils/http_util.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 class DiagnosisRecordsPage extends StatefulWidget {
   const DiagnosisRecordsPage({super.key});
@@ -21,6 +25,7 @@ class _DiagnosisRecordsPageState extends State<DiagnosisRecordsPage> {
   int? _expandedId;
   bool _sortDescending = true;
   List<MapEntry<String, int>> _stats = [];
+  final Map<String, String> _adcodeNameMap = {};
 
   static const _barColors = [
     AppColors.error,
@@ -35,7 +40,49 @@ class _DiagnosisRecordsPageState extends State<DiagnosisRecordsPage> {
   @override
   void initState() {
     super.initState();
+    _loadAdcodeNames();
     _fetchRecords();
+  }
+
+  Future<void> _loadAdcodeNames() async {
+    try {
+      final provinceName = currentProvince.name;
+      final cityJson = await rootBundle.loadString(currentProvince.cityGeoJsonPath);
+      final districtJson = await rootBundle.loadString(currentProvince.districtGeoJsonPath);
+
+      final cityData = jsonDecode(cityJson) as Map<String, dynamic>;
+      final districtData = jsonDecode(districtJson) as Map<String, dynamic>;
+
+      for (final feature in cityData['features'] ?? []) {
+        final props = feature['properties'] ?? {};
+        final adcode = props['adcode']?.toString();
+        final name = props['name']?.toString();
+        if (adcode != null && name != null) {
+          _adcodeNameMap[adcode] = '$provinceName$name';
+        }
+      }
+
+      for (final feature in districtData['features'] ?? []) {
+        final props = feature['properties'] ?? {};
+        final adcode = props['adcode']?.toString();
+        final name = props['name']?.toString();
+        final parent = props['parent'] as Map<String, dynamic>?;
+        final parentAdcode = parent?['adcode']?.toString();
+        if (adcode != null && name != null) {
+          final cityName = _adcodeNameMap[parentAdcode] ?? provinceName;
+          _adcodeNameMap[adcode] = '$cityName$name';
+        }
+      }
+
+      if (mounted) setState(() {});
+    } catch (e) {
+      debugPrint('加载地区名称失败: $e');
+    }
+  }
+
+  String _getLocationName(String? adcode) {
+    if (adcode == null || adcode.isEmpty) return '';
+    return _adcodeNameMap[adcode] ?? adcode;
   }
 
   static DateTime _parseDtime(String dtime) {
@@ -660,7 +707,6 @@ borderRadius: BorderRadius.circular(2),
                         record.formattedTime,
                         style: TextStyle(fontFamily: "serif", fontSize: 13, color: AppColors.muted, fontStyle: FontStyle.italic),
                       ),
-                      const SizedBox(width: 16),
                       const Spacer(),
                       if (Global.user.role == '1') ...[
                         Container(
@@ -677,6 +723,22 @@ borderRadius: BorderRadius.circular(2),
                       ],
                     ],
                   ),
+                  if (_getLocationName(record.location).isNotEmpty) ...[
+                    const SizedBox(height: 4),
+                    Row(
+                      children: [
+                        Icon(Icons.location_on_outlined, size: 14, color: AppColors.textTertiary),
+                        const SizedBox(width: 6),
+                        Expanded(
+                          child: Text(
+                            _getLocationName(record.location),
+                            style: TextStyle(fontFamily: "serif", fontSize: 12, color: AppColors.muted, fontStyle: FontStyle.italic),
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
                 ],
               ),
             ),

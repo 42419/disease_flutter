@@ -16,7 +16,7 @@ class LoginPage extends StatefulWidget {
 class _LoginPageState extends State<LoginPage> {
   final _usernameController = TextEditingController();
   final _passwordController = TextEditingController();
-  String? _selectedRole = "1";
+  String? _selectedRole = "0";
   final _formKey = GlobalKey<FormState>();
   bool _isSelected = false;
   bool _rememberMe = false;
@@ -297,10 +297,13 @@ class _LoginPageState extends State<LoginPage> {
                               },
                               items: const [
                                 DropdownMenuItem(
+                                    value: "0",
+                                    child: Text("农户")
+                                ),
+                                DropdownMenuItem(
                                   value: "1",
                                   child: Text("管理员"),
-                                ),
-                                DropdownMenuItem(value: "0", child: Text("农户")),
+                                )
                               ],
                               decoration: _buildMinimalInputDecoration(
                                 hintText: "角色",

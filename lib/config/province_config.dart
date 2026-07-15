@@ -27,7 +27,7 @@ class ProvinceConfig {
 
 // ==================== 当前显示省份 ====================
 // 修改此值即可切换地图显示的省份，可选值见 Provinces 类
-const ProvinceConfig currentProvince = Provinces.henan;
+const ProvinceConfig currentProvince = Provinces.liaoning;
 // =====================================================
 
 /// 预定义省份配置
@@ -45,6 +45,7 @@ class Provinces {
     districtGeoJsonPath: 'assets/geojson/辽宁省_县区.geojson',
     center: LatLng(41.3, 123.0),
     initialZoom: 7.0,
+    districtLabelZoom: 7.2,
   );
 
   /// 所有可用省份（方便后续扩展）
