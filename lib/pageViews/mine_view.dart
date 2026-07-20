@@ -1,11 +1,10 @@
-import 'package:farm_flutter/models/diagnosis.dart';
-import 'package:farm_flutter/config/config.dart';
+import 'package:farm_flutter/providers/diagnosis_records_provider.dart';
+import 'package:farm_flutter/providers/user_provider.dart';
+import 'package:farm_flutter/providers/main_navigation_provider.dart';
+import 'package:farm_flutter/services/auth_storage.dart';
 import 'package:farm_flutter/utils/app_colors.dart';
-import 'package:farm_flutter/utils/http_util.dart';
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-
-import '../utils/global.dart';
+import 'package:provider/provider.dart';
 
 class MineView extends StatefulWidget {
   const MineView({super.key});
@@ -15,10 +14,7 @@ class MineView extends StatefulWidget {
 }
 
 class _MineViewState extends State<MineView> with AutomaticKeepAliveClientMixin {
-  int _diagnosisCount = 0;
-  bool _statsLoading = true;
-
-  int _uniqueCount = 0;
+  final AuthStorage _authStorage = const AuthStorage();
 
   @override
   bool get wantKeepAlive => true;
@@ -26,44 +22,16 @@ class _MineViewState extends State<MineView> with AutomaticKeepAliveClientMixin 
   @override
   void initState() {
     super.initState();
-    _loadDiagnosisCount();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _fetchIfNeeded();
+    });
   }
 
-  Future<void> _loadDiagnosisCount() async {
-    try {
-      HttpUtil.init(baseUrl: Config.baseUrl);
-      final resp = await HttpUtil.get(
-        '/get_all_dg',
-        headers: {'X-API-Token': Config.apiToken},
-      );
-      if (resp is Map && resp['data'] is List) {
-        final records = (resp['data'] as List)
-            .whereType<Map<String, dynamic>>()
-            .map((e) => Diagnosis.fromJson(e))
-            .toList();
-        final filtered = Global.user.role == '1'
-            ? records
-            : records.where((r) => r.username == Global.user.nickName).toList();
-
-        filtered.sort((a, b) => b.dtime.compareTo(a.dtime));
-
-        final countMap = <String, int>{};
-        for (final r in filtered) {
-          final name = r.bhname.isNotEmpty ? r.bhname : '未知';
-          countMap[name] = (countMap[name] ?? 0) + 1;
-        }
-
-        if (!mounted) return;
-        setState(() {
-          _diagnosisCount = filtered.length;
-          _uniqueCount = countMap.length;
-          _statsLoading = false;
-        });
-      }
-    } catch (e) {
-      debugPrint("MineView _loadDiagnosisCount error: $e");
-      if (!mounted) return;
-      setState(() => _statsLoading = false);
+  void _fetchIfNeeded() {
+    final recordsProvider = context.read<DiagnosisRecordsProvider>();
+    final user = context.read<UserProvider>();
+    if (recordsProvider.records.isEmpty && recordsProvider.isLoading) {
+      recordsProvider.fetchRecords(role: user.role, nickName: user.nickName);
     }
   }
 
@@ -112,6 +80,9 @@ class _MineViewState extends State<MineView> with AutomaticKeepAliveClientMixin 
   @override
   Widget build(BuildContext context) {
     super.build(context);
+    final user = context.watch<UserProvider>();
+    final recordsProvider = context.watch<DiagnosisRecordsProvider>();
+
     return Scaffold(
       backgroundColor: AppColors.canvas,
       appBar: AppBar(
@@ -165,7 +136,7 @@ class _MineViewState extends State<MineView> with AutomaticKeepAliveClientMixin 
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          Global.user.nickName,
+                          user.nickName,
                           style: TextStyle(
                             fontSize: 28,
                             color: AppColors.ink,
@@ -174,7 +145,7 @@ class _MineViewState extends State<MineView> with AutomaticKeepAliveClientMixin 
                         ),
                         const SizedBox(height: 6),
                         Text(
-                          Global.user.role == '1' ? '管理员' : '农户',
+                          user.isAdmin ? '管理员' : '农户',
                           style: TextStyle(
                             color: AppColors.muted,
                             fontSize: 14,
@@ -204,11 +175,11 @@ class _MineViewState extends State<MineView> with AutomaticKeepAliveClientMixin 
                     child: CircleAvatar(
                       radius: 36,
                       backgroundImage:
-                          Global.user.userAvatarUrl.isNotEmpty == true
-                          ? AssetImage(Global.user.userAvatarUrl)
+                          user.userAvatarUrl.isNotEmpty
+                          ? AssetImage(user.userAvatarUrl)
                           : null,
                       backgroundColor: AppColors.surfaceCard,
-                      child: (Global.user.userAvatarUrl.isEmpty)
+                      child: (user.userAvatarUrl.isEmpty)
                           ? Icon(Icons.person, size: 36, color: AppColors.muted)
                           : null,
                     ),
@@ -252,13 +223,13 @@ class _MineViewState extends State<MineView> with AutomaticKeepAliveClientMixin 
                 Row(
                   children: [
                     _summaryItem(
-                      _statsLoading ? '...' : '$_diagnosisCount',
+                      recordsProvider.isLoading ? '...' : '${recordsProvider.records.length}',
                       '诊断总记录数',
                       AppColors.ink,
                     ),
                     _summaryDivider(),
                     _summaryItem(
-                      _statsLoading ? '...' : '$_uniqueCount',
+                      recordsProvider.isLoading ? '...' : '${recordsProvider.stats.length}',
                       '已识别病害种类',
                       AppColors.ink,
                     ),
@@ -335,11 +306,10 @@ class _MineViewState extends State<MineView> with AutomaticKeepAliveClientMixin 
                       ),
                     ),
                     onPressed: () async {
-                      final prefs = await SharedPreferences.getInstance();
-                      await prefs.setBool("remember_me", false);
-                      await prefs.remove("username");
-                      await prefs.remove("password");
-                      await prefs.remove("role");
+                      await _authStorage.clearCredentials();
+                      if (!mounted) return;
+                      context.read<UserProvider>().clear();
+                      context.read<MainNavigationProvider>().setCurrentIndex(0);
                       Navigator.pushNamedAndRemoveUntil(
                         context,
                         "/login",

@@ -1,15 +1,14 @@
 import 'dart:convert';
 
 import 'package:farm_flutter/config/province_config.dart';
-import 'package:farm_flutter/models/diagnosis.dart';
 import 'package:farm_flutter/pages/widgets/analyzePage/components/highlight_utils.dart';
-import 'package:farm_flutter/config/config.dart';
+import 'package:farm_flutter/providers/diagnosis_records_provider.dart';
+import 'package:farm_flutter/providers/user_provider.dart';
 import 'package:farm_flutter/utils/app_colors.dart';
-import 'package:farm_flutter/utils/global.dart';
-import 'package:farm_flutter/utils/http_util.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:provider/provider.dart';
 
 class DiagnosisRecordsPage extends StatefulWidget {
   const DiagnosisRecordsPage({super.key});
@@ -19,12 +18,6 @@ class DiagnosisRecordsPage extends StatefulWidget {
 }
 
 class _DiagnosisRecordsPageState extends State<DiagnosisRecordsPage> {
-  List<Diagnosis> _records = [];
-  bool _isLoading = true;
-  String? _errorMessage;
-  int? _expandedId;
-  bool _sortDescending = true;
-  List<MapEntry<String, int>> _stats = [];
   final Map<String, String> _adcodeNameMap = {};
 
   static const _barColors = [
@@ -85,99 +78,19 @@ class _DiagnosisRecordsPageState extends State<DiagnosisRecordsPage> {
     return _adcodeNameMap[adcode] ?? adcode;
   }
 
-  static DateTime _parseDtime(String dtime) {
-    try {
-      return DateTime.parse(dtime);
-    } catch (_) {
-      final months = {'Jan': 1, 'Feb': 2, 'Mar': 3, 'Apr': 4, 'May': 5, 'Jun': 6, 'Jul': 7, 'Aug': 8, 'Sep': 9, 'Oct': 10, 'Nov': 11, 'Dec': 12};
-      final regex = RegExp(r'\w+,\s+(\d{1,2})\s+(\w{3})\s+(\d{4})\s+(\d{2}):(\d{2}):(\d{2})');
-      final match = regex.firstMatch(dtime);
-      if (match != null) {
-        return DateTime(
-          int.tryParse(match.group(3)!) ?? 2000,
-          months[match.group(2)!] ?? 1,
-          int.tryParse(match.group(1)!) ?? 1,
-          int.tryParse(match.group(4)!) ?? 0,
-          int.tryParse(match.group(5)!) ?? 0,
-          int.tryParse(match.group(6)!) ?? 0,
-        );
-      }
-      return DateTime(2000);
-    }
-  }
-
-  List<Diagnosis> _filterRecords(List<Diagnosis> all) {
-    List<Diagnosis> filtered;
-    if (Global.user.role == '1') {
-      filtered = all.toList();
-    } else {
-      filtered = all.where((r) => r.username == Global.user.nickName).toList();
-    }
-    filtered.sort((a, b) {
-      final da = _parseDtime(a.dtime);
-      final db = _parseDtime(b.dtime);
-      return _sortDescending ? db.compareTo(da) : da.compareTo(db);
-    });
-    return filtered;
-  }
-
   Future<void> _fetchRecords() async {
-    setState(() {
-      _isLoading = true;
-      _errorMessage = null;
-    });
-    try {
-      HttpUtil.init(baseUrl: Config.baseUrl);
-      final resp = await HttpUtil.get(
-        '/get_all_dg',
-        headers: {'X-API-Token': Config.apiToken},
-      );
-      if (resp is Map && resp['data'] is List) {
-        final all = (resp['data'] as List)
-            .whereType<Map<String, dynamic>>()
-            .map((e) => Diagnosis.fromJson(e))
-            .toList();
-        if (!mounted) return;
-        final filtered = _filterRecords(all);
-        final countMap = <String, int>{};
-        for (final r in filtered) {
-          final name = r.bhname.isNotEmpty ? r.bhname : '未知';
-          countMap[name] = (countMap[name] ?? 0) + 1;
-        }
-        final stats = countMap.entries.toList()
-          ..sort((a, b) => b.value.compareTo(a.value));
-        setState(() {
-          _records = filtered;
-          _stats = stats;
-          _isLoading = false;
-        });
-      } else {
-        if (!mounted) return;
-        setState(() {
-          _isLoading = false;
-          _errorMessage = '数据格式异常';
-        });
-      }
-    } catch (e) {
-      if (!mounted) return;
-      setState(() {
-        _isLoading = false;
-        _errorMessage = '加载失败: $e';
-      });
-    }
-  }
-
-  void _resortRecords() {
-    _records.sort((a, b) {
-      final da = _parseDtime(a.dtime);
-      final db = _parseDtime(b.dtime);
-      return _sortDescending ? db.compareTo(da) : da.compareTo(db);
-    });
-    setState(() {});
+    final user = context.read<UserProvider>();
+    await context.read<DiagnosisRecordsProvider>().fetchRecords(
+      role: user.role,
+      nickName: user.nickName,
+    );
   }
 
   @override
   Widget build(BuildContext context) {
+    final recordsProvider = context.watch<DiagnosisRecordsProvider>();
+    final user = context.watch<UserProvider>();
+
     return Scaffold(
       backgroundColor: AppColors.canvas,
       appBar: AppBar(
@@ -200,9 +113,9 @@ class _DiagnosisRecordsPageState extends State<DiagnosisRecordsPage> {
                 letterSpacing: 1.5,
               ),
             ),
-            if (!_isLoading && _records.isNotEmpty)
+            if (!recordsProvider.isLoading && recordsProvider.records.isNotEmpty)
               Text(
-                '共 ${_records.length} 条记录',
+                '共 ${recordsProvider.records.length} 条记录',
                 style: TextStyle(
                   fontFamily: "serif",
                   color: AppColors.muted,
@@ -217,26 +130,25 @@ class _DiagnosisRecordsPageState extends State<DiagnosisRecordsPage> {
         actions: [
           PopupMenuButton<bool>(
             icon: Icon(
-              _sortDescending ? Icons.arrow_downward_rounded : Icons.arrow_upward_rounded,
+              recordsProvider.sortDescending ? Icons.arrow_downward_rounded : Icons.arrow_upward_rounded,
               color: AppColors.muted,
               size: 20,
             ),
             tooltip: '排序方式',
             onSelected: (value) {
-              if (_sortDescending != value) {
-                setState(() => _sortDescending = value);
-                _resortRecords();
+              if (recordsProvider.sortDescending != value) {
+                context.read<DiagnosisRecordsProvider>().setSortDescending(value);
               }
             },
             itemBuilder: (context) => [
               CheckedPopupMenuItem<bool>(
                 value: true,
-                checked: _sortDescending,
+                checked: recordsProvider.sortDescending,
                 child: const Text('最新在前'),
               ),
               CheckedPopupMenuItem<bool>(
                 value: false,
-                checked: !_sortDescending,
+                checked: !recordsProvider.sortDescending,
                 child: const Text('最早在前'),
               ),
             ],
@@ -244,12 +156,12 @@ class _DiagnosisRecordsPageState extends State<DiagnosisRecordsPage> {
           const SizedBox(width: 4),
         ],
       ),
-      body: _buildBody(),
+      body: _buildBody(recordsProvider, user),
     );
   }
 
-  Widget _buildBody() {
-    if (_isLoading) {
+  Widget _buildBody(DiagnosisRecordsProvider recordsProvider, UserProvider user) {
+    if (recordsProvider.isLoading) {
       return Center(
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -276,7 +188,7 @@ class _DiagnosisRecordsPageState extends State<DiagnosisRecordsPage> {
         ),
       );
     }
-    if (_errorMessage != null) {
+    if (recordsProvider.errorMessage != null) {
       return Center(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 40),
@@ -307,7 +219,7 @@ class _DiagnosisRecordsPageState extends State<DiagnosisRecordsPage> {
               ),
               const SizedBox(height: 8),
               Text(
-                _errorMessage!,
+                recordsProvider.errorMessage!,
                 style: const TextStyle(
                   color: AppColors.textSecondary,
                   fontSize: 13,
@@ -336,7 +248,7 @@ class _DiagnosisRecordsPageState extends State<DiagnosisRecordsPage> {
         ),
       );
     }
-    if (_records.isEmpty) {
+    if (recordsProvider.records.isEmpty) {
       return Center(
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -384,18 +296,18 @@ class _DiagnosisRecordsPageState extends State<DiagnosisRecordsPage> {
       color: AppColors.primary,
       child: ListView.builder(
         padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
-        itemCount: _records.length + 1,
+        itemCount: recordsProvider.records.length + 1,
         itemBuilder: (context, index) {
-          if (index == 0) return _buildChartCard();
-          return _buildRecordCard(_records[index - 1]);
+          if (index == 0) return _buildChartCard(recordsProvider);
+          return _buildRecordCard(recordsProvider.records[index - 1], recordsProvider, user);
         },
       ),
     );
   }
 
-  Widget _buildChartCard() {
-    if (_stats.isEmpty) return const SizedBox.shrink();
-    final displayStats = _stats.take(7).toList();
+  Widget _buildChartCard(DiagnosisRecordsProvider recordsProvider) {
+    if (recordsProvider.stats.isEmpty) return const SizedBox.shrink();
+    final displayStats = recordsProvider.stats.take(7).toList();
     final maxCount = displayStats.first.value;
 
     return Container(
@@ -438,7 +350,7 @@ borderRadius: BorderRadius.circular(2),
                   borderRadius: BorderRadius.circular(2),
                 ),
                 child: Text(
-                  '${_stats.length} 种',
+                  '${recordsProvider.stats.length} 种',
                   style: TextStyle(
                     fontFamily: "serif",
                     fontSize: 12,
@@ -609,15 +521,15 @@ borderRadius: BorderRadius.circular(2),
     );
   }
 
-  Widget _buildRecordCard(Diagnosis record) {
-    final isExpanded = _expandedId == record.id;
+  Widget _buildRecordCard(dynamic record, DiagnosisRecordsProvider recordsProvider, UserProvider user) {
+    final isExpanded = recordsProvider.expandedId == record.id;
     
     // Evaluate severity based on name and description keywords
     final severity = _evaluateSeverity(record);
     final badgeColor = _severityBadgeColor(severity);
     final badgeLabel = _severityLabel(severity);
     
-    final diseaseRank = _stats.indexWhere((e) => e.key == record.bhname);
+    final diseaseRank = recordsProvider.stats.indexWhere((e) => e.key == record.bhname);
     final accentColor = diseaseRank >= 0
         ? _barColors[diseaseRank % _barColors.length]
         : AppColors.success;
@@ -635,9 +547,7 @@ borderRadius: BorderRadius.circular(2),
           InkWell(
             borderRadius: BorderRadius.circular(2),
             onTap: () {
-              setState(() {
-                _expandedId = isExpanded ? null : record.id;
-              });
+              context.read<DiagnosisRecordsProvider>().toggleExpanded(record.id);
             },
             child: Padding(
               padding: const EdgeInsets.all(16),
@@ -708,7 +618,7 @@ borderRadius: BorderRadius.circular(2),
                         style: TextStyle(fontFamily: "serif", fontSize: 13, color: AppColors.muted, fontStyle: FontStyle.italic),
                       ),
                       const Spacer(),
-                      if (Global.user.role == '1') ...[
+                      if (user.isAdmin) ...[
                         Container(
                           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                           decoration: BoxDecoration(
@@ -837,7 +747,7 @@ borderRadius: BorderRadius.circular(2),
   }
 
   // 0: 高危, 1: 中度, 2: 轻微, 3: 未知
-  int _evaluateSeverity(Diagnosis record) {
+  int _evaluateSeverity(dynamic record) {
     if (record.bhname.isEmpty || record.bhname == '未知') return 3;
     final name = record.bhname;
     final desc = record.bhreason + record.bhadvice;

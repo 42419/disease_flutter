@@ -1,10 +1,11 @@
 import 'package:dio/dio.dart';
 import 'package:farm_flutter/config/config.dart';
 import 'package:farm_flutter/utils/app_colors.dart';
-import 'package:farm_flutter/utils/global.dart';
+import 'package:farm_flutter/providers/user_provider.dart';
 import 'package:farm_flutter/utils/http_util.dart';
+import 'package:farm_flutter/services/auth_storage.dart';
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:provider/provider.dart';
 
 class AppInitPage extends StatefulWidget {
   const AppInitPage({super.key});
@@ -14,6 +15,8 @@ class AppInitPage extends StatefulWidget {
 }
 
 class _AppInitPageState extends State<AppInitPage> {
+  final AuthStorage _authStorage = const AuthStorage();
+
   @override
   void initState() {
     super.initState();
@@ -21,15 +24,11 @@ class _AppInitPageState extends State<AppInitPage> {
   }
 
   Future<void> _bootstrap() async {
-    final prefs = await SharedPreferences.getInstance();
-    final rememberMe = prefs.getBool('remember_me') ?? false;
-    final username = prefs.getString('username') ?? '';
-    final password = prefs.getString('password') ?? '';
-    final role = prefs.getString('role') ?? '1';
+    final credentials = await _authStorage.readCredentials();
 
     if (!mounted) return;
 
-    if (!rememberMe || username.isEmpty || password.isEmpty) {
+    if (!credentials.canAutoLogin) {
       _goTo('/login');
       return;
     }
@@ -37,17 +36,23 @@ class _AppInitPageState extends State<AppInitPage> {
     try {
       final response = await HttpUtil.post(
         "/login",
-        {"username": username, "pwd": password, "role": role},
+        {
+          "username": credentials.username,
+          "pwd": credentials.password,
+          "role": credentials.role,
+        },
         headers: {"X-API-Token": Config.apiToken},
       );
 
       if (!mounted) return;
 
       if (response["msg"] == "success") {
-        Global.user.nickName = response["username"] ?? username;
-        Global.user.role = role;
+        context.read<UserProvider>().login(
+          response["username"] ?? credentials.username,
+          credentials.role,
+        );
         HttpUtil.init(baseUrl: Config.baseUrl);
-        _goTo(role == "1" ? "/admin_main" : "/main");
+        _goTo(context.read<UserProvider>().isAdmin ? "/admin_main" : "/main");
       } else {
         _goTo('/login');
       }

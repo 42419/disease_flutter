@@ -1,7 +1,11 @@
 import 'package:farm_flutter/pageViews/main_view.dart';
 import 'package:farm_flutter/pageViews/mine_view.dart';
+import 'package:farm_flutter/providers/diagnosis_records_provider.dart';
+import 'package:farm_flutter/providers/main_navigation_provider.dart';
+import 'package:farm_flutter/providers/user_provider.dart';
 import 'package:farm_flutter/utils/app_colors.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 class MainPage extends StatefulWidget {
   const MainPage({super.key});
@@ -10,30 +14,56 @@ class MainPage extends StatefulWidget {
   State<MainPage> createState() => _MainPageState();
 }
 
-class _MainPageState extends State<MainPage> {
-  int _currentIndex = 0;
+class _MainPageState extends State<MainPage> with WidgetsBindingObserver {
   PageController? _pageController;
 
   PageController get _controller {
-    return _pageController ??= PageController(initialPage: _currentIndex);
+    return _pageController ??= PageController(
+      initialPage: context.read<MainNavigationProvider>().currentIndex,
+    );
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+    _startPolling();
   }
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    context.read<DiagnosisRecordsProvider>().stopTimer();
     _pageController?.dispose();
     super.dispose();
   }
 
   @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    final provider = context.read<DiagnosisRecordsProvider>();
+    if (state == AppLifecycleState.resumed) {
+      provider.refreshIfStale();
+    } else if (state == AppLifecycleState.paused) {
+      provider.stopTimer();
+    }
+  }
+
+  void _startPolling() {
+    final user = context.read<UserProvider>();
+    final provider = context.read<DiagnosisRecordsProvider>();
+    provider.startTimer(role: user.role, nickName: user.nickName);
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final navProvider = context.watch<MainNavigationProvider>();
+
     return Scaffold(
       body: PageView(
         physics: const NeverScrollableScrollPhysics(),
         controller: _controller,
         onPageChanged: (index) {
-          setState(() {
-            _currentIndex = index;
-          });
+          context.read<MainNavigationProvider>().setCurrentIndex(index);
         },
         children: const [MainView(), MineView()],
       ),
@@ -73,7 +103,7 @@ class _MainPageState extends State<MainPage> {
           ),
         ),
         child: NavigationBar(
-          selectedIndex: _currentIndex,
+          selectedIndex: navProvider.currentIndex,
           onDestinationSelected: (index) {
             _controller.jumpToPage(index);
           },

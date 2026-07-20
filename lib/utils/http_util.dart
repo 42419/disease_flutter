@@ -1,25 +1,18 @@
 import 'package:dio/dio.dart';
 
 class HttpUtil {
-  static late Dio _client;
+  static String _baseUrl = '';
 
   /// 全局初始化，只在 main.dart 调用一次
   static void init({required String baseUrl}) {
-    _client = Dio(
-      BaseOptions(
-        baseUrl: baseUrl,
-        connectTimeout: const Duration(seconds: 20),
-        receiveTimeout: const Duration(seconds: 20),
-        contentType: "application/json",
-      ),
-    );
+    _baseUrl = baseUrl;
   }
 
-  /// 登录等需要不同 baseUrl 的场景，临时创建独立实例
+  /// 根据 baseUrl 和 headers 构建独立 Dio 实例
   static Dio _buildClient({String? baseUrl, Map<String, String>? headers}) {
     return Dio(
       BaseOptions(
-        baseUrl: baseUrl ?? _client.options.baseUrl,
+        baseUrl: baseUrl ?? _baseUrl,
         connectTimeout: const Duration(seconds: 20),
         receiveTimeout: const Duration(seconds: 20),
         contentType: "application/json",
@@ -36,8 +29,9 @@ class HttpUtil {
     final client = _buildClient(baseUrl: baseUrl, headers: headers);
     try {
       final response = await client.get(url);
-      if (response.statusCode! < 200 || response.statusCode! >= 300) {
-        throw Exception("请求失败: ${response.statusCode}");
+      final statusCode = response.statusCode;
+      if (statusCode == null || statusCode < 200 || statusCode >= 300) {
+        throw Exception("请求失败: $statusCode");
       }
       return response.data;
     } on DioException {
@@ -56,8 +50,9 @@ class HttpUtil {
     final client = _buildClient(baseUrl: baseUrl, headers: headers);
     try {
       final response = await client.post(url, data: data);
-      if (response.statusCode! < 200 || response.statusCode! >= 300) {
-        throw Exception("请求失败: ${response.statusCode}");
+      final statusCode = response.statusCode;
+      if (statusCode == null || statusCode < 200 || statusCode >= 300) {
+        throw Exception("请求失败: $statusCode");
       }
       return response.data;
     } on DioException {
@@ -67,6 +62,8 @@ class HttpUtil {
     }
   }
 
+  /// 流式请求：不自动关闭 client，调用方消费完流后由 client GC 回收。
+  /// 若在 finally 中关闭 client，可能导致 ResponseBody.stream 被截断。
   static Future<Response<ResponseBody>> postStream(
       String url,
       Map data, {
@@ -80,15 +77,18 @@ class HttpUtil {
         data: data,
         options: Options(responseType: ResponseType.stream),
       );
-      if (response.statusCode! < 200 || response.statusCode! >= 300) {
-        throw Exception("请求失败: ${response.statusCode}");
+      final statusCode = response.statusCode;
+      if (statusCode == null || statusCode < 200 || statusCode >= 300) {
+        client.close(force: true);
+        throw Exception("请求失败: $statusCode");
       }
       return response;
     } on DioException {
+      client.close(force: true);
       rethrow;
-    } finally {
-      client.close();
     }
+    // 注意：成功时不关闭 client，让 stream 正常消费。
+    // Dio client 会在 GC 时自动回收连接。
   }
 
   static Future<Map<String, dynamic>> postFile(
@@ -119,8 +119,9 @@ class HttpUtil {
       }
 
       final response = await client.post(url, data: formData);
-      if (response.statusCode! < 200 || response.statusCode! >= 300) {
-        throw Exception("请求失败: ${response.statusCode}");
+      final statusCode = response.statusCode;
+      if (statusCode == null || statusCode < 200 || statusCode >= 300) {
+        throw Exception("请求失败: $statusCode");
       }
       return response.data as Map<String, dynamic>;
     } on DioException {
@@ -131,6 +132,6 @@ class HttpUtil {
   }
 
   static void close() {
-    _client.close(force: true);
+    // No longer needed - Dio clients are per-request and auto-recycled
   }
 }

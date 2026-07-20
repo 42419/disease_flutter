@@ -1,10 +1,11 @@
 import 'package:dio/dio.dart';
 import 'package:farm_flutter/config/config.dart';
 import 'package:farm_flutter/utils/http_util.dart';
-import 'package:farm_flutter/utils/global.dart';
+import 'package:farm_flutter/providers/user_provider.dart';
+import 'package:farm_flutter/services/auth_storage.dart';
 import 'package:farm_flutter/utils/app_colors.dart';
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:provider/provider.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -21,6 +22,7 @@ class _LoginPageState extends State<LoginPage> {
   bool _isSelected = false;
   bool _rememberMe = false;
   bool _isLoggingIn = false;
+  final AuthStorage _authStorage = const AuthStorage();
 
   @override
   void initState() {
@@ -29,16 +31,24 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   Future<void> _loadSavedData() async {
-    final prefs = await SharedPreferences.getInstance();
+    final credentials = await _authStorage.readCredentials();
+    if (!mounted) return;
     setState(() {
-      _rememberMe = prefs.getBool('remember_me') ?? false;
+      _rememberMe = credentials.rememberMe;
       if (_rememberMe) {
-        _usernameController.text = prefs.getString('username') ?? '';
-        _passwordController.text = prefs.getString('password') ?? '';
-        _selectedRole = prefs.getString('role') ?? '1';
+        _usernameController.text = credentials.username;
+        _passwordController.text = credentials.password;
+        _selectedRole = credentials.role;
         _isSelected = true;
       }
     });
+  }
+
+  @override
+  void dispose() {
+    _usernameController.dispose();
+    _passwordController.dispose();
+    super.dispose();
   }
 
   String? _validateUsername(String? value) {
@@ -112,22 +122,19 @@ class _LoginPageState extends State<LoginPage> {
       );
       if (mounted) Navigator.pop(context);
       if (response["msg"] == "success") {
-        Global.user.nickName = response["username"] ?? _usernameController.text;
-        Global.user.role = _selectedRole ?? "1";
+        if (!mounted) return;
+        context.read<UserProvider>().login(
+          response["username"] ?? _usernameController.text,
+          _selectedRole ?? "1",
+        );
         HttpUtil.init(baseUrl: Config.baseUrl);
 
-        final prefs = await SharedPreferences.getInstance();
-        if (_rememberMe) {
-          await prefs.setBool('remember_me', true);
-          await prefs.setString('username', _usernameController.text);
-          await prefs.setString('password', _passwordController.text);
-          await prefs.setString('role', _selectedRole ?? "1");
-        } else {
-          await prefs.setBool('remember_me', false);
-          await prefs.remove('username');
-          await prefs.remove('password');
-          await prefs.remove('role');
-        }
+        await _authStorage.saveCredentials(
+          rememberMe: _rememberMe,
+          username: _usernameController.text,
+          password: _passwordController.text,
+          role: _selectedRole ?? "1",
+        );
 
         if (!mounted) return;
 
@@ -142,7 +149,7 @@ class _LoginPageState extends State<LoginPage> {
           ),
         );
 
-        if (Global.user.role == "1") {
+        if (context.read<UserProvider>().isAdmin) {
           Navigator.pushNamedAndRemoveUntil(
             context,
             "/admin_main",
@@ -164,10 +171,9 @@ class _LoginPageState extends State<LoginPage> {
       }
     } on DioException catch (e) {
       debugPrint("DioException: ${e.type}, ${e.message}, ${e.error}");
-      if (mounted) {
-        Navigator.pop(context);
-        setState(() => _isLoggingIn = false);
-      }
+      if (!mounted) return;
+      Navigator.pop(context);
+      setState(() => _isLoggingIn = false);
       ScaffoldMessenger.of(context).clearSnackBars();
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -177,10 +183,9 @@ class _LoginPageState extends State<LoginPage> {
       );
     } catch (e) {
       debugPrint("登录异常: $e");
-      if (mounted) {
-        Navigator.pop(context);
-        setState(() => _isLoggingIn = false);
-      }
+      if (!mounted) return;
+      Navigator.pop(context);
+      setState(() => _isLoggingIn = false);
       ScaffoldMessenger.of(context).clearSnackBars();
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text("登录异常: $e"), backgroundColor: AppColors.error),
@@ -280,7 +285,7 @@ class _LoginPageState extends State<LoginPage> {
 
                             // Role Selection
                             DropdownButtonFormField<String>(
-                              value: _selectedRole,
+                              initialValue: _selectedRole,
                               isExpanded: true,
                               validator: _validateRole,
                               style: TextStyle(
@@ -518,7 +523,10 @@ class _LoginPageState extends State<LoginPage> {
         checkColor: AppColors.canvas,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(0)),
         // Sharp checkbox
-        side: BorderSide(color: AppColors.muted.withOpacity(0.5), width: 1.5),
+        side: BorderSide(
+          color: AppColors.muted.withValues(alpha: 0.5),
+          width: 1.5,
+        ),
       ),
     );
   }
@@ -535,7 +543,7 @@ class _LoginPageState extends State<LoginPage> {
       ),
       prefixIconConstraints: const BoxConstraints(minWidth: 0, minHeight: 0),
       hintStyle: TextStyle(
-        color: AppColors.muted.withOpacity(0.6),
+        color: AppColors.muted.withValues(alpha: 0.6),
         fontSize: 18,
         fontWeight: FontWeight.w400,
       ),

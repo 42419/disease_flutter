@@ -63,6 +63,10 @@ class AdminMapViewState extends State<AdminMapView> {
   final Map<String, Map<String, int>> _diseaseStatsByCode = {};
   final List<Map<String, dynamic>> _diseaseRawData = [];
 
+  // 缓存多边形和标记，避免每次缩放都重建
+  List<Polygon<String>> _cachedPolygons = const [];
+  List<Marker> _cachedLabels = const [];
+
   List<GeoRegion> get _activeRegions =>
       _showDistrictLayer ? _districtRegions : _cityRegions;
 
@@ -101,10 +105,12 @@ class AdminMapViewState extends State<AdminMapView> {
 
   Future<void> _loadGeoJson() async {
     try {
-      final cityData = await _loadRegionsFromAsset(_cityGeoJsonAssetPath);
-      final districtData = await _loadRegionsFromAsset(
-        _districtGeoJsonAssetPath,
-      );
+      final results = await Future.wait([
+        _loadRegionsFromAsset(_cityGeoJsonAssetPath),
+        _loadRegionsFromAsset(_districtGeoJsonAssetPath),
+      ]);
+      final cityData = results[0];
+      final districtData = results[1];
 
       if (!mounted) return;
 
@@ -115,6 +121,7 @@ class AdminMapViewState extends State<AdminMapView> {
         _selectedRegionId = null;
         _isLoading = false;
       });
+      _rebuildCache();
     } catch (e) {
       if (!mounted) return;
       setState(() {
@@ -157,7 +164,10 @@ class AdminMapViewState extends State<AdminMapView> {
           _cityCodesWithDistrictData.add('${adcode.substring(0, 4)}00');
         }
       }
-      if (mounted) setState(() {});
+      if (mounted) {
+        setState(() {});
+        _rebuildCache();
+      }
     } catch (e) {
       debugPrint('fetch disease data failed: $e');
     }
@@ -371,6 +381,11 @@ class AdminMapViewState extends State<AdminMapView> {
       lngSum += point.longitude;
     }
     return LatLng(latSum / points.length, lngSum / points.length);
+  }
+
+  void _rebuildCache() {
+    _cachedPolygons = _buildMapPolygons();
+    _cachedLabels = _buildLabelMarkers();
   }
 
   List<Polygon<String>> _buildMapPolygons() {
@@ -878,7 +893,10 @@ class AdminMapViewState extends State<AdminMapView> {
     if (hitId == null) return;
 
     if (hitId == _selectedRegionId) {
-      setState(() => _selectedRegionId = null);
+      setState(() {
+        _selectedRegionId = null;
+        _rebuildCache();
+      });
       return;
     }
 
@@ -893,6 +911,7 @@ class AdminMapViewState extends State<AdminMapView> {
       } else {
         _selectedRegionId = null;
       }
+      _rebuildCache();
     });
   }
 
@@ -901,6 +920,7 @@ class AdminMapViewState extends State<AdminMapView> {
     final shouldShowDistrictLayer = _currentZoom >= _districtLabelZoom;
     if (shouldShowDistrictLayer != _showDistrictLayer) {
       _showDistrictLayer = shouldShowDistrictLayer;
+      _rebuildCache();
     }
 
     if (_isLoading) {
@@ -1105,14 +1125,14 @@ class AdminMapViewState extends State<AdminMapView> {
                                   GestureDetector(
                                     onTap: _handlePolygonTap,
                                     child: PolygonLayer<String>(
-                                      polygons: _buildMapPolygons(),
+                                      polygons: _cachedPolygons,
                                       hitNotifier: _hitNotifier,
                                       drawInSingleWorld: true,
                                     ),
                                   ),
                                   MarkerLayer(
                                     markers: [
-                                      ..._buildLabelMarkers(),
+                                      ..._cachedLabels,
                                       ..._buildDiseaseInfoMarkers(),
                                     ],
                                   ),

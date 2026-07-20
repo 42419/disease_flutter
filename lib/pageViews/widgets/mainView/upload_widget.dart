@@ -1,33 +1,21 @@
-import 'dart:convert';
 import 'dart:io';
 
 import 'package:farm_flutter/config/config.dart';
-import 'package:farm_flutter/utils/global.dart';
+import 'package:farm_flutter/models/prediction_result.dart';
+import 'package:farm_flutter/providers/upload_provider.dart';
+import 'package:farm_flutter/services/region_option_loader.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:farm_flutter/utils/app_colors.dart';
 import 'package:farm_flutter/utils/http_util.dart';
+import 'package:provider/provider.dart';
 
-class UploadWidget extends StatefulWidget {
-  final VoidCallback? onImageSelected;
+class UploadWidget extends StatelessWidget {
+  const UploadWidget({super.key});
 
-  const UploadWidget({super.key, this.onImageSelected});
-
-  @override
-  State<UploadWidget> createState() => _UploadWidgetState();
-}
-
-class _UploadWidgetState extends State<UploadWidget> {
-  File? _selectedImage;
-  bool _isUploading = false;
-  String? _result;
-  String? _heatmapData;
-  List<String>? _top5Classes;
-  List<double>? _predictTop5;
-
-  void _showCategoryDetails() {
+  void _showCategoryDetails(BuildContext context, String result) {
     showDialog(
       context: context,
       builder: (dialogContext) => Dialog(
@@ -59,7 +47,7 @@ class _UploadWidgetState extends State<UploadWidget> {
                   ),
                 ),
                 child: SelectableText(
-                  _result ?? "请上传图片",
+                  result,
                   style: TextStyle(
                     fontSize: 16,
                     color: AppColors.danger,
@@ -98,10 +86,8 @@ class _UploadWidgetState extends State<UploadWidget> {
                       height: 44,
                       child: ElevatedButton(
                         onPressed: () {
-                          final text = _result ?? "请上传图片";
-                          Clipboard.setData(ClipboardData(text: text));
+                          Clipboard.setData(ClipboardData(text: result));
                           Navigator.pop(dialogContext);
-                          // 使用主 context 显示 SnackBar，确保其显示在最上层
                           ScaffoldMessenger.of(context).clearSnackBars();
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(
@@ -137,7 +123,7 @@ class _UploadWidgetState extends State<UploadWidget> {
     );
   }
 
-  void _showPickOptions() {
+  void _showPickOptions(BuildContext context) {
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
@@ -187,7 +173,7 @@ class _UploadWidgetState extends State<UploadWidget> {
                 subtitle: "使用相机拍摄照片",
                 onTap: () {
                   Navigator.pop(context);
-                  _pickImage(ImageSource.camera);
+                  _pickImage(context, ImageSource.camera);
                 },
               ),
 
@@ -206,7 +192,7 @@ class _UploadWidgetState extends State<UploadWidget> {
                 subtitle: "从图库中选择已有照片",
                 onTap: () {
                   Navigator.pop(context);
-                  _pickImage(ImageSource.gallery);
+                  _pickImage(context, ImageSource.gallery);
                 },
               ),
 
@@ -294,32 +280,36 @@ class _UploadWidgetState extends State<UploadWidget> {
     );
   }
 
-  Future<void> _pickImage(ImageSource source) async {
+  Future<void> _pickImage(BuildContext context, ImageSource source) async {
+    final uploadProvider = context.read<UploadProvider>();
+    if (uploadProvider.isUploading) return;
+
     final picker = ImagePicker();
     final pickedFile = await picker.pickImage(source: source, imageQuality: 80);
+    if (!context.mounted) return;
     if (pickedFile != null) {
-      setState(() {
-        _selectedImage = File(pickedFile.path);
-        _result = null;
-        _heatmapData = null;
-      });
-      Global.uploadImageName = pickedFile.name;
-      // 通知父组件图片已选择
-      widget.onImageSelected?.call();
-      // 选图后自动上传
-      await _uploadImage();
+      uploadProvider.setImage(
+        File(pickedFile.path),
+        pickedFile.name,
+      );
+      await _uploadImage(context);
     }
   }
 
-  Future<void> _uploadImage() async {
-    if (_selectedImage == null) return;
+  Future<void> _uploadImage(BuildContext context) async {
+    final uploadProvider = context.read<UploadProvider>();
+    if (uploadProvider.isUploading) return;
+    final imagePath = uploadProvider.selectedImage?.path;
+    if (imagePath == null) return;
 
-    setState(() {
-      _isUploading = true;
-    });
+    uploadProvider.setUploading(true);
 
-    // 上传图片的同时获取adcode
-    _fetchAdcode();
+    final adcode = await _resolveAdcode(context);
+    uploadProvider.setAdcode(adcode ?? '');
+    if (!context.mounted) {
+      uploadProvider.setUploading(false);
+      return;
+    }
 
     try {
       HttpUtil.init(baseUrl: Config.baseUrl);
@@ -328,43 +318,159 @@ class _UploadWidgetState extends State<UploadWidget> {
 
       final response = await HttpUtil.postFile(
         "/predict",
-        [_selectedImage!.path],
+        [imagePath],
         headers: headers,
         fileField: "image",
       );
 
-      if (mounted) {
-        String? successValue;
-        successValue = response['top5class'][0]?.toString();
-        setState(() {
-          _isUploading = false;
-          _result = successValue ?? response.toString();
-          _heatmapData = response['heatmap']?.toString();
-          if (response["top5class"] != null &&
-              response["predicttop5"] != null) {
-            _top5Classes = List<String>.from(response["top5class"]);
-            _predictTop5 = List<double>.from(response["predicttop5"]);
-          }
-        });
-      }
+      final result = PredictionResult.fromResponse(response);
+      uploadProvider.setResult(
+        result: result.result,
+        heatmapData: result.heatmapData,
+        top5Classes: result.top5Classes,
+        predictTop5: result.predictTop5,
+      );
     } catch (e) {
-      if (mounted) {
-        setState(() {
-          _isUploading = false;
-          _result = "上传失败: $e";
-        });
-      }
+      uploadProvider.setError("上传失败: $e");
     }
   }
 
-  Future<void> _fetchAdcode() async {
-    // 测试模式：硬编码为辽宁省锦州市太和区
-    Global.amapAdcode = '210711';
-    debugPrint('test：adcode 已硬编码为 210711 (辽宁省锦州市太和区)');
+  Future<String?> _resolveAdcode(BuildContext context) async {
+    try {
+      LocationPermission permission = await Geolocator.checkPermission();
+      if (permission == LocationPermission.denied) {
+        permission = await Geolocator.requestPermission();
+      }
+
+      if (permission == LocationPermission.denied ||
+          permission == LocationPermission.deniedForever) {
+        debugPrint('定位权限不可用，进入手动地区选择');
+        if (!context.mounted) return null;
+        return _pickRegionAdcode(context);
+      }
+
+      final position = await Geolocator.getCurrentPosition(
+        locationSettings: const LocationSettings(
+          accuracy: LocationAccuracy.high,
+          timeLimit: Duration(seconds: 10),
+        ),
+      );
+
+      final resp = await HttpUtil.get(
+        '/v3/geocode/regeo?key=${Config.amapKey}&location=${position.longitude},${position.latitude}',
+        baseUrl: Config.amapBaseUrl,
+      );
+
+      if (resp is Map) {
+        final regeocode = resp['regeocode'];
+        final addressComponent = regeocode is Map
+            ? regeocode['addressComponent']
+            : null;
+        final adcode = addressComponent is Map
+            ? addressComponent['adcode']?.toString()
+            : null;
+        if (adcode != null && adcode.isNotEmpty && adcode != '[]') {
+          return adcode;
+        }
+      }
+
+      debugPrint('逆地理编码未返回有效 adcode: $resp');
+    } catch (e) {
+      debugPrint('GPS 定位/逆地理编码异常: $e');
+    }
+
+    if (!context.mounted) return null;
+    return _pickRegionAdcode(context);
+  }
+
+  Future<String?> _pickRegionAdcode(BuildContext context) async {
+    if (!context.mounted) return null;
+
+    List<RegionOption> regions;
+    try {
+      regions = await const RegionOptionLoader().loadCurrentProvinceRegions();
+    } catch (e) {
+      debugPrint('加载手动地区列表失败: $e');
+      return null;
+    }
+
+    if (!context.mounted || regions.isEmpty) return null;
+
+    final selected = await showModalBottomSheet<RegionOption>(
+      context: context,
+      backgroundColor: AppColors.canvas,
+      showDragHandle: true,
+      builder: (sheetContext) {
+        return SafeArea(
+          child: SizedBox(
+            height: 420,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 0, 20, 12),
+                  child: Text(
+                    '选择诊断地区',
+                    style: TextStyle(
+                      fontFamily: "serif",
+                      fontSize: 18,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.ink,
+                    ),
+                  ),
+                ),
+                const Divider(height: 1, color: AppColors.hairline),
+                Expanded(
+                  child: ListView.separated(
+                    itemCount: regions.length,
+                    separatorBuilder: (_, _) =>
+                        const Divider(height: 1, color: AppColors.hairline),
+                    itemBuilder: (_, index) {
+                      final region = regions[index];
+                      return ListTile(
+                        title: Text(
+                          region.name,
+                          style: const TextStyle(
+                            color: AppColors.ink,
+                            fontSize: 15,
+                          ),
+                        ),
+                        subtitle: Text(
+                          '${region.level.isEmpty ? '区域' : region.level} · ${region.adcode}',
+                          style: const TextStyle(
+                            color: AppColors.muted,
+                            fontSize: 12,
+                          ),
+                        ),
+                        onTap: () => Navigator.pop(sheetContext, region),
+                      );
+                    },
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 12, 20, 16),
+                  child: SizedBox(
+                    width: double.infinity,
+                    height: 44,
+                    child: OutlinedButton(
+                      onPressed: () => Navigator.pop(sheetContext),
+                      child: const Text('暂不选择'),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+
+    return selected?.adcode;
   }
 
   Widget _buildProbabilityItem(int index, String name, double percent) {
     final percentage = (percent * 100).toStringAsFixed(1);
+    final widthFactor = percent.clamp(0.0, 1.0).toDouble();
     return Padding(
       padding: EdgeInsets.symmetric(vertical: 12),
       child: Row(
@@ -420,7 +526,7 @@ class _UploadWidgetState extends State<UploadWidget> {
               color: AppColors.hairline,
               alignment: Alignment.centerLeft,
               child: FractionallySizedBox(
-                widthFactor: percent,
+                widthFactor: widthFactor,
                 child: Container(
                   height: 3,
                   color: index == 0 ? AppColors.ink : AppColors.muted,
@@ -449,14 +555,31 @@ class _UploadWidgetState extends State<UploadWidget> {
 
   @override
   Widget build(BuildContext context) {
+    final uploadProvider = context.watch<UploadProvider>();
+    final heatmapBytes = PredictionResult(
+      result: uploadProvider.result ?? '',
+      heatmapData: uploadProvider.heatmapData,
+      top5Classes: const [],
+      predictTop5: const [],
+    ).tryDecodeHeatmap();
+    final top5Classes = uploadProvider.top5Classes;
+    final predictTop5 = uploadProvider.predictTop5;
+    final probabilityCount = top5Classes == null || predictTop5 == null
+        ? 0
+        : PredictionResult(
+            result: uploadProvider.result ?? '',
+            heatmapData: null,
+            top5Classes: top5Classes,
+            predictTop5: predictTop5,
+          ).displayCount;
+
     return Padding(
-      // padding: EdgeInsets.only(left: 20, right: 20, top: 20),
       padding: EdgeInsets.only(left: 0, right: 0, top: 0),
       child: Column(
         children: [
           // 上传区域 - editorial style
           GestureDetector(
-            onTap: _isUploading ? null : _showPickOptions,
+            onTap: uploadProvider.isUploading ? null : () => _showPickOptions(context),
             child: Container(
               width: double.infinity,
               height: 180,
@@ -464,8 +587,8 @@ class _UploadWidgetState extends State<UploadWidget> {
                 color: Colors.transparent,
                 border: Border.all(color: AppColors.ink, width: 1.5),
               ),
-              child: _selectedImage != null
-                  ? Image.file(_selectedImage!, fit: BoxFit.contain)
+              child: uploadProvider.selectedImage != null
+                  ? Image.file(uploadProvider.selectedImage!, fit: BoxFit.contain)
                   : Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
@@ -491,7 +614,7 @@ class _UploadWidgetState extends State<UploadWidget> {
           ),
 
           // 类别选择框 - inline editorial style
-          if (_isUploading || _result != null)
+          if (uploadProvider.isUploading || uploadProvider.result != null)
             Container(
               margin: EdgeInsets.only(top: 24),
               padding: EdgeInsets.symmetric(horizontal: 16, vertical: 16),
@@ -505,7 +628,7 @@ class _UploadWidgetState extends State<UploadWidget> {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  if (_isUploading) ...[
+                  if (uploadProvider.isUploading) ...[
                     Text(
                       "识别中...",
                       style: TextStyle(
@@ -535,7 +658,7 @@ class _UploadWidgetState extends State<UploadWidget> {
                           ),
                           children: [
                             TextSpan(
-                              text: _result ?? "未知",
+                              text: uploadProvider.result ?? "未知",
                               style: TextStyle(
                                 fontFamily: "serif",
                                 fontSize: 20,
@@ -550,7 +673,9 @@ class _UploadWidgetState extends State<UploadWidget> {
                       ),
                     ),
                     GestureDetector(
-                      onTap: _result != null ? _showCategoryDetails : null,
+                      onTap: uploadProvider.result != null
+                          ? () => _showCategoryDetails(context, uploadProvider.result!)
+                          : null,
                       child: Icon(
                         Icons.arrow_forward_rounded,
                         size: 20,
@@ -561,7 +686,7 @@ class _UploadWidgetState extends State<UploadWidget> {
                 ],
               ),
             ),
-          if (_selectedImage != null) ...[
+          if (uploadProvider.selectedImage != null) ...[
             SizedBox(height: 40),
             Container(
               width: double.infinity,
@@ -584,22 +709,22 @@ class _UploadWidgetState extends State<UploadWidget> {
                   SizedBox(height: 24),
                   Row(
                     children: [
-                      if (_selectedImage != null)
+                      if (uploadProvider.selectedImage != null)
                         Expanded(
                           child: Container(
                             decoration: BoxDecoration(
                               border: Border.all(color: AppColors.hairline),
                             ),
                             child: Image.file(
-                              _selectedImage!,
+                              uploadProvider.selectedImage!,
                               fit: BoxFit.cover,
                               height: 140,
                             ),
                           ),
                         ),
-                      if (_selectedImage != null &&
-                          _heatmapData != null &&
-                          _heatmapData!.isNotEmpty)
+                      if (uploadProvider.selectedImage != null &&
+                          uploadProvider.heatmapData != null &&
+                          uploadProvider.heatmapData!.isNotEmpty)
                         Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 16),
                           child: Icon(
@@ -607,17 +732,31 @@ class _UploadWidgetState extends State<UploadWidget> {
                             color: AppColors.muted,
                           ),
                         ),
-                      if (_heatmapData != null && _heatmapData!.isNotEmpty)
+                      if (uploadProvider.heatmapData != null &&
+                          uploadProvider.heatmapData!.isNotEmpty)
                         Expanded(
                           child: Container(
                             decoration: BoxDecoration(
                               border: Border.all(color: AppColors.hairline),
                             ),
-                            child: Image.memory(
-                              base64Decode(_heatmapData!),
-                              fit: BoxFit.cover,
-                              height: 140,
-                            ),
+                            child: heatmapBytes == null
+                                ? const SizedBox(
+                                    height: 140,
+                                    child: Center(
+                                      child: Text(
+                                        '热力图数据异常',
+                                        style: TextStyle(
+                                          color: AppColors.muted,
+                                          fontSize: 13,
+                                        ),
+                                      ),
+                                    ),
+                                  )
+                                : Image.memory(
+                                    heatmapBytes,
+                                    fit: BoxFit.cover,
+                                    height: 140,
+                                  ),
                           ),
                         ),
                     ],
@@ -642,13 +781,15 @@ class _UploadWidgetState extends State<UploadWidget> {
                     ),
                   ),
                   SizedBox(height: 24),
-                  if (_top5Classes != null && _predictTop5 != null)
+                  if (top5Classes != null &&
+                      predictTop5 != null &&
+                      probabilityCount > 0)
                     Column(
-                      children: List.generate(_top5Classes!.length, (index) {
+                      children: List.generate(probabilityCount, (index) {
                         return _buildProbabilityItem(
                           index,
-                          _top5Classes![index],
-                          _predictTop5![index],
+                          top5Classes[index],
+                          predictTop5[index],
                         );
                       }),
                     ),
@@ -668,13 +809,13 @@ class _UploadWidgetState extends State<UploadWidget> {
                   ),
                   elevation: 0,
                 ),
-                onPressed: _result == null || _result!.trim().isEmpty
+                onPressed: uploadProvider.result == null || uploadProvider.result!.trim().isEmpty
                     ? null
                     : () {
                         Navigator.pushNamed(
                           context,
                           "/analyze",
-                          arguments: _result!.trim(),
+                          arguments: uploadProvider.result!.trim(),
                         );
                       },
                 child: Text(

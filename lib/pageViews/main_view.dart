@@ -1,23 +1,21 @@
 import 'package:farm_flutter/pageViews/widgets/mainView/farm_news.dart';
 import 'package:farm_flutter/pageViews/widgets/mainView/function_cards.dart';
 import 'package:farm_flutter/pageViews/widgets/mainView/upload_widget.dart';
+import 'package:farm_flutter/providers/user_provider.dart';
+import 'package:farm_flutter/providers/upload_provider.dart';
 import 'package:farm_flutter/utils/app_colors.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
-import '../utils/global.dart';
-
-class MainView extends StatefulWidget {
+class MainView extends StatelessWidget {
   const MainView({super.key});
 
   @override
-  State<MainView> createState() => _MainViewState();
-}
-
-class _MainViewState extends State<MainView> {
-  bool _hasImageSelected = false;
-
-  @override
   Widget build(BuildContext context) {
+    final user = context.watch<UserProvider>();
+    final upload = context.watch<UploadProvider>();
+    final hasImageSelected = upload.selectedImage != null;
+
     return Scaffold(
       backgroundColor: AppColors.canvas,
       appBar: AppBar(
@@ -38,7 +36,7 @@ class _MainViewState extends State<MainView> {
             Padding(
               padding: const EdgeInsets.only(bottom: 6.0),
               child: Text(
-                Global.user.nickName,
+                user.nickName,
                 style: TextStyle(
                   color: AppColors.muted,
                   fontSize: 15,
@@ -87,18 +85,12 @@ class _MainViewState extends State<MainView> {
                 ),
                 const SizedBox(height: 24),
 
-                UploadWidget(
-                  onImageSelected: () {
-                    setState(() {
-                      _hasImageSelected = true;
-                    });
-                  },
-                ),
+                UploadWidget(),
               ],
             ),
           ),
 
-          if (!_hasImageSelected) ...[
+          if (!hasImageSelected) ...[
             // 2. 更多工具版块
             Container(
               padding: const EdgeInsets.only(left: 24, right: 24, top: 16),
