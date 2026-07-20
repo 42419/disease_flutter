@@ -123,11 +123,11 @@ class UploadWidget extends StatelessWidget {
     );
   }
 
-  void _showPickOptions(BuildContext context) {
+  void _showPickOptions(BuildContext parentContext) {
     showModalBottomSheet(
-      context: context,
+      context: parentContext,
       backgroundColor: Colors.transparent,
-      builder: (context) => SafeArea(
+      builder: (sheetContext) => SafeArea(
         child: Container(
           margin: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
           decoration: BoxDecoration(
@@ -172,8 +172,8 @@ class UploadWidget extends StatelessWidget {
                 title: "拍照上传",
                 subtitle: "使用相机拍摄照片",
                 onTap: () {
-                  Navigator.pop(context);
-                  _pickImage(context, ImageSource.camera);
+                  Navigator.pop(sheetContext);
+                  _pickImage(parentContext, ImageSource.camera);
                 },
               ),
 
@@ -191,8 +191,8 @@ class UploadWidget extends StatelessWidget {
                 title: "从相册选择",
                 subtitle: "从图库中选择已有照片",
                 onTap: () {
-                  Navigator.pop(context);
-                  _pickImage(context, ImageSource.gallery);
+                  Navigator.pop(sheetContext);
+                  _pickImage(parentContext, ImageSource.gallery);
                 },
               ),
 
@@ -200,7 +200,7 @@ class UploadWidget extends StatelessWidget {
               Padding(
                 padding: EdgeInsets.all(16),
                 child: TextButton(
-                  onPressed: () => Navigator.pop(context),
+                  onPressed: () => Navigator.pop(sheetContext),
                   child: Text(
                     "取消",
                     style: TextStyle(
@@ -282,17 +282,33 @@ class UploadWidget extends StatelessWidget {
 
   Future<void> _pickImage(BuildContext context, ImageSource source) async {
     final uploadProvider = context.read<UploadProvider>();
-    if (uploadProvider.isUploading) return;
+    if (uploadProvider.isUploading) {
+      uploadProvider.setUploading(false);
+    }
 
-    final picker = ImagePicker();
-    final pickedFile = await picker.pickImage(source: source, imageQuality: 80);
-    if (!context.mounted) return;
-    if (pickedFile != null) {
-      uploadProvider.setImage(
-        File(pickedFile.path),
-        pickedFile.name,
+    try {
+      final picker = ImagePicker();
+      final pickedFile = await picker.pickImage(source: source, imageQuality: 80);
+      if (!context.mounted) return;
+      if (pickedFile != null) {
+        debugPrint('图片选择成功: ${pickedFile.path}');
+        uploadProvider.setImage(
+          File(pickedFile.path),
+          pickedFile.name,
+        );
+        await _uploadImage(context);
+      }
+    } catch (e) {
+      debugPrint('图片选择异常: $e');
+      if (!context.mounted) return;
+      uploadProvider.setUploading(false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text("选择图片失败: $e"),
+          backgroundColor: AppColors.danger,
+          duration: Duration(seconds: 3),
+        ),
       );
-      await _uploadImage(context);
     }
   }
 
@@ -304,14 +320,18 @@ class UploadWidget extends StatelessWidget {
 
     uploadProvider.setUploading(true);
 
-    final adcode = await _resolveAdcode(context);
-    uploadProvider.setAdcode(adcode ?? '');
-    if (!context.mounted) {
-      uploadProvider.setUploading(false);
-      return;
-    }
-
     try {
+      String? adcode;
+      try {
+        adcode = await _resolveAdcode(context);
+      } catch (e) {
+        debugPrint('定位解析异常: $e');
+      }
+      uploadProvider.setAdcode(adcode ?? '');
+      if (!context.mounted) {
+        return;
+      }
+
       HttpUtil.init(baseUrl: Config.baseUrl);
 
       final headers = {"X-API-Token": Config.apiToken};
