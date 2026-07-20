@@ -1,0 +1,15 @@
+class Config {
+  // 识别接口
+  static const String baseUrl = 'http://your-server.com';
+  static const String apiToken = 'your-api-token';
+
+  // coze智能体接口
+  static const String cozeUrl = 'https://api.coze.cn/v3/chat?';
+  static const String botId = 'your-bot-id';
+  static const String userId = 'your-user-id';
+  static const String cozeToken = 'Bearer your-coze-pat';
+
+  // 高德地图Web API
+  static const String amapBaseUrl = 'https://restapi.amap.com';
+  static const String amapKey = 'your-amap-key';
+}
