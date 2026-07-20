@@ -242,9 +242,6 @@ class _MineViewState extends State<MineView> with AutomaticKeepAliveClientMixin 
           // 3. 第三版块：系统与偏好
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
-            decoration: BoxDecoration(
-              color: AppColors.canvas,
-            ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
