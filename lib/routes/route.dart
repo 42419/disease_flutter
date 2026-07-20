@@ -24,7 +24,7 @@ Widget getRootWidget() {
       ChangeNotifierProvider(create: (_) => MainNavigationProvider()),
     ],
     child: MaterialApp(
-      initialRoute: "/admin_main",
+      initialRoute: "/init",
       routes: _getRoutes(),
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
