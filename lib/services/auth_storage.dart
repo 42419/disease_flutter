@@ -55,8 +55,18 @@ class AuthStorage {
     final prefs = await SharedPreferences.getInstance();
     final rememberMe = prefs.getBool(_rememberKey) ?? false;
     final username = prefs.getString(_usernameKey) ?? '';
-    final role = prefs.getString(_roleKey) ?? '1';
-    final password = await _secureStore.read(key: _passwordKey) ?? '';
+    final role = prefs.getString(_roleKey) ?? '0';
+    String password = '';
+    try {
+      password = await _secureStore.read(key: _passwordKey) ?? '';
+    } catch (e) {
+      // Secure storage may fail on keystore corruption / backup restore.
+      // Clear the bad entry and treat as no saved password.
+      try {
+        await _secureStore.delete(key: _passwordKey);
+      } catch (_) {}
+      password = '';
+    }
 
     return SavedCredentials(
       rememberMe: rememberMe,

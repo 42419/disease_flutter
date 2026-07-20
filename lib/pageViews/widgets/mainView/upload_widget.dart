@@ -12,8 +12,15 @@ import 'package:farm_flutter/utils/app_colors.dart';
 import 'package:farm_flutter/utils/http_util.dart';
 import 'package:provider/provider.dart';
 
-class UploadWidget extends StatelessWidget {
+class UploadWidget extends StatefulWidget {
   const UploadWidget({super.key});
+
+  @override
+  State<UploadWidget> createState() => _UploadWidgetState();
+}
+
+class _UploadWidgetState extends State<UploadWidget> {
+  int _uploadGeneration = 0;
 
   void _showCategoryDetails(BuildContext context, String result) {
     showDialog(
@@ -300,8 +307,8 @@ class UploadWidget extends StatelessWidget {
       }
     } catch (e) {
       debugPrint('图片选择异常: $e');
-      if (!context.mounted) return;
       uploadProvider.setUploading(false);
+      if (!context.mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text("选择图片失败: $e"),
@@ -318,6 +325,7 @@ class UploadWidget extends StatelessWidget {
     final imagePath = uploadProvider.selectedImage?.path;
     if (imagePath == null) return;
 
+    final generation = ++_uploadGeneration;
     uploadProvider.setUploading(true);
 
     try {
@@ -328,7 +336,7 @@ class UploadWidget extends StatelessWidget {
         debugPrint('定位解析异常: $e');
       }
       uploadProvider.setAdcode(adcode ?? '');
-      if (!context.mounted) {
+      if (!context.mounted || generation != _uploadGeneration) {
         return;
       }
 
@@ -343,6 +351,8 @@ class UploadWidget extends StatelessWidget {
         fileField: "image",
       );
 
+      if (generation != _uploadGeneration) return;
+
       final result = PredictionResult.fromResponse(response);
       uploadProvider.setResult(
         result: result.result,
@@ -351,6 +361,7 @@ class UploadWidget extends StatelessWidget {
         predictTop5: result.predictTop5,
       );
     } catch (e) {
+      if (generation != _uploadGeneration) return;
       uploadProvider.setError("上传失败: $e");
     }
   }
@@ -634,7 +645,7 @@ class UploadWidget extends StatelessWidget {
           ),
 
           // 类别选择框 - inline editorial style
-          if (uploadProvider.isUploading || uploadProvider.result != null)
+          if (uploadProvider.isUploading || uploadProvider.result != null || uploadProvider.errorMessage != null)
             Container(
               margin: EdgeInsets.only(top: 24),
               padding: EdgeInsets.symmetric(horizontal: 16, vertical: 16),
@@ -664,6 +675,31 @@ class UploadWidget extends StatelessWidget {
                       child: CircularProgressIndicator(
                         strokeWidth: 2,
                         color: AppColors.ink,
+                      ),
+                    ),
+                  ] else if (uploadProvider.errorMessage != null) ...[
+                    Expanded(
+                      child: Text.rich(
+                        TextSpan(
+                          text: "识别失败   ",
+                          style: TextStyle(
+                            fontFamily: "serif",
+                            fontSize: 16,
+                            color: AppColors.danger,
+                          ),
+                          children: [
+                            TextSpan(
+                              text: uploadProvider.errorMessage!,
+                              style: TextStyle(
+                                fontFamily: "serif",
+                                fontSize: 14,
+                                color: AppColors.textSecondary,
+                              ),
+                            ),
+                          ],
+                        ),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
                       ),
                     ),
                   ] else ...[

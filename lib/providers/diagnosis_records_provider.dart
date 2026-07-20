@@ -71,6 +71,20 @@ class DiagnosisRecordsProvider extends ChangeNotifier {
     _refreshTimer = null;
   }
 
+  /// 清空所有状态（退出登录时调用）。
+  void clear() {
+    stopTimer();
+    _records = [];
+    _stats = [];
+    _errorMessage = null;
+    _expandedId = null;
+    _cachedRole = null;
+    _cachedNickName = null;
+    _lastFetchTime = null;
+    _isLoading = true;
+    notifyListeners();
+  }
+
   /// 立即刷新（App 恢复前台时调用），仅在数据过期时实际请求。
   void refreshIfStale() {
     if (isStale && _cachedRole != null && _cachedNickName != null) {
@@ -94,20 +108,20 @@ class DiagnosisRecordsProvider extends ChangeNotifier {
 
   static DateTime _parseDtime(String dtime) {
     try {
-      return DateTime.parse(dtime);
+      return DateTime.parse(dtime).toLocal();
     } catch (_) {
       final months = {'Jan': 1, 'Feb': 2, 'Mar': 3, 'Apr': 4, 'May': 5, 'Jun': 6, 'Jul': 7, 'Aug': 8, 'Sep': 9, 'Oct': 10, 'Nov': 11, 'Dec': 12};
       final regex = RegExp(r'\w+,\s+(\d{1,2})\s+(\w{3})\s+(\d{4})\s+(\d{2}):(\d{2}):(\d{2})');
       final match = regex.firstMatch(dtime);
       if (match != null) {
-        return DateTime(
+        return DateTime.utc(
           int.tryParse(match.group(3)!) ?? 2000,
           months[match.group(2)!] ?? 1,
           int.tryParse(match.group(1)!) ?? 1,
           int.tryParse(match.group(4)!) ?? 0,
           int.tryParse(match.group(5)!) ?? 0,
           int.tryParse(match.group(6)!) ?? 0,
-        );
+        ).toLocal();
       }
       return DateTime(2000);
     }

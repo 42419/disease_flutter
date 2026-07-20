@@ -87,6 +87,7 @@ class AdminMapViewState extends State<AdminMapView> {
   @override
   void dispose() {
     _cameraBounceTimer?.cancel();
+    _mapController.dispose();
     _hitNotifier.dispose();
     super.dispose();
   }
@@ -382,7 +383,7 @@ class AdminMapViewState extends State<AdminMapView> {
     final camera = _mapController.camera;
     final vc = camera.center;
     final z = camera.zoom;
-    final halfLat = 360 / z.clamp(5, 18);
+    final halfLat = 360 / (1 << z.clamp(5, 18).toInt());
     final halfLng = halfLat * 1.6;
 
     final latMargin = ((bounds.north - bounds.south) * 0.35).clamp(0.08, 0.32);
@@ -423,12 +424,13 @@ class AdminMapViewState extends State<AdminMapView> {
               c.longitude - popupHalfLng > avoidEast);
       final overlapPenalty = (overlapLat && overlapLng) ? 5.0 : 0.0;
 
+      // Prefer candidates closer to region center (subtract distance, not add)
       final distanceFromCenter =
           (c.latitude - region.center.latitude).abs() +
           (c.longitude - region.center.longitude).abs();
       final centerPreference = 0.8 - (latRatio.abs() + lngRatio.abs()) * 0.35;
       final score =
-          (distanceFromCenter * 3.2) +
+          -(distanceFromCenter * 3.2) +
           centerPreference -
           edgePenalty -
           overlapPenalty;
@@ -651,6 +653,7 @@ class AdminMapViewState extends State<AdminMapView> {
                     if (_selectedRegionId == null) return;
                     setState(() {
                       _selectedRegionId = null;
+                      _rebuildCache();
                     });
                   },
                 ),

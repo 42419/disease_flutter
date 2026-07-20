@@ -31,21 +31,28 @@ class _DiseaseAnalyzeWidgetState extends State<DiseaseAnalyzeWidget> {
   @override
   void initState() {
     super.initState();
-    if (widget.initialDiseaseName.isEmpty ||
-        widget.initialDiseaseName == 'null') {
-      // Show input mode
-    } else {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        final user = context.read<UserProvider>();
-        final upload = context.read<UploadProvider>();
-        context.read<DiseaseAnalyzeProvider>().init(
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      final user = context.read<UserProvider>();
+      final upload = context.read<UploadProvider>();
+      final provider = context.read<DiseaseAnalyzeProvider>();
+      if (widget.initialDiseaseName.isEmpty ||
+          widget.initialDiseaseName == 'null') {
+        provider.init(
+          '',
+          uploadImageName: upload.uploadImageName,
+          nickName: user.nickName,
+          amapAdcode: upload.amapAdcode,
+        );
+      } else {
+        provider.init(
           widget.initialDiseaseName,
           uploadImageName: upload.uploadImageName,
           nickName: user.nickName,
           amapAdcode: upload.amapAdcode,
         );
-      });
-    }
+      }
+    });
   }
 
   @override

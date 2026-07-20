@@ -83,6 +83,7 @@ class DiseaseAnalyzeProvider extends ChangeNotifier {
     if (_disposed) return;
     _cancelToken?.cancel('restart');
     _cancelToken = CancelToken();
+    _typewriterTimer?.cancel();
 
     _isLoading = true;
     _hasError = false;
@@ -98,8 +99,9 @@ class DiseaseAnalyzeProvider extends ChangeNotifier {
     isTypingNotifier.value = false;
     _lastStreamUiUpdateMs = 0;
 
+    Dio? client;
     try {
-      final response = await HttpUtil.postStream(
+      final (response, dioClient) = await HttpUtil.postStream(
         Config.cozeUrl,
         {
           'bot_id': Config.botId,
@@ -110,45 +112,47 @@ class DiseaseAnalyzeProvider extends ChangeNotifier {
           ],
         },
         headers: {'Authorization': Config.cozeToken},
+        cancelToken: _cancelToken,
       );
+      client = dioClient;
 
-      if (_disposed) return;
+      if (_disposed) {
+        client.close();
+        return;
+      }
 
       final stream = response.data!.stream;
       final deltaBuffer = StringBuffer();
-      String lineBuffer = '';
       String currentEvent = '';
       int processedLines = 0;
 
-      await for (final chunk in stream) {
+      // Use utf8.decoder transform to correctly handle multi-byte characters
+      // crossing chunk boundaries (e.g. Chinese characters split across SSE chunks).
+      await for (final line in stream.cast<List<int>>().transform(utf8.decoder).transform(const LineSplitter())) {
         if (_disposed) return;
-        lineBuffer += utf8.decode(chunk, allowMalformed: true);
-        while (lineBuffer.contains('\n')) {
-          final idx = lineBuffer.indexOf('\n');
-          final line = lineBuffer.substring(0, idx).trim();
-          lineBuffer = lineBuffer.substring(idx + 1);
+        final trimmed = line.trim();
+        if (trimmed.isEmpty) continue;
 
-          if (line.startsWith('event:')) {
-            currentEvent = line.substring(6).trim();
-          } else if (line.startsWith('data:')) {
-            final dataStr = line.substring(5).trim();
-            if (dataStr == '[DONE]') continue;
-            try {
-              final json = jsonDecode(dataStr) as Map<String, dynamic>;
-              if (json['type'] == 'answer') {
-                final content = json['content']?.toString() ?? '';
-                if (currentEvent == 'conversation.message.delta') {
-                  deltaBuffer.write(content);
-                  _pushStreamingText(deltaBuffer.toString());
-                }
+        if (trimmed.startsWith('event:')) {
+          currentEvent = trimmed.substring(6).trim();
+        } else if (trimmed.startsWith('data:')) {
+          final dataStr = trimmed.substring(5).trim();
+          if (dataStr == '[DONE]') continue;
+          try {
+            final json = jsonDecode(dataStr) as Map<String, dynamic>;
+            if (json['type'] == 'answer') {
+              final content = json['content']?.toString() ?? '';
+              if (currentEvent == 'conversation.message.delta') {
+                deltaBuffer.write(content);
+                _pushStreamingText(deltaBuffer.toString());
               }
-            } catch (_) {}
-          }
+            }
+          } catch (_) {}
+        }
 
-          processedLines++;
-          if (processedLines % _streamYieldEveryLines == 0) {
-            await Future<void>.delayed(Duration.zero);
-          }
+        processedLines++;
+        if (processedLines % _streamYieldEveryLines == 0) {
+          await Future<void>.delayed(Duration.zero);
         }
       }
 
@@ -167,6 +171,7 @@ class DiseaseAnalyzeProvider extends ChangeNotifier {
       }
     } on DioException catch (e) {
       if (_disposed) return;
+      if (_cancelToken?.isCancelled == true) return;
       debugPrint('[DIO ERROR] ${e.type} | ${e.message} | ${e.response?.data}');
       _isLoading = false;
       _hasError = true;
@@ -178,6 +183,8 @@ class DiseaseAnalyzeProvider extends ChangeNotifier {
       _hasError = true;
       _errorMessage = e.toString();
       notifyListeners();
+    } finally {
+      client?.close();
     }
   }
 

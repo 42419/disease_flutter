@@ -21,7 +21,8 @@ class _DiseaseAnalyzePageState extends State<DiseaseAnalyzePage> {
 
   @override
   Widget build(BuildContext context) {
-    final args = ModalRoute.of(context)?.settings.arguments?.toString() ?? '';
+    var args = ModalRoute.of(context)?.settings.arguments?.toString() ?? '';
+    if (args == 'null') args = '';
 
     return Scaffold(
       backgroundColor: AppColors.canvas,

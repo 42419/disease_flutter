@@ -43,6 +43,8 @@ class _MainPageState extends State<MainPage> with WidgetsBindingObserver {
     final provider = context.read<DiagnosisRecordsProvider>();
     if (state == AppLifecycleState.resumed) {
       provider.refreshIfStale();
+      final user = context.read<UserProvider>();
+      provider.startTimer(role: user.role, nickName: user.nickName);
     } else if (state == AppLifecycleState.paused) {
       provider.stopTimer();
     }

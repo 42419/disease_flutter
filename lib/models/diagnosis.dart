@@ -21,7 +21,7 @@ class Diagnosis {
 
   factory Diagnosis.fromJson(Map<String, dynamic> json) {
     return Diagnosis(
-      id: json['id'] ?? 0,
+      id: int.tryParse(json['id']?.toString() ?? '') ?? 0,
       imgname: json['imgname']?.toString() ?? '',
       bhname: json['bhname']?.toString() ?? '',
       bhreason: json['bhreason']?.toString() ?? '',
@@ -35,7 +35,7 @@ class Diagnosis {
   String get formattedTime {
     DateTime? parsed;
     try {
-      parsed = DateTime.parse(dtime);
+      parsed = DateTime.parse(dtime).toLocal();
     } catch (_) {
       // Try parsing RFC 1123 format like "Fri, 08 May 2026 15:47:30 GMT"
       final months = {'Jan': 1, 'Feb': 2, 'Mar': 3, 'Apr': 4, 'May': 5, 'Jun': 6, 'Jul': 7, 'Aug': 8, 'Sep': 9, 'Oct': 10, 'Nov': 11, 'Dec': 12};
@@ -48,9 +48,8 @@ class Diagnosis {
         final hour = int.tryParse(match.group(4)!) ?? 0;
         final min = int.tryParse(match.group(5)!) ?? 0;
         final sec = int.tryParse(match.group(6)!) ?? 0;
-        // The date is typically in GMT, convert if you need local time.
-        // For simplicity, we create it in local or keep as is.
-        parsed = DateTime(year, month, day, hour, min, sec);
+        // The date is in GMT (as stated in the format), convert to local time.
+        parsed = DateTime.utc(year, month, day, hour, min, sec).toLocal();
       }
     }
 

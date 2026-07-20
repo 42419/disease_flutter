@@ -1,4 +1,5 @@
 import 'package:farm_flutter/providers/diagnosis_records_provider.dart';
+import 'package:farm_flutter/providers/upload_provider.dart';
 import 'package:farm_flutter/providers/user_provider.dart';
 import 'package:farm_flutter/providers/main_navigation_provider.dart';
 import 'package:farm_flutter/services/auth_storage.dart';
@@ -305,6 +306,9 @@ class _MineViewState extends State<MineView> with AutomaticKeepAliveClientMixin 
                     onPressed: () async {
                       await _authStorage.clearCredentials();
                       if (!mounted) return;
+                      context.read<DiagnosisRecordsProvider>().stopTimer();
+                      context.read<DiagnosisRecordsProvider>().clear();
+                      context.read<UploadProvider>().reset();
                       context.read<UserProvider>().clear();
                       context.read<MainNavigationProvider>().setCurrentIndex(0);
                       Navigator.pushNamedAndRemoveUntil(

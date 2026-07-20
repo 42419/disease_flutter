@@ -67,6 +67,7 @@ class DiseaseStatsService {
 
   /// 计算指定区域的病害总数。
   int regionTotalCount(GeoRegion region, {required bool showDistrictLayer}) {
+    if (!region.id.startsWith(RegExp(r'^\d{4,6}$'))) return 0;
     final isCityLevel = !showDistrictLayer;
     final prefix = isCityLevel ? region.id.substring(0, 4) : region.id;
     int total = 0;
@@ -83,6 +84,7 @@ class DiseaseStatsService {
     String regionId, {
     required bool showDistrictLayer,
   }) {
+    if (!regionId.startsWith(RegExp(r'^\d{4,6}$'))) return [];
     final merged = <String, int>{};
     final isCityLevel = !showDistrictLayer;
     final prefix = isCityLevel ? regionId.substring(0, 4) : regionId;

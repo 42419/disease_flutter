@@ -125,7 +125,7 @@ class _LoginPageState extends State<LoginPage> {
         if (!mounted) return;
         context.read<UserProvider>().login(
           response["username"] ?? _usernameController.text,
-          _selectedRole ?? "1",
+          _selectedRole ?? "0",
         );
         HttpUtil.init(baseUrl: Config.baseUrl);
 
@@ -133,7 +133,7 @@ class _LoginPageState extends State<LoginPage> {
           rememberMe: _rememberMe,
           username: _usernameController.text,
           password: _passwordController.text,
-          role: _selectedRole ?? "1",
+          role: _selectedRole ?? "0",
         );
 
         if (!mounted) return;

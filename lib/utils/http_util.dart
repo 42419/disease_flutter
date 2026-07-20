@@ -62,13 +62,14 @@ class HttpUtil {
     }
   }
 
-  /// 流式请求：不自动关闭 client，调用方消费完流后由 client GC 回收。
-  /// 若在 finally 中关闭 client，可能导致 ResponseBody.stream 被截断。
-  static Future<Response<ResponseBody>> postStream(
+  /// 流式请求，返回 (response, dioClient)。
+  /// 调用方消费完流后**必须**调用 dioClient.close() 释放连接。
+  static Future<(Response<ResponseBody> response, Dio dioClient)> postStream(
       String url,
       Map data, {
         Map<String, String>? headers,
         String? baseUrl,
+        CancelToken? cancelToken,
       }) async {
     final client = _buildClient(baseUrl: baseUrl, headers: headers);
     try {
@@ -76,19 +77,18 @@ class HttpUtil {
         url,
         data: data,
         options: Options(responseType: ResponseType.stream),
+        cancelToken: cancelToken,
       );
       final statusCode = response.statusCode;
       if (statusCode == null || statusCode < 200 || statusCode >= 300) {
         client.close(force: true);
         throw Exception("请求失败: $statusCode");
       }
-      return response;
+      return (response, client);
     } on DioException {
       client.close(force: true);
       rethrow;
     }
-    // 注意：成功时不关闭 client，让 stream 正常消费。
-    // Dio client 会在 GC 时自动回收连接。
   }
 
   static Future<Map<String, dynamic>> postFile(

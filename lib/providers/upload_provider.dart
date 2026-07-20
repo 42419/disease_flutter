@@ -6,6 +6,7 @@ class UploadProvider extends ChangeNotifier {
   File? _selectedImage;
   bool _isUploading = false;
   String? _result;
+  String? _errorMessage;
   String? _heatmapData;
   List<String>? _top5Classes;
   List<double>? _predictTop5;
@@ -15,6 +16,7 @@ class UploadProvider extends ChangeNotifier {
   File? get selectedImage => _selectedImage;
   bool get isUploading => _isUploading;
   String? get result => _result;
+  String? get errorMessage => _errorMessage;
   String? get heatmapData => _heatmapData;
   List<String>? get top5Classes => _top5Classes;
   List<double>? get predictTop5 => _predictTop5;
@@ -24,7 +26,10 @@ class UploadProvider extends ChangeNotifier {
   void setImage(File file, String name) {
     _selectedImage = file;
     _result = null;
+    _errorMessage = null;
     _heatmapData = null;
+    _top5Classes = null;
+    _predictTop5 = null;
     _uploadImageName = name;
     notifyListeners();
   }
@@ -42,6 +47,7 @@ class UploadProvider extends ChangeNotifier {
   }) {
     _isUploading = false;
     _result = result;
+    _errorMessage = null;
     _heatmapData = heatmapData;
     _top5Classes = top5Classes;
     _predictTop5 = predictTop5;
@@ -50,7 +56,7 @@ class UploadProvider extends ChangeNotifier {
 
   void setError(String message) {
     _isUploading = false;
-    _result = message;
+    _errorMessage = message;
     notifyListeners();
   }
 
@@ -63,6 +69,7 @@ class UploadProvider extends ChangeNotifier {
     _selectedImage = null;
     _isUploading = false;
     _result = null;
+    _errorMessage = null;
     _heatmapData = null;
     _top5Classes = null;
     _predictTop5 = null;
