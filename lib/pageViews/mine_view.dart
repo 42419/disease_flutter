@@ -1,4 +1,5 @@
 import 'package:farm_flutter/providers/diagnosis_records_provider.dart';
+import 'package:farm_flutter/providers/disease_analyze_provider.dart';
 import 'package:farm_flutter/providers/upload_provider.dart';
 import 'package:farm_flutter/providers/user_provider.dart';
 import 'package:farm_flutter/providers/main_navigation_provider.dart';
@@ -304,17 +305,25 @@ class _MineViewState extends State<MineView> with AutomaticKeepAliveClientMixin 
                       ),
                     ),
                     onPressed: () async {
-                      await _authStorage.clearCredentials();
+                      // 先缓存 provider 引用，避免 await 后 context 可能失效
+                      final authStorage = _authStorage;
+                      final recordsProvider = context.read<DiagnosisRecordsProvider>();
+                      final analyzeProvider = context.read<DiseaseAnalyzeProvider>();
+                      final uploadProvider = context.read<UploadProvider>();
+                      final userProvider = context.read<UserProvider>();
+                      final navProvider = context.read<MainNavigationProvider>();
+                      final nav = Navigator.of(context);
+                      await authStorage.clearCredentials();
                       if (!mounted) return;
-                      context.read<DiagnosisRecordsProvider>().stopTimer();
-                      context.read<DiagnosisRecordsProvider>().clear();
-                      context.read<UploadProvider>().reset();
-                      context.read<UserProvider>().clear();
-                      context.read<MainNavigationProvider>().setCurrentIndex(0);
-                      Navigator.pushNamedAndRemoveUntil(
-                        context,
+                      analyzeProvider.reset();
+                      recordsProvider.stopTimer();
+                      recordsProvider.clear();
+                      uploadProvider.reset();
+                      userProvider.clear();
+                      navProvider.setCurrentIndex(0);
+                      nav.pushNamedAndRemoveUntil(
                         "/login",
-                        (context) => false,
+                        (route) => false,
                       );
                     },
                     child: Text(

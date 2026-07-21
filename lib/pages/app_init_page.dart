@@ -1,6 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:farm_flutter/config/config.dart';
 import 'package:farm_flutter/utils/app_colors.dart';
+import 'package:farm_flutter/utils/response_util.dart';
 import 'package:farm_flutter/providers/user_provider.dart';
 import 'package:farm_flutter/utils/http_util.dart';
 import 'package:farm_flutter/services/auth_storage.dart';
@@ -34,7 +35,7 @@ class _AppInitPageState extends State<AppInitPage> {
     }
 
     try {
-      final response = await HttpUtil.post(
+      final rawResponse = await HttpUtil.post(
         "/login",
         {
           "username": credentials.username,
@@ -46,13 +47,15 @@ class _AppInitPageState extends State<AppInitPage> {
 
       if (!mounted) return;
 
-      if (response["msg"] == "success") {
+      final response = ResponseUtil.asMap(rawResponse);
+      if (response != null && ResponseUtil.isLoginSuccess(response)) {
+        final resolvedRole = ResponseUtil.resolveRole(response, credentials.role);
         context.read<UserProvider>().login(
-          response["username"] ?? credentials.username,
-          credentials.role,
+          response['username']?.toString() ?? credentials.username,
+          resolvedRole,
         );
         HttpUtil.init(baseUrl: Config.baseUrl);
-        _goTo(context.read<UserProvider>().isAdmin ? "/admin_main" : "/main");
+        _goTo(resolvedRole == '1' ? "/admin_main" : "/main");
       } else {
         _goTo('/login');
       }

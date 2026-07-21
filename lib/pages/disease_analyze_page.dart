@@ -1,7 +1,9 @@
 import 'package:farm_flutter/pages/widgets/analyzePage/disease_analyze_widget.dart';
 import 'package:farm_flutter/pages/widgets/ai_analysis_card.dart';
+import 'package:farm_flutter/providers/disease_analyze_provider.dart';
 import 'package:farm_flutter/utils/app_colors.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 class DiseaseAnalyzePage extends StatefulWidget {
   const DiseaseAnalyzePage({super.key});
@@ -36,7 +38,13 @@ class _DiseaseAnalyzePageState extends State<DiseaseAnalyzePage> {
             Icons.arrow_back_ios_new,
             color: AppColors.ink,
           ),
-          onPressed: () => Navigator.pop(context),
+          onPressed: () {
+            // 离开分析页时取消进行中的 SSE 请求和打字机动画
+            if (context.mounted) {
+              context.read<DiseaseAnalyzeProvider>().cancelPendingRequest();
+            }
+            Navigator.pop(context);
+          },
         ),
         title: const Text(
           '智能病因分析',

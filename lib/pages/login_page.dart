@@ -1,6 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:farm_flutter/config/config.dart';
 import 'package:farm_flutter/utils/http_util.dart';
+import 'package:farm_flutter/utils/response_util.dart';
 import 'package:farm_flutter/providers/user_provider.dart';
 import 'package:farm_flutter/services/auth_storage.dart';
 import 'package:farm_flutter/utils/app_colors.dart';
@@ -111,7 +112,7 @@ class _LoginPageState extends State<LoginPage> {
     );
 
     try {
-      final response = await HttpUtil.post(
+      final rawResponse = await HttpUtil.post(
         "/login",
         {
           "username": _usernameController.text,
@@ -121,54 +122,54 @@ class _LoginPageState extends State<LoginPage> {
         headers: {"X-API-Token": Config.apiToken},
       );
       if (mounted) Navigator.pop(context);
-      if (response["msg"] == "success") {
-        if (!mounted) return;
-        context.read<UserProvider>().login(
-          response["username"] ?? _usernameController.text,
-          _selectedRole ?? "0",
-        );
-        HttpUtil.init(baseUrl: Config.baseUrl);
 
-        await _authStorage.saveCredentials(
-          rememberMe: _rememberMe,
-          username: _usernameController.text,
-          password: _passwordController.text,
-          role: _selectedRole ?? "0",
-        );
-
-        if (!mounted) return;
-
-        ScaffoldMessenger.of(context).clearSnackBars();
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              "登录成功, 欢迎 ${response["username"] ?? _usernameController.text}",
-            ),
-            backgroundColor: AppColors.success,
-            duration: const Duration(milliseconds: 500),
-          ),
-        );
-
-        if (context.read<UserProvider>().isAdmin) {
-          Navigator.pushNamedAndRemoveUntil(
-            context,
-            "/admin_main",
-            (route) => false,
-          );
-        } else {
-          Navigator.pushNamedAndRemoveUntil(context, "/main", (route) => false);
-        }
-      } else {
+      final response = ResponseUtil.asMap(rawResponse);
+      if (response == null || !ResponseUtil.isLoginSuccess(response)) {
         if (!mounted) return;
         setState(() => _isLoggingIn = false);
+        final msg = response?['msg']?.toString() ?? '响应格式异常';
         ScaffoldMessenger.of(context).clearSnackBars();
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text("登录失败，${response["msg"]}"),
+            content: Text("登录失败，$msg"),
             backgroundColor: AppColors.error,
           ),
         );
+        return;
       }
+
+      // 优先使用服务端返回的角色，避免客户端自选绕过权限
+      final resolvedRole = ResponseUtil.resolveRole(response, _selectedRole);
+      final resolvedName = response['username']?.toString() ?? _usernameController.text;
+
+      if (!mounted) return;
+      context.read<UserProvider>().login(resolvedName, resolvedRole);
+      HttpUtil.init(baseUrl: Config.baseUrl);
+
+      await _authStorage.saveCredentials(
+        rememberMe: _rememberMe,
+        username: _usernameController.text,
+        password: _passwordController.text,
+        role: resolvedRole,
+      );
+
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).clearSnackBars();
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text("登录成功, 欢迎 $resolvedName"),
+          backgroundColor: AppColors.success,
+          duration: const Duration(milliseconds: 500),
+        ),
+      );
+
+      final isAdmin = resolvedRole == '1';
+      Navigator.pushNamedAndRemoveUntil(
+        context,
+        isAdmin ? "/admin_main" : "/main",
+        (route) => false,
+      );
     } on DioException catch (e) {
       debugPrint("DioException: ${e.type}, ${e.message}, ${e.error}");
       if (!mounted) return;

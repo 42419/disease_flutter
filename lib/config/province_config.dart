@@ -6,6 +6,8 @@ class ProvinceConfig {
   final String cityGeoJsonPath;
   final String districtGeoJsonPath;
   final LatLng center;
+  /// 行政区划 adcode 前缀（辽宁 21、河南 41），用于过滤全国接口中的外省数据。
+  final String adcodePrefix;
   final double initialZoom;
   final double districtLabelZoom;
   final double districtDetailZoom;
@@ -17,6 +19,7 @@ class ProvinceConfig {
     required this.cityGeoJsonPath,
     required this.districtGeoJsonPath,
     required this.center,
+    required this.adcodePrefix,
     this.initialZoom = 6.8,
     this.districtLabelZoom = 8.1,
     this.districtDetailZoom = 9.6,
@@ -37,6 +40,7 @@ class Provinces {
     cityGeoJsonPath: 'assets/geojson/河南省_市.geojson',
     districtGeoJsonPath: 'assets/geojson/河南省_县区.geojson',
     center: LatLng(34.0, 113.0),
+    adcodePrefix: '41',
   );
 
   static const liaoning = ProvinceConfig(
@@ -44,6 +48,7 @@ class Provinces {
     cityGeoJsonPath: 'assets/geojson/辽宁省_市.geojson',
     districtGeoJsonPath: 'assets/geojson/辽宁省_县区.geojson',
     center: LatLng(41.3, 123.0),
+    adcodePrefix: '21',
     initialZoom: 7.0,
     districtLabelZoom: 7.2,
   );

@@ -1,3 +1,5 @@
+import 'package:farm_flutter/utils/datetime_util.dart';
+
 class Diagnosis {
   final int id;
   final String imgname;
@@ -32,32 +34,5 @@ class Diagnosis {
     );
   }
 
-  String get formattedTime {
-    DateTime? parsed;
-    try {
-      parsed = DateTime.parse(dtime).toLocal();
-    } catch (_) {
-      // Try parsing RFC 1123 format like "Fri, 08 May 2026 15:47:30 GMT"
-      final months = {'Jan': 1, 'Feb': 2, 'Mar': 3, 'Apr': 4, 'May': 5, 'Jun': 6, 'Jul': 7, 'Aug': 8, 'Sep': 9, 'Oct': 10, 'Nov': 11, 'Dec': 12};
-      final regex = RegExp(r'\w+,\s+(\d{1,2})\s+(\w{3})\s+(\d{4})\s+(\d{2}):(\d{2}):(\d{2})');
-      final match = regex.firstMatch(dtime);
-      if (match != null) {
-        final day = int.tryParse(match.group(1)!) ?? 1;
-        final month = months[match.group(2)!] ?? 1;
-        final year = int.tryParse(match.group(3)!) ?? 2000;
-        final hour = int.tryParse(match.group(4)!) ?? 0;
-        final min = int.tryParse(match.group(5)!) ?? 0;
-        final sec = int.tryParse(match.group(6)!) ?? 0;
-        // The date is in GMT (as stated in the format), convert to local time.
-        parsed = DateTime.utc(year, month, day, hour, min, sec).toLocal();
-      }
-    }
-
-    if (parsed != null) {
-      return '${parsed.year.toString().padLeft(4, '0')}年${parsed.month.toString().padLeft(2, '0')}月${parsed.day.toString().padLeft(2, '0')}日 '
-          '${parsed.hour.toString().padLeft(2, '0')}:${parsed.minute.toString().padLeft(2, '0')}:${parsed.second.toString().padLeft(2, '0')}';
-    } else {
-      return dtime;
-    }
-  }
+  String get formattedTime => DateTimeUtil.formatChinese(dtime);
 }

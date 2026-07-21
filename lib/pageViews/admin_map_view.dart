@@ -458,12 +458,6 @@ class AdminMapViewState extends State<AdminMapView> {
 
   @override
   Widget build(BuildContext context) {
-    final shouldShowDistrictLayer = _currentZoom >= _districtLabelZoom;
-    if (shouldShowDistrictLayer != _showDistrictLayer) {
-      _showDistrictLayer = shouldShowDistrictLayer;
-      _rebuildCache();
-    }
-
     if (_isLoading) {
       return const Scaffold(
         backgroundColor: AppColors.backgroundLight,
@@ -635,11 +629,15 @@ class AdminMapViewState extends State<AdminMapView> {
                   ),
                   onPositionChanged: (camera, hasGesture) {
                     final zoom = camera.zoom;
-                    if (mounted &&
-                        (zoom - _currentZoom).abs() >= 0.05) {
+                    if (mounted && (zoom - _currentZoom).abs() >= 0.05) {
+                      final shouldShowDistrictLayer = zoom >= _districtLabelZoom;
                       setState(() {
                         _currentZoom = zoom;
+                        if (shouldShowDistrictLayer != _showDistrictLayer) {
+                          _showDistrictLayer = shouldShowDistrictLayer;
+                        }
                       });
+                      _rebuildCache();
                     }
 
                     if (!hasGesture &&

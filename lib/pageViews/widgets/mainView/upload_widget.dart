@@ -337,6 +337,7 @@ class _UploadWidgetState extends State<UploadWidget> {
       }
       uploadProvider.setAdcode(adcode ?? '');
       if (!context.mounted || generation != _uploadGeneration) {
+        if (generation == _uploadGeneration) uploadProvider.setUploading(false);
         return;
       }
 

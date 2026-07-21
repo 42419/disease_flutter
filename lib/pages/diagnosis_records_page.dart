@@ -753,14 +753,14 @@ borderRadius: BorderRadius.circular(2),
     final desc = record.bhreason + record.bhadvice;
     
     // 高危病害关键词
-    if (name.contains('腐烂') || name.contains('枯萎') || name.contains('死') || 
+    if (name.contains('腐烂') || name.contains('枯萎') || 
         name.contains('疫病') || name.contains('病毒') || name.contains('溃疡') ||
         desc.contains('严重') || desc.contains('绝产') || desc.contains('致死')) {
       return 0;
     }
     // 中度病害关键词
     if (name.contains('斑') || name.contains('霉') || name.contains('锈') || 
-        name.contains('粉') || name.contains('炭疽') || name.contains('黑痘') ||
+        name.contains('炭疽') || name.contains('黑痘') ||
         desc.contains('较重') || desc.contains('落叶') || desc.contains('减产')) {
       return 1;
     }

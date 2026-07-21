@@ -9,12 +9,17 @@ class HttpUtil {
   }
 
   /// 根据 baseUrl 和 headers 构建独立 Dio 实例
-  static Dio _buildClient({String? baseUrl, Map<String, String>? headers}) {
+  static Dio _buildClient({
+    String? baseUrl,
+    Map<String, String>? headers,
+    Duration? connectTimeout,
+    Duration? receiveTimeout,
+  }) {
     return Dio(
       BaseOptions(
         baseUrl: baseUrl ?? _baseUrl,
-        connectTimeout: const Duration(seconds: 20),
-        receiveTimeout: const Duration(seconds: 20),
+        connectTimeout: connectTimeout ?? const Duration(seconds: 20),
+        receiveTimeout: receiveTimeout ?? const Duration(seconds: 20),
         contentType: "application/json",
         headers: headers,
       ),
@@ -64,19 +69,31 @@ class HttpUtil {
 
   /// 流式请求，返回 (response, dioClient)。
   /// 调用方消费完流后**必须**调用 dioClient.close() 释放连接。
+  ///
+  /// SSE 场景默认使用更长的 [receiveTimeout]（5 分钟），避免长回复被 20s 截断。
   static Future<(Response<ResponseBody> response, Dio dioClient)> postStream(
       String url,
       Map data, {
         Map<String, String>? headers,
         String? baseUrl,
         CancelToken? cancelToken,
+        Duration receiveTimeout = const Duration(minutes: 5),
       }) async {
-    final client = _buildClient(baseUrl: baseUrl, headers: headers);
+    final client = _buildClient(
+      baseUrl: baseUrl,
+      headers: headers,
+      receiveTimeout: receiveTimeout,
+    );
     try {
       final response = await client.post<ResponseBody>(
         url,
         data: data,
-        options: Options(responseType: ResponseType.stream),
+        options: Options(
+          responseType: ResponseType.stream,
+          // 流式传输期间禁用「整包」超时语义，改由 BaseOptions.receiveTimeout
+          // 控制相邻数据块间隔；同时显式传入避免被其它 Options 覆盖。
+          receiveTimeout: receiveTimeout,
+        ),
         cancelToken: cancelToken,
       );
       final statusCode = response.statusCode;

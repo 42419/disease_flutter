@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:farm_flutter/config/config.dart';
 import 'package:farm_flutter/models/diagnosis.dart';
+import 'package:farm_flutter/utils/datetime_util.dart';
 import 'package:farm_flutter/utils/http_util.dart';
 import 'package:flutter/foundation.dart';
 
@@ -100,31 +101,10 @@ class DiagnosisRecordsProvider extends ChangeNotifier {
 
   void _resortRecords() {
     _records.sort((a, b) {
-      final da = _parseDtime(a.dtime);
-      final db = _parseDtime(b.dtime);
+      final da = DateTimeUtil.parseFlexible(a.dtime);
+      final db = DateTimeUtil.parseFlexible(b.dtime);
       return _sortDescending ? db.compareTo(da) : da.compareTo(db);
     });
-  }
-
-  static DateTime _parseDtime(String dtime) {
-    try {
-      return DateTime.parse(dtime).toLocal();
-    } catch (_) {
-      final months = {'Jan': 1, 'Feb': 2, 'Mar': 3, 'Apr': 4, 'May': 5, 'Jun': 6, 'Jul': 7, 'Aug': 8, 'Sep': 9, 'Oct': 10, 'Nov': 11, 'Dec': 12};
-      final regex = RegExp(r'\w+,\s+(\d{1,2})\s+(\w{3})\s+(\d{4})\s+(\d{2}):(\d{2}):(\d{2})');
-      final match = regex.firstMatch(dtime);
-      if (match != null) {
-        return DateTime.utc(
-          int.tryParse(match.group(3)!) ?? 2000,
-          months[match.group(2)!] ?? 1,
-          int.tryParse(match.group(1)!) ?? 1,
-          int.tryParse(match.group(4)!) ?? 0,
-          int.tryParse(match.group(5)!) ?? 0,
-          int.tryParse(match.group(6)!) ?? 0,
-        ).toLocal();
-      }
-      return DateTime(2000);
-    }
   }
 
   List<Diagnosis> _filterRecords(List<Diagnosis> all, {required String role, required String nickName}) {
@@ -135,8 +115,8 @@ class DiagnosisRecordsProvider extends ChangeNotifier {
       filtered = all.where((r) => r.username == nickName).toList();
     }
     filtered.sort((a, b) {
-      final da = _parseDtime(a.dtime);
-      final db = _parseDtime(b.dtime);
+      final da = DateTimeUtil.parseFlexible(a.dtime);
+      final db = DateTimeUtil.parseFlexible(b.dtime);
       return _sortDescending ? db.compareTo(da) : da.compareTo(db);
     });
     return filtered;

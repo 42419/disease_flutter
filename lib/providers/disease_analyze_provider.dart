@@ -147,7 +147,9 @@ class DiseaseAnalyzeProvider extends ChangeNotifier {
                 _pushStreamingText(deltaBuffer.toString());
               }
             }
-          } catch (_) {}
+          } catch (e) {
+            debugPrint('[SSE] JSON 行解析失败: $e  data=$dataStr');
+          }
         }
 
         processedLines++;
@@ -203,12 +205,7 @@ class DiseaseAnalyzeProvider extends ChangeNotifier {
   void _parseResult(String rawContent) {
     if (_disposed) return;
     try {
-      final start = rawContent.indexOf('{');
-      final end = rawContent.lastIndexOf('}');
-      if (start < 0 || end <= start) throw const FormatException('no json');
-      final json =
-          jsonDecode(rawContent.substring(start, end + 1))
-              as Map<String, dynamic>;
+      final json = _extractFirstJsonObject(rawContent);
 
       final diseaseType = json['病害类型']?.toString();
       final causeAnalysis = _buildCauseAnalysisFromJson(json);
@@ -235,9 +232,41 @@ class DiseaseAnalyzeProvider extends ChangeNotifier {
 
       _savePredictionResult(json);
     } catch (_) {
+      debugPrint('[PARSE] JSON 解析失败，展示原始文本');
       _causeAnalysis = rawContent;
       _isLoading = false;
       notifyListeners();
+    }
+  }
+
+  /// 从原始文本中提取第一个完整的 JSON 对象，比 indexOf('{') + lastIndexOf('}')
+  /// 更可靠——支持嵌套大括号和多段 JSON 文本。
+  Map<String, dynamic> _extractFirstJsonObject(String text) {
+    final start = text.indexOf('{');
+    if (start < 0) throw const FormatException('no json found');
+
+    int depth = 0;
+    int end = -1;
+    for (int i = start; i < text.length; i++) {
+      if (text[i] == '{') {
+        depth++;
+      } else if (text[i] == '}') {
+        depth--;
+        if (depth == 0) {
+          end = i;
+          break;
+        }
+      }
+    }
+
+    if (end <= start) throw const FormatException('no complete json object');
+
+    // 尝试解析提取到的子串
+    final candidate = text.substring(start, end + 1);
+    try {
+      return jsonDecode(candidate) as Map<String, dynamic>;
+    } catch (_) {
+      throw const FormatException('json decode failed');
     }
   }
 
@@ -273,6 +302,10 @@ class DiseaseAnalyzeProvider extends ChangeNotifier {
       );
     } catch (e) {
       debugPrint('savepredict failed: $e');
+      if (!_disposed) {
+        _errorMessage = '诊断记录保存失败，请检查网络后重试';
+        notifyListeners();
+      }
     }
   }
 
@@ -447,5 +480,44 @@ class DiseaseAnalyzeProvider extends ChangeNotifier {
     _showInput = false;
     notifyListeners();
     startAnalysis();
+  }
+
+  /// 取消当前正在进行的 SSE 请求和打字机动画，释放页面级资源。
+  /// 在离开分析页时调用，避免后台残留请求。
+  void cancelPendingRequest() {
+    _cancelToken?.cancel('page_disposed');
+    _typewriterTimer?.cancel();
+    _isLoading = false;
+    _hasError = false;
+    _errorMessage = null;
+    streamingTextNotifier.value = '';
+    displayedAnalysisNotifier.value = '';
+    displayedSuggestionsNotifier.value = [];
+    isTypingNotifier.value = false;
+    notifyListeners();
+  }
+
+  /// 退出登录时清空所有分析状态。
+  void reset() {
+    _cancelToken?.cancel('logout');
+    _typewriterTimer?.cancel();
+    _disposed = false;
+    _isLoading = false;
+    _hasError = false;
+    _errorMessage = null;
+    _diseaseType = null;
+    _causeAnalysis = null;
+    _symptomCount = 0;
+    _suggestions = null;
+    _showInput = false;
+    _diseaseName = '';
+    _uploadImageName = '';
+    _nickName = '';
+    _amapAdcode = '';
+    streamingTextNotifier.value = '';
+    displayedAnalysisNotifier.value = '';
+    displayedSuggestionsNotifier.value = [];
+    isTypingNotifier.value = false;
+    notifyListeners();
   }
 }

@@ -1,4 +1,5 @@
 import 'package:farm_flutter/config/config.dart';
+import 'package:farm_flutter/config/province_config.dart';
 import 'package:farm_flutter/models/map_models.dart';
 import 'package:farm_flutter/utils/app_colors.dart';
 import 'package:farm_flutter/utils/http_util.dart';
@@ -10,8 +11,12 @@ class DiseaseStatsService {
   final Set<String> cityCodesWithDistrictData = {};
   final Map<String, Map<String, int>> diseaseStatsByCode = {};
 
-  /// 从后端拉取全部诊断记录并解析为统计结构。
-  Future<void> fetchDiseaseData() async {
+  /// 从后端拉取诊断记录并解析为统计结构。
+  ///
+  /// 默认仅保留 [currentProvince.adcodePrefix] 下的 location，避免全国数据
+  /// 污染当前省地图着色。
+  Future<void> fetchDiseaseData({String? adcodePrefix}) async {
+    final prefix = adcodePrefix ?? currentProvince.adcodePrefix;
     try {
       final resp = await HttpUtil.get(
         '/get_all_dg',
@@ -27,6 +32,7 @@ class DiseaseStatsService {
             final name = item['bhname']?.toString().trim();
             if (loc == null || loc.isEmpty || loc == 'null') continue;
             if (name == null || name.isEmpty) continue;
+            if (prefix.isNotEmpty && !loc.startsWith(prefix)) continue;
             dataAdcodes.add(loc);
             tempStats.putIfAbsent(loc, () => {});
             tempStats[loc]!.update(name, (c) => c + 1, ifAbsent: () => 1);
@@ -34,6 +40,10 @@ class DiseaseStatsService {
         }
         diseaseStatsByCode.clear();
         diseaseStatsByCode.addAll(tempStats);
+      } else {
+        debugPrint(
+          'fetch disease data: unexpected response type=${resp.runtimeType}',
+        );
       }
       cityCodesWithDistrictData.clear();
       for (final adcode in dataAdcodes) {
@@ -41,8 +51,8 @@ class DiseaseStatsService {
           cityCodesWithDistrictData.add('${adcode.substring(0, 4)}00');
         }
       }
-    } catch (e) {
-      debugPrint('fetch disease data failed: $e');
+    } catch (e, st) {
+      debugPrint('fetch disease data failed: $e\n$st');
     }
   }
 
