@@ -4,13 +4,13 @@
 
 **慧田良方**（Wisdom Farm Remedy）—— 基于 AI + 地理信息系统的农作物病害智能诊断与防治决策平台
 
-| 属性   | 说明                         |
-|------|----------------------------|
-| 项目代号 | `farm_flutter`             |
-| 版本   | v1.0.0+1（Alpha）            |
-| 开发框架 | Flutter (Dart) SDK ^3.11.4 |
-| 目标平台 | Android / iOS              |
-| 目标用户 | 农业种植户（农户）、农业管理部门（管理员）      |
+| 属性     | 说明                                       |
+| -------- | ------------------------------------------ |
+| 项目代号 | `farm_flutter`                             |
+| 版本     | v1.0.0+1（Alpha）                          |
+| 开发框架 | Flutter (Dart) SDK ^3.11.4                 |
+| 目标平台 | Android / iOS                              |
+| 目标用户 | 农业种植户（农户）、农业管理部门（管理员） |
 
 ---
 
@@ -44,10 +44,10 @@
 
 ### 3.1 "CV + LLM" 双模型协同诊断
 
-| 阶段       | 模型/服务            | 输入     | 输出                                     |
-|----------|------------------|--------|----------------------------------------|
-| **视觉识别** | 后端深度学习模型（图像分类）   | 作物叶片照片 | Top-5 病害类别 + 置信度 + 热力图                 |
-| **语义分析** | 扣子 Coze 大语言模型智能体 | 病害名称   | 结构化 JSON：病害类型、致病病原、危害部位、病害症状、发病规律、防治方法 |
+| 阶段         | 模型/服务                    | 输入         | 输出                                                                    |
+| ------------ | ---------------------------- | ------------ | ----------------------------------------------------------------------- |
+| **视觉识别** | 后端深度学习模型（图像分类） | 作物叶片照片 | Top-5 病害类别 + 置信度 + 热力图                                        |
+| **语义分析** | 扣子 Coze 大语言模型智能体   | 病害名称     | 结构化 JSON：病害类型、致病病原、危害部位、病害症状、发病规律、防治方法 |
 
 与传统仅输出单一分类标签的方案不同，慧田良方将 CV 模型的分类结果作为 LLM 智能体的上下文输入，触发**多维度语义推理**，一次性输出从病因到防治的完整决策链。分析结果以 SSE（Server-Sent Events）流式返回，用户可实时看到 AI 逐字生成内容，大幅降低等待焦虑。
 
@@ -122,7 +122,7 @@ graph TB
         D1[(诊断记录数据库)]
         D2[省 GeoJSON<br/>市/区县双层级]
         D3[flutter_secure_storage<br/>密码安全存储]
-        D4[.env<br/>API 密钥配置]
+        D4[config.dart<br/>API 密钥配置]
     end
 
     A1 --> B1
@@ -207,26 +207,26 @@ sequenceDiagram
 
 ### 6.1 诊断记录模型 `Diagnosis`
 
-| 字段         | 类型      | 说明                        |
-|------------|---------|---------------------------|
-| `id`       | int     | 诊断记录唯一标识                  |
-| `imgname`  | String  | 上传图片文件名                   |
-| `bhname`   | String  | 病害名称（CV 模型识别结果）           |
-| `bhreason` | String  | 致病病原（Coze AI 分析结果）        |
-| `bhadvice` | String  | 防治建议（Coze AI 分析结果）        |
-| `username` | String  | 提交诊断的农户用户名                |
-| `location` | String? | 行政区划编码（高德 adcode）         |
+| 字段       | 类型    | 说明                            |
+| ---------- | ------- | ------------------------------- |
+| `id`       | int     | 诊断记录唯一标识                |
+| `imgname`  | String  | 上传图片文件名                  |
+| `bhname`   | String  | 病害名称（CV 模型识别结果）     |
+| `bhreason` | String  | 致病病原（Coze AI 分析结果）    |
+| `bhadvice` | String  | 防治建议（Coze AI 分析结果）    |
+| `username` | String  | 提交诊断的农户用户名            |
+| `location` | String? | 行政区划编码（高德 adcode）     |
 | `dtime`    | String  | 诊断时间（ISO 8601 / RFC 1123） |
 
 ### 6.2 识别结果模型 `PredictionResult`
 
-| 字段            | 类型               | 说明                     |
-|---------------|------------------|------------------------|
-| `result`      | String           | 置信度最高的病害类别              |
-| `heatmapData` | String?          | 热力图 base64 编码          |
-| `top5Classes` | List\<String\>   | Top-5 病害类别名称           |
-| `predictTop5` | List\<double\>   | Top-5 对应置信度            |
-| `displayCount`| int (getter)     | 实际显示数量（min(类别数, 概率数, 5)） |
+| 字段           | 类型           | 说明                                   |
+| -------------- | -------------- | -------------------------------------- |
+| `result`       | String         | 置信度最高的病害类别                   |
+| `heatmapData`  | String?        | 热力图 base64 编码                     |
+| `top5Classes`  | List\<String\> | Top-5 病害类别名称                     |
+| `predictTop5`  | List\<double\> | Top-5 对应置信度                       |
+| `displayCount` | int (getter)   | 实际显示数量（min(类别数, 概率数, 5)） |
 
 ### 6.3 地图区域模型
 
@@ -341,21 +341,20 @@ GeoDataBundle
 
 ## 九、技术栈详情
 
-| 类别       | 技术                     | 版本                  | 用途                            |
-|----------|------------------------|---------------------|-------------------------------|
-| 跨平台框架    | Flutter (Dart)         | SDK ^3.11.4         | 移动端 UI 与业务逻辑                  |
-| 状态管理     | Provider               | ^6.1.2              | 响应式状态管理                      |
-| HTTP 客户端 | Dio                    | ^5.9.2              | REST API + SSE 流式请求           |
-| 图片选择     | image_picker           | ^1.2.1              | 相机拍照 / 相册选图                   |
-| 本地持久化    | shared_preferences     | ^2.5.5              | 用户偏好缓存                       |
-| 安全存储     | flutter_secure_storage | ^10.3.1             | 密码安全存储（RSA OAEP + AES-GCM）    |
-| 地图引擎     | flutter_map + latlong2 | ^8.3.0 / ^0.10.1   | OpenStreetMap 底图 + GeoJSON 渲染 |
-| GPS 定位   | geolocator             | ^14.0.2             | 获取设备经纬度                       |
-| 数据图表     | fl_chart               | ^1.2.0              | 病害分布柱状图                       |
-| 环境配置     | flutter_dotenv         | ^6.0.1              | .env 文件加载 API 密钥              |
-| AI 大模型   | 扣子 Coze API            | api.coze.cn/v3      | SSE 流式智能对话                    |
-| 逆地理编码    | 高德地图 Web API           | restapi.amap.com/v3 | 经纬度 → adcode                  |
-| 后端服务     | 自建 REST API            | —                   | 用户认证、病害预测、数据存储                |
+| 类别        | 技术                   | 版本                | 用途                               |
+| ----------- | ---------------------- | ------------------- | ---------------------------------- |
+| 跨平台框架  | Flutter (Dart)         | SDK ^3.11.4         | 移动端 UI 与业务逻辑               |
+| 状态管理    | Provider               | ^6.1.2              | 响应式状态管理                     |
+| HTTP 客户端 | Dio                    | ^5.9.2              | REST API + SSE 流式请求            |
+| 图片选择    | image_picker           | ^1.2.1              | 相机拍照 / 相册选图                |
+| 本地持久化  | shared_preferences     | ^2.5.5              | 用户偏好缓存                       |
+| 安全存储    | flutter_secure_storage | ^10.3.1             | 密码安全存储（RSA OAEP + AES-GCM） |
+| 地图引擎    | flutter_map + latlong2 | ^8.3.0 / ^0.10.1    | OpenStreetMap 底图 + GeoJSON 渲染  |
+| GPS 定位    | geolocator             | ^14.0.2             | 获取设备经纬度                     |
+| 数据图表    | fl_chart               | ^1.2.0              | 病害分布柱状图                     |
+| AI 大模型   | 扣子 Coze API          | api.coze.cn/v3      | SSE 流式智能对话                   |
+| 逆地理编码  | 高德地图 Web API       | restapi.amap.com/v3 | 经纬度 → adcode                    |
+| 后端服务    | 自建 REST API          | —                   | 用户认证、病害预测、数据存储       |
 
 ---
 
@@ -363,10 +362,11 @@ GeoDataBundle
 
 ```
 lib/
-├── main.dart                                    # 应用入口（dotenv 加载 + HttpUtil 初始化）
+├── main.dart                                    # 应用入口（Config 初始化 + HttpUtil 初始化）
 │
 ├── config/
-│   ├── config.dart                              # 环境变量配置（.env 读取）
+│   ├── config.dart                              # API 密钥配置（静态常量）
+│   ├── config.dart.example                      # 配置文件模板（需复制为 config.dart 并填入真实值）
 │   └── province_config.dart                     # 省份地图配置（GeoJSON 路径、中心坐标、缩放参数）
 │
 ├── models/
@@ -410,7 +410,7 @@ lib/
 ├── pageViews/
 │   ├── main_view.dart                           # 农户首页视图
 │   ├── mine_view.dart                           # 个人中心视图（复用 DiagnosisRecordsProvider）
-│   ├── admin_map_view.dart                      # 管理员地图态势大屏（719 行）
+│   ├── admin_map_view.dart                      # 管理员地图态势大屏
 │   └── widgets/
 │       ├── mainView/
 │       │   ├── upload_widget.dart               # 图片上传 + CV 病害预测核心
@@ -424,13 +424,15 @@ lib/
 │
 └── utils/
     ├── http_util.dart                           # Dio HTTP 封装（GET / POST / 流式 / 文件上传）
-    └── app_colors.dart                          # 完整设计系统色彩令牌（208 行）
+    ├── app_colors.dart                          # 完整设计系统色彩令牌
+    ├── datetime_util.dart                       # 时间解析工具（ISO8601 / RFC1123 灵活解析）
+    └── response_util.dart                       # HTTP 响应安全转换 + 角色解析辅助
 
 test/
-├── widget_test.dart                             # 保留的原有测试（20 个）
-├── models_test.dart                             # 数据模型单元测试（36 个）
-├── providers_test.dart                          # Provider 状态管理测试（14 个）
-└── services_test.dart                           # 服务层逻辑测试（24 个）
+├── widget_test.dart                             # 保留的原有测试
+├── models_test.dart                             # 数据模型单元测试
+├── providers_test.dart                          # Provider 状态管理测试
+└── services_test.dart                           # 服务层逻辑测试
 ```
 
 ---
@@ -454,8 +456,8 @@ cd disease_flutter
 flutter pub get
 
 # 配置 API 密钥
-cp .env.example .env
-# 编辑 .env 填入后端地址、Coze 令牌、高德 API Key
+cp lib/config/config.dart.example lib/config/config.dart
+# 编辑 lib/config/config.dart 填入后端地址、Coze 令牌、高德 API Key
 
 # 调试运行
 flutter run
@@ -472,30 +474,33 @@ flutter build ios --release
 
 ### 配置清单
 
-编辑项目根目录 `.env` 文件：
+编辑 `lib/config/config.dart` 文件（从 `config.dart.example` 复制后修改）：
 
-| 配置项          | 说明                                     |
-|--------------|----------------------------------------|
-| `BASE_URL`   | 后端 REST API 地址                        |
-| `API_TOKEN`  | 后端 API 鉴权 Token（Header: `X-API-Token`） |
-| `COZE_URL`   | 扣子 Coze API 地址                        |
-| `BOT_ID`     | 扣子智能体 Bot ID                           |
-| `USER_ID`    | 扣子平台用户 ID                              |
-| `COZE_TOKEN` | 扣子 API 访问令牌（`Bearer pat_xxx`）          |
-| `AMAP_KEY`   | 高德地图 Web API Key                       |
+| 配置项        | 说明                                         |
+| ------------- | -------------------------------------------- |
+| `baseUrl`     | 后端 REST API 地址                           |
+| `apiToken`    | 后端 API 鉴权 Token（Header: `X-API-Token`） |
+| `cozeUrl`     | 扣子 Coze API 地址                           |
+| `botId`       | 扣子智能体 Bot ID                            |
+| `userId`      | 扣子平台用户 ID                              |
+| `cozeToken`   | 扣子 API 访问令牌（`Bearer pat_xxx`）        |
+| `amapBaseUrl` | 高德地图 Web API 基础地址                    |
+| `amapKey`     | 高德地图 Web API Key                         |
+
+> **注意**：`config.dart` 已被 `.gitignore` 排除，不会提交至版本控制。请妥善保管您的 API 密钥。
 
 ---
 
 ## 十二、API 接口一览
 
-| 接口                                  | 方法         | Content-Type             | 说明              |
-|-------------------------------------|------------|--------------------------|-----------------|
+| 接口                                | 方法       | Content-Type             | 说明                     |
+| ----------------------------------- | ---------- | ------------------------ | ------------------------ |
 | `{baseUrl}/login`                   | POST       | JSON                     | 用户名 + 密码 + 角色登录 |
-| `{baseUrl}/predict`                 | POST       | multipart/form-data      | 上传图片进行 CV 病害识别  |
-| `{baseUrl}/savepredict`             | POST       | JSON                     | 保存诊断结果至后端数据库    |
-| `{baseUrl}/get_all_dg`              | GET        | —                        | 获取全部诊断记录        |
+| `{baseUrl}/predict`                 | POST       | multipart/form-data      | 上传图片进行 CV 病害识别 |
+| `{baseUrl}/savepredict`             | POST       | JSON                     | 保存诊断结果至后端数据库 |
+| `{baseUrl}/get_all_dg`              | GET        | —                        | 获取全部诊断记录         |
 | `api.coze.cn/v3/chat`               | POST (SSE) | JSON → text/event-stream | Coze 大模型流式病害分析  |
-| `restapi.amap.com/v3/geocode/regeo` | GET        | —                        | 高德逆地理编码         |
+| `restapi.amap.com/v3/geocode/regeo` | GET        | —                        | 高德逆地理编码           |
 
 所有后端请求携带统一 Header：`X-API-Token: {apiToken}`
 
@@ -503,16 +508,15 @@ flutter build ios --release
 
 ## 十三、资产文件
 
-| 文件路径                            | 用途                   |
-|---------------------------------|----------------------|
-| `.env`                          | API 密钥配置（不提交至仓库）     |
-| `.env.example`                  | 配置模板                 |
-| `assets/geojson/河南省_市.geojson`  | 河南省地级市行政区划 GeoJSON   |
-| `assets/geojson/河南省_县区.geojson` | 河南省下辖区县级行政区划 GeoJSON |
-| `assets/geojson/辽宁省_市.geojson`  | 辽宁省地级市行政区划 GeoJSON   |
-| `assets/geojson/辽宁省_县区.geojson` | 辽宁省下辖区县级行政区划 GeoJSON |
-| `assets/img/logo.png`           | 应用品牌 Logo            |
-| `assets/img/avatar.jpg`         | 用户头像占位               |
+| 文件路径                             | 用途                                     |
+| ------------------------------------ | ---------------------------------------- |
+| `lib/config/config.dart.example`     | API 密钥配置模板（需复制为 config.dart） |
+| `assets/geojson/河南省_市.geojson`   | 河南省地级市行政区划 GeoJSON             |
+| `assets/geojson/河南省_县区.geojson` | 河南省下辖区县级行政区划 GeoJSON         |
+| `assets/geojson/辽宁省_市.geojson`   | 辽宁省地级市行政区划 GeoJSON             |
+| `assets/geojson/辽宁省_县区.geojson` | 辽宁省下辖区县级行政区划 GeoJSON         |
+| `assets/img/logo.png`                | 应用品牌 Logo                            |
+| `assets/img/avatar.jpg`              | 用户头像占位                             |
 
 ---
 
@@ -524,20 +528,20 @@ flutter build ios --release
 flutter test
 ```
 
-| 测试文件              | 测试数 | 覆盖范围                                      |
-|-------------------|-----|---------------------------------------------|
-| `models_test.dart`    | 36  | Diagnosis / PredictionResult / User / SavedCredentials / 地图模型 |
-| `providers_test.dart` | 14  | UserProvider / UploadProvider / MainNavigationProvider         |
-| `services_test.dart`  | 24  | DiseaseStatsService / RegionOptionLoader.parseRegions          |
-| `widget_test.dart`    | 20  | 保留的原有模型测试                                      |
+| 测试文件              | 测试数 | 覆盖范围                                                          |
+| --------------------- | ------ | ----------------------------------------------------------------- |
+| `models_test.dart`    | 36     | Diagnosis / PredictionResult / User / SavedCredentials / 地图模型 |
+| `providers_test.dart` | 14     | UserProvider / UploadProvider / MainNavigationProvider            |
+| `services_test.dart`  | 24     | DiseaseStatsService / RegionOptionLoader.parseRegions             |
+| `widget_test.dart`    | 20     | 保留的原有模型测试                                                |
 
 ---
 
 ## 相关文档
 
-| 文档                                                                               | 说明                                   |
-|----------------------------------------------------------------------------------|--------------------------------------|
-| [DESIGN.md](./DESIGN.md)                                                         | Anthropic Claude 设计系统规范（颜色、字体、组件、布局） |
+| 文档                     | 说明                                                    |
+| ------------------------ | ------------------------------------------------------- |
+| [DESIGN.md](./DESIGN.md) | Anthropic Claude 设计系统规范（颜色、字体、组件、布局） |
 
 ---
 
