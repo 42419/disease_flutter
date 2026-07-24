@@ -51,3 +51,5 @@ lib/config/config.dart
 !lib/config/config.dart.example
 
 .mimocode/
+
+docs/
