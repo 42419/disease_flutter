@@ -104,7 +104,7 @@ void main() {
       provider.setError('上传失败');
 
       expect(provider.isUploading, isFalse);
-      expect(provider.result, '上传失败');
+      expect(provider.errorMessage, '上传失败');
       expect(notified, isTrue);
     });
 

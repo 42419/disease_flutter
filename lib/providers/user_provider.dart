@@ -18,10 +18,8 @@ class LoginResult {
   final String? role;
   final String message;
 
-  const LoginResult.success({required String nickName, required String role})
+  const LoginResult.success({required this.nickName, required this.role})
       : success = true,
-        nickName = nickName,
-        role = role,
         message = '';
 
   const LoginResult.failure(this.message)
