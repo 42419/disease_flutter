@@ -99,9 +99,11 @@ class DiseaseAnalyzeProvider extends ChangeNotifier {
     isTypingNotifier.value = false;
     _lastStreamUiUpdateMs = 0;
 
-    Dio? client;
     try {
-      final (response, dioClient) = await HttpUtil.postStream(
+      // dioClient 现在是 HttpUtil 内部按 baseUrl 缓存复用的共享实例，这里不再
+      // 需要（也不应该）在用完后手动 close()，否则会连带关闭后续所有请求共用
+      // 的连接；中途取消统一通过 [_cancelToken] 完成。
+      final (response, _) = await HttpUtil.postStream(
         Config.cozeUrl,
         {
           'bot_id': Config.botId,
@@ -114,12 +116,8 @@ class DiseaseAnalyzeProvider extends ChangeNotifier {
         headers: {'Authorization': Config.cozeToken},
         cancelToken: _cancelToken,
       );
-      client = dioClient;
 
-      if (_disposed) {
-        client.close();
-        return;
-      }
+      if (_disposed) return;
 
       final stream = response.data!.stream;
       final deltaBuffer = StringBuffer();
@@ -185,8 +183,6 @@ class DiseaseAnalyzeProvider extends ChangeNotifier {
       _hasError = true;
       _errorMessage = e.toString();
       notifyListeners();
-    } finally {
-      client?.close();
     }
   }
 
@@ -294,12 +290,8 @@ class DiseaseAnalyzeProvider extends ChangeNotifier {
         'dtime': _nowString(),
       };
 
-      HttpUtil.init(baseUrl: Config.baseUrl);
-      await HttpUtil.post(
-        '/savepredict',
-        payload,
-        headers: {'X-API-Token': Config.apiToken},
-      );
+      // 默认后端的 X-API-Token 由 HttpUtil 统一自动注入，这里无需再手传。
+      await HttpUtil.post('/savepredict', payload, baseUrl: Config.baseUrl);
     } catch (e) {
       debugPrint('savepredict failed: $e');
       if (!_disposed) {

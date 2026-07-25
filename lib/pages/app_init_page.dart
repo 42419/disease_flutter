@@ -1,9 +1,5 @@
-import 'package:dio/dio.dart';
-import 'package:farm_flutter/config/config.dart';
 import 'package:farm_flutter/utils/app_colors.dart';
-import 'package:farm_flutter/utils/response_util.dart';
 import 'package:farm_flutter/providers/user_provider.dart';
-import 'package:farm_flutter/utils/http_util.dart';
 import 'package:farm_flutter/services/auth_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -34,36 +30,19 @@ class _AppInitPageState extends State<AppInitPage> {
       return;
     }
 
-    try {
-      final rawResponse = await HttpUtil.post(
-        "/login",
-        {
-          "username": credentials.username,
-          "pwd": credentials.password,
-          "role": credentials.role,
-        },
-        headers: {"X-API-Token": Config.apiToken},
-      );
+    // 与手动登录（login_page.dart）共用同一份请求/解析逻辑，见
+    // UserProvider.loginWithCredentials。
+    final result = await context.read<UserProvider>().loginWithCredentials(
+      username: credentials.username,
+      password: credentials.password,
+      role: credentials.role,
+    );
 
-      if (!mounted) return;
+    if (!mounted) return;
 
-      final response = ResponseUtil.asMap(rawResponse);
-      if (response != null && ResponseUtil.isLoginSuccess(response)) {
-        final resolvedRole = ResponseUtil.resolveRole(response, credentials.role);
-        context.read<UserProvider>().login(
-          response['username']?.toString() ?? credentials.username,
-          resolvedRole,
-        );
-        HttpUtil.init(baseUrl: Config.baseUrl);
-        _goTo(resolvedRole == '1' ? "/admin_main" : "/main");
-      } else {
-        _goTo('/login');
-      }
-    } on DioException catch (_) {
-      if (!mounted) return;
-      _goTo('/login');
-    } catch (_) {
-      if (!mounted) return;
+    if (result.success) {
+      _goTo(result.role == '1' ? "/admin_main" : "/main");
+    } else {
       _goTo('/login');
     }
   }
