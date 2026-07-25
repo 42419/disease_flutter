@@ -15,7 +15,7 @@ class LoginPage extends StatefulWidget {
   State<LoginPage> createState() => _LoginPageState();
 }
 
-class _LoginPageState extends State<LoginPage> {
+class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
   final _usernameController = TextEditingController();
   final _passwordController = TextEditingController();
   String? _selectedRole = "0";
@@ -25,10 +25,46 @@ class _LoginPageState extends State<LoginPage> {
   bool _isLoggingIn = false;
   final AuthStorage _authStorage = const AuthStorage();
 
+  // 弹性弹出动效相关
+  OverlayEntry? _roleMenuOverlay;
+  late AnimationController _menuAnimController;
+  late Animation<double> _menuScaleAnim;
+  late Animation<double> _menuFadeAnim;
+  late Animation<double> _overlayFadeAnim;
+
+  // 角色选项（顺序即弹出选择器中的顺序）
+  static const List<String> _roleKeys = ["0", "1"];
+  static const Map<String, String> _roleLabels = {
+    "0": "农户",
+    "1": "管理员",
+  };
+  final GlobalKey _roleFieldKey = GlobalKey();
+  bool _isRoleMenuOpen = false;
+
   @override
   void initState() {
     super.initState();
     _loadSavedData();
+    // 初始化弹性动画：更快更脆
+    _menuAnimController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 220),
+    );
+    // 弹簧缩放：快速弹出，轻微微弹
+    _menuScaleAnim = CurvedAnimation(
+      parent: _menuAnimController,
+      curve: Curves.easeOutCubic,
+    );
+    // 菜单淡入（前半段就完成）
+    _menuFadeAnim = CurvedAnimation(
+      parent: _menuAnimController,
+      curve: const Interval(0.0, 0.5, curve: Curves.easeOut),
+    );
+    // 蒙层淡入（更早完成）
+    _overlayFadeAnim = CurvedAnimation(
+      parent: _menuAnimController,
+      curve: const Interval(0.0, 0.3, curve: Curves.easeOut),
+    );
   }
 
   Future<void> _loadSavedData() async {
@@ -47,6 +83,8 @@ class _LoginPageState extends State<LoginPage> {
 
   @override
   void dispose() {
+    _menuAnimController.dispose();
+    _roleMenuOverlay?.remove();
     _usernameController.dispose();
     _passwordController.dispose();
     super.dispose();
@@ -168,7 +206,7 @@ class _LoginPageState extends State<LoginPage> {
       Navigator.pushNamedAndRemoveUntil(
         context,
         isAdmin ? "/admin_main" : "/main",
-        (route) => false,
+            (route) => false,
       );
     } on DioException catch (e) {
       debugPrint("DioException: ${e.type}, ${e.message}, ${e.error}");
@@ -194,6 +232,154 @@ class _LoginPageState extends State<LoginPage> {
     }
   }
 
+  // 弹性丝滑弹出菜单（参考小米笔记的「更多」动效）
+  Future<void> _showRoleMenu(FormFieldState<String> field) async {
+    FocusScope.of(context).unfocus();
+    // 如果已有菜单在显示，先关闭
+    if (_roleMenuOverlay != null) {
+      await _closeRoleMenu(field: field);
+      return;
+    }
+
+    final RenderBox? button =
+    _roleFieldKey.currentContext?.findRenderObject() as RenderBox?;
+    if (button == null) return;
+
+    final Offset buttonPos = button.localToGlobal(Offset.zero);
+    final Size buttonSize = button.size;
+    final screenSize = MediaQuery.of(context).size;
+
+    // 菜单宽度
+    const double menuWidth = 200;
+    const double menuItemHeight = 64;
+    final double menuHeight = menuItemHeight * _roleKeys.length + 24;
+
+    // 菜单右边缘对齐字段右边缘
+    double menuLeft = buttonPos.dx + buttonSize.width - menuWidth;
+    // 菜单顶部在字段下方
+    double menuTop = buttonPos.dy + buttonSize.height + 6;
+    // 边界修正
+    if (menuLeft < 8) menuLeft = 8;
+    if (menuLeft + menuWidth > screenSize.width - 8) {
+      menuLeft = screenSize.width - menuWidth - 8;
+    }
+    if (menuTop + menuHeight > screenSize.height - 8) {
+      menuTop = buttonPos.dy - menuHeight - 6; // 上方弹出
+    }
+
+    setState(() => _isRoleMenuOpen = true);
+
+    _roleMenuOverlay = OverlayEntry(
+      builder: (context) {
+        return Stack(
+          children: [
+            // 半透明蒙层（淡入）
+            FadeTransition(
+              opacity: _overlayFadeAnim,
+              child: GestureDetector(
+                onTap: () => _closeRoleMenu(field: field),
+                behavior: HitTestBehavior.translucent,
+                child: Container(
+                  color: Colors.black.withValues(alpha: 0.15),
+                  width: screenSize.width,
+                  height: screenSize.height,
+                ),
+              ),
+            ),
+            // 菜单主体（缩放 + 淡入，从右上角弹出）
+            Positioned(
+              left: menuLeft,
+              top: menuTop,
+              child: FadeTransition(
+                opacity: _menuFadeAnim,
+                child: ScaleTransition(
+                  alignment: Alignment.topRight, // 从右上角展开
+                  scale: _menuScaleAnim,
+                  child: Material(
+                    color: Colors.white,
+                    elevation: 12,
+                    shadowColor: Colors.black.withValues(alpha: 0.2),
+                    borderRadius: BorderRadius.circular(20),
+                    child: Container(
+                      width: menuWidth,
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          for (int i = 0; i < _roleKeys.length; i++)
+                            InkWell(
+                              onTap: () => _closeRoleMenu(
+                                field: field,
+                                result: _roleKeys[i],
+                              ),
+                              child: _buildRoleMenuItem(
+                                _roleKeys[i],
+                                isLast: i == _roleKeys.length - 1,
+                              ),
+                            ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+
+    Overlay.of(context).insert(_roleMenuOverlay!);
+    // 正向播放动画
+    _menuAnimController.forward(from: 0);
+  }
+
+  Future<void> _closeRoleMenu({
+    required FormFieldState<String> field,
+    String? result,
+  }) async {
+    // 反向播放关闭动画
+    await _menuAnimController.reverse();
+    _roleMenuOverlay?.remove();
+    _roleMenuOverlay = null;
+    if (mounted) setState(() => _isRoleMenuOpen = false);
+
+    if (result != null && mounted) {
+      setState(() => _selectedRole = result);
+      field.didChange(result);
+    }
+  }
+
+  Widget _buildRoleMenuItem(String key, {required bool isLast}) {
+    final bool selected = key == _selectedRole;
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+      decoration: isLast
+          ? null
+          : BoxDecoration(
+        border: Border(
+          bottom: BorderSide(color: AppColors.hairline, width: 1),
+        ),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(
+            _roleLabels[key]!,
+            style: TextStyle(
+              fontSize: 16,
+              color: selected ? AppColors.primary : AppColors.ink,
+              fontWeight: selected ? FontWeight.w600 : FontWeight.w400,
+            ),
+          ),
+          if (selected)
+            Icon(Icons.check_rounded, color: AppColors.primary, size: 20),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
@@ -209,40 +395,54 @@ class _LoginPageState extends State<LoginPage> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const SizedBox(height: 56),
+                      const SizedBox(height: 44),
 
-                      // Logo & Editorial Title
+                      // Logo
                       Hero(
                         tag: 'app_logo',
                         child: Image.asset(
                           "assets/img/logo.png",
-                          width: 80,
-                          height: 80,
-                        ),
-                      ),
-                      // const SizedBox(height: 24),
-                      Text(
-                        "Sign in to\ncontinue.",
-                        style: TextStyle(
-                          fontFamily: "serif",
-                          fontWeight: FontWeight.w400,
-                          fontSize: 48,
-                          height: 1.1,
-                          color: AppColors.ink,
-                          letterSpacing: -1.0,
+                          width: 84,
+                          height: 84,
                         ),
                       ),
                       const SizedBox(height: 24),
+
+                      // 品牌名
                       Text(
-                        "欢迎回到慧田良方",
+                        "禾康智诊",
                         style: TextStyle(
-                          fontSize: 16,
-                          color: AppColors.muted,
-                          letterSpacing: 1.5,
-                          fontWeight: FontWeight.w400,
+                          fontFamily: "serif",
+                          fontWeight: FontWeight.w600,
+                          fontSize: 36,
+                          height: 1.1,
+                          color: AppColors.ink,
+                          letterSpacing: 2.0,
                         ),
                       ),
-                      const SizedBox(height: 64),
+                      const SizedBox(height: 16),
+
+                      // 推广语
+                      Row(
+                        children: [
+                          Container(
+                            width: 30,
+                            height: 2,
+                            color: AppColors.primary,
+                          ),
+                          const SizedBox(width: 10),
+                          Text(
+                            "让东北黑土地遇见智慧",
+                            style: TextStyle(
+                              fontSize: 15,
+                              color: AppColors.primary,
+                              letterSpacing: 1.2,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 62),
 
                       // Minimalist Form
                       Form(
@@ -284,37 +484,51 @@ class _LoginPageState extends State<LoginPage> {
                             ),
                             const SizedBox(height: 16),
 
-                            // Role Selection
-                            DropdownButtonFormField<String>(
+                            // Role Selection（贴合字段弹出的选择卡片）
+                            FormField<String>(
                               initialValue: _selectedRole,
-                              isExpanded: true,
                               validator: _validateRole,
-                              style: TextStyle(
-                                color: AppColors.ink,
-                                fontSize: 18,
-                              ),
-                              dropdownColor: AppColors.canvas,
-                              icon: Icon(
-                                Icons.keyboard_arrow_down_rounded,
-                                color: AppColors.muted,
-                              ),
-                              onChanged: (String? newValue) {
-                                setState(() => _selectedRole = newValue);
+                              builder: (field) {
+                                return InkWell(
+                                  key: _roleFieldKey,
+                                  borderRadius: BorderRadius.circular(4),
+                                  onTap: () => _showRoleMenu(field),
+                                  child: AnimatedContainer(
+                                    duration: const Duration(milliseconds: 120),
+                                    color: _isRoleMenuOpen
+                                        ? AppColors.hairline.withValues(alpha: 0.25)
+                                        : Colors.transparent,
+                                    child: InputDecorator(
+                                      decoration: _buildMinimalInputDecoration(
+                                        hintText: "角色",
+                                        icon: Icons.switch_account_outlined,
+                                      ).copyWith(
+                                        errorText: field.errorText,
+                                      ),
+                                      child: Row(
+                                        children: [
+                                          Expanded(
+                                            child: Text(
+                                              _roleLabels[_selectedRole] ?? "请选择角色",
+                                              style: TextStyle(
+                                                color: _selectedRole == null
+                                                    ? AppColors.muted.withValues(alpha: 0.6)
+                                                    : AppColors.ink,
+                                                fontSize: 18,
+                                              ),
+                                            ),
+                                          ),
+                                          Icon(
+                                            Icons.unfold_more_rounded,
+                                            color: AppColors.muted,
+                                            size: 20,
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                );
                               },
-                              items: const [
-                                DropdownMenuItem(
-                                    value: "0",
-                                    child: Text("农户")
-                                ),
-                                DropdownMenuItem(
-                                  value: "1",
-                                  child: Text("管理员"),
-                                )
-                              ],
-                              decoration: _buildMinimalInputDecoration(
-                                hintText: "角色",
-                                icon: Icons.switch_account_outlined,
-                              ),
                             ),
 
                             const SizedBox(height: 32),
@@ -324,12 +538,12 @@ class _LoginPageState extends State<LoginPage> {
                               children: [
                                 _buildCheckbox(
                                   _rememberMe,
-                                  (v) => setState(() => _rememberMe = v!),
+                                      (v) => setState(() => _rememberMe = v!),
                                 ),
                                 const SizedBox(width: 12),
                                 GestureDetector(
                                   onTap: () => setState(
-                                    () => _rememberMe = !_rememberMe,
+                                        () => _rememberMe = !_rememberMe,
                                   ),
                                   child: Text(
                                     "保持登录状态",
@@ -349,17 +563,17 @@ class _LoginPageState extends State<LoginPage> {
                               children: [
                                 _buildCheckbox(
                                   _isSelected,
-                                  (v) => setState(() => _isSelected = v!),
+                                      (v) => setState(() => _isSelected = v!),
                                 ),
                                 const SizedBox(width: 12),
                                 Expanded(
                                   child: Wrap(
                                     crossAxisAlignment:
-                                        WrapCrossAlignment.center,
+                                    WrapCrossAlignment.center,
                                     children: [
                                       GestureDetector(
                                         onTap: () => setState(
-                                          () => _isSelected = !_isSelected,
+                                              () => _isSelected = !_isSelected,
                                         ),
                                         child: Text(
                                           "已阅读并同意",
@@ -415,9 +629,9 @@ class _LoginPageState extends State<LoginPage> {
                                 onPressed: _isLoggingIn
                                     ? null
                                     : () {
-                                        FocusScope.of(context).unfocus();
-                                        _login();
-                                      },
+                                  FocusScope.of(context).unfocus();
+                                  _login();
+                                },
                                 style: ElevatedButton.styleFrom(
                                   backgroundColor: AppColors.ink,
                                   foregroundColor: AppColors.canvas,
@@ -432,21 +646,21 @@ class _LoginPageState extends State<LoginPage> {
                                 ),
                                 child: _isLoggingIn
                                     ? SizedBox(
-                                        height: 20,
-                                        width: 20,
-                                        child: CircularProgressIndicator(
-                                          color: AppColors.canvas,
-                                          strokeWidth: 2,
-                                        ),
-                                      )
+                                  height: 20,
+                                  width: 20,
+                                  child: CircularProgressIndicator(
+                                    color: AppColors.canvas,
+                                    strokeWidth: 2,
+                                  ),
+                                )
                                     : const Text(
-                                        "登 录",
-                                        style: TextStyle(
-                                          fontSize: 16,
-                                          fontWeight: FontWeight.normal,
-                                          letterSpacing: 4,
-                                        ),
-                                      ),
+                                  "登 录",
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.normal,
+                                    letterSpacing: 4,
+                                  ),
+                                ),
                               ),
                             ),
                             const SizedBox(height: 32),
@@ -457,7 +671,7 @@ class _LoginPageState extends State<LoginPage> {
                               children: [
                                 _buildTextButton(
                                   "忘记密码",
-                                  () => _showSnack("忘记密码"),
+                                      () => _showSnack("忘记密码"),
                                 ),
                                 Container(
                                   height: 12,
@@ -469,7 +683,7 @@ class _LoginPageState extends State<LoginPage> {
                                 ),
                                 _buildTextButton(
                                   "注册账户",
-                                  () => _showSnack("跳转注册"),
+                                      () => _showSnack("跳转注册"),
                                 ),
                               ],
                             ),

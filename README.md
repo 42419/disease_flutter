@@ -1,8 +1,8 @@
-# 慧田良方 — 农作物病害智能诊断平台
+# 禾康智诊 — 农作物病害智能诊断平台
 
 ## 一、作品名称
 
-**慧田良方**（Wisdom Farm Remedy）—— 基于 AI + 地理信息系统的农作物病害智能诊断与防治决策平台
+**禾康智诊**（Wisdom Farm Remedy）—— 基于 AI + 地理信息系统的农作物病害智能诊断与防治决策平台
 
 | 属性     | 说明                                       |
 | -------- | ------------------------------------------ |
@@ -27,7 +27,7 @@
 
 ### 2.2 解决思路
 
-慧田良方以"**拍照即诊断 + AI 深度分析 + 地图态势感知**"三位一体，构建了一条从田间到决策的完整智能化链路：
+禾康智诊以"**拍照即诊断 + AI 深度分析 + 地图态势感知**"三位一体，构建了一条从田间到决策的完整智能化链路：
 
 1. **前端感知层**：农户在田间拍照上传作物叶片图像
 2. **视觉识别层**：后端深度学习模型对图像进行病害分类，输出 Top-5 置信度排序
@@ -49,7 +49,7 @@
 | **视觉识别** | 后端深度学习模型（图像分类） | 作物叶片照片 | Top-5 病害类别 + 置信度 + 热力图                                        |
 | **语义分析** | 扣子 Coze 大语言模型智能体   | 病害名称     | 结构化 JSON：病害类型、致病病原、危害部位、病害症状、发病规律、防治方法 |
 
-与传统仅输出单一分类标签的方案不同，慧田良方将 CV 模型的分类结果作为 LLM 智能体的上下文输入，触发**多维度语义推理**，一次性输出从病因到防治的完整决策链。分析结果以 SSE（Server-Sent Events）流式返回，用户可实时看到 AI 逐字生成内容，大幅降低等待焦虑。
+与传统仅输出单一分类标签的方案不同，禾康智诊将 CV 模型的分类结果作为 LLM 智能体的上下文输入，触发**多维度语义推理**，一次性输出从病因到防治的完整决策链。分析结果以 SSE（Server-Sent Events）流式返回，用户可实时看到 AI 逐字生成内容，大幅降低等待焦虑。
 
 ### 3.2 空间地理可视化病害态势感知
 
@@ -150,7 +150,7 @@ graph TB
 ```mermaid
 sequenceDiagram
     actor 农户
-    participant App as 慧田良方 App
+    participant App as 禾康智诊 App
     participant Backend as 后端 API
     participant ML as CV 病害识别模型
     participant Coze as Coze 大模型
@@ -182,7 +182,7 @@ sequenceDiagram
 ```mermaid
 sequenceDiagram
     actor 管理员
-    participant App as 慧田良方 App
+    participant App as 禾康智诊 App
     participant Backend as 后端 API
     participant GeoJSON as 本地 GeoJSON 资产
     管理员 ->> App: 打开地图大屏
@@ -270,7 +270,7 @@ GeoDataBundle
 
 ### 7.1 登录页
 
-采用 Claude 设计系统的"编辑级"极简风格：48px 衬线体双行标题（"Sign in to continue."），16px 大写字母间距副标题（"欢迎回到慧田良方"），下划线式输入框 + 零圆角黑色登录按钮。支持角色选择（管理员/农户）、记住密码自动登录（密码通过 `flutter_secure_storage` 安全存储）。
+采用 Claude 设计系统的"编辑级"极简风格：48px 衬线体双行标题（"Sign in to continue."），16px 大写字母间距副标题（"欢迎回到禾康智诊"），下划线式输入框 + 零圆角黑色登录按钮。支持角色选择（管理员/农户）、记住密码自动登录（密码通过 `flutter_secure_storage` 安全存储）。
 
 ### 7.2 农户首页
 

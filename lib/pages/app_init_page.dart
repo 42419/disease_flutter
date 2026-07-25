@@ -83,7 +83,7 @@ class _AppInitPageState extends State<AppInitPage> {
             Image.asset('assets/img/logo.png', width: 120, height: 120),
             const SizedBox(height: 24),
             Text(
-              '慧田良方',
+              '禾康智诊',
               style: TextStyle(
                 fontSize: 24,
                 fontWeight: FontWeight.w400,
