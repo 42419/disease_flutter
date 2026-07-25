@@ -1,15 +1,10 @@
-import 'dart:io';
-
-import 'package:farm_flutter/config/config.dart';
 import 'package:farm_flutter/models/prediction_result.dart';
 import 'package:farm_flutter/providers/upload_provider.dart';
 import 'package:farm_flutter/services/region_option_loader.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:geolocator/geolocator.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:farm_flutter/utils/app_colors.dart';
-import 'package:farm_flutter/utils/http_util.dart';
 import 'package:provider/provider.dart';
 
 class UploadWidget extends StatefulWidget {
@@ -20,8 +15,6 @@ class UploadWidget extends StatefulWidget {
 }
 
 class _UploadWidgetState extends State<UploadWidget> {
-  int _uploadGeneration = 0;
-
   void _showCategoryDetails(BuildContext context, String result) {
     showDialog(
       context: context,
@@ -180,7 +173,7 @@ class _UploadWidgetState extends State<UploadWidget> {
                 subtitle: "使用相机拍摄照片",
                 onTap: () {
                   Navigator.pop(sheetContext);
-                  _pickImage(parentContext, ImageSource.camera);
+                  _pickAndUpload(parentContext, ImageSource.camera);
                 },
               ),
 
@@ -199,7 +192,7 @@ class _UploadWidgetState extends State<UploadWidget> {
                 subtitle: "从图库中选择已有照片",
                 onTap: () {
                   Navigator.pop(sheetContext);
-                  _pickImage(parentContext, ImageSource.gallery);
+                  _pickAndUpload(parentContext, ImageSource.gallery);
                 },
               ),
 
@@ -287,132 +280,18 @@ class _UploadWidgetState extends State<UploadWidget> {
     );
   }
 
-  Future<void> _pickImage(BuildContext context, ImageSource source) async {
+  /// 选图 + 上传识别的业务逻辑都在 [UploadProvider] 里，这里只负责：
+  /// 触发流程，并把"自动定位失败时如何弹出手动选地区 UI"这一小段界面逻辑
+  /// 通过 [resolveManualRegion] 回调交给 Provider。
+  Future<void> _pickAndUpload(BuildContext context, ImageSource source) async {
     final uploadProvider = context.read<UploadProvider>();
-    if (uploadProvider.isUploading) {
-      uploadProvider.setUploading(false);
-    }
-
-    try {
-      final picker = ImagePicker();
-      final pickedFile = await picker.pickImage(source: source, imageQuality: 80);
-      if (!context.mounted) return;
-      if (pickedFile != null) {
-        debugPrint('图片选择成功: ${pickedFile.path}');
-        uploadProvider.setImage(
-          File(pickedFile.path),
-          pickedFile.name,
-        );
-        await _uploadImage(context);
-      }
-    } catch (e) {
-      debugPrint('图片选择异常: $e');
-      uploadProvider.setUploading(false);
-      if (!context.mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text("选择图片失败: $e"),
-          backgroundColor: AppColors.danger,
-          duration: Duration(seconds: 3),
-        ),
-      );
-    }
-  }
-
-  Future<void> _uploadImage(BuildContext context) async {
-    final uploadProvider = context.read<UploadProvider>();
-    if (uploadProvider.isUploading) return;
-    final imagePath = uploadProvider.selectedImage?.path;
-    if (imagePath == null) return;
-
-    final generation = ++_uploadGeneration;
-    uploadProvider.setUploading(true);
-
-    try {
-      String? adcode;
-      try {
-        adcode = await _resolveAdcode(context);
-      } catch (e) {
-        debugPrint('定位解析异常: $e');
-      }
-      uploadProvider.setAdcode(adcode ?? '');
-      if (!context.mounted || generation != _uploadGeneration) {
-        if (generation == _uploadGeneration) uploadProvider.setUploading(false);
-        return;
-      }
-
-      HttpUtil.init(baseUrl: Config.baseUrl);
-
-      final headers = {"X-API-Token": Config.apiToken};
-
-      final response = await HttpUtil.postFile(
-        "/predict",
-        [imagePath],
-        headers: headers,
-        fileField: "image",
-      );
-
-      if (generation != _uploadGeneration) return;
-
-      final result = PredictionResult.fromResponse(response);
-      uploadProvider.setResult(
-        result: result.result,
-        heatmapData: result.heatmapData,
-        top5Classes: result.top5Classes,
-        predictTop5: result.predictTop5,
-      );
-    } catch (e) {
-      if (generation != _uploadGeneration) return;
-      uploadProvider.setError("上传失败: $e");
-    }
-  }
-
-  Future<String?> _resolveAdcode(BuildContext context) async {
-    try {
-      LocationPermission permission = await Geolocator.checkPermission();
-      if (permission == LocationPermission.denied) {
-        permission = await Geolocator.requestPermission();
-      }
-
-      if (permission == LocationPermission.denied ||
-          permission == LocationPermission.deniedForever) {
-        debugPrint('定位权限不可用，进入手动地区选择');
-        if (!context.mounted) return null;
+    await uploadProvider.pickAndUpload(
+      source,
+      resolveManualRegion: () {
+        if (!context.mounted) return Future.value(null);
         return _pickRegionAdcode(context);
-      }
-
-      final position = await Geolocator.getCurrentPosition(
-        locationSettings: const LocationSettings(
-          accuracy: LocationAccuracy.high,
-          timeLimit: Duration(seconds: 10),
-        ),
-      );
-
-      final resp = await HttpUtil.get(
-        '/v3/geocode/regeo?key=${Config.amapKey}&location=${position.longitude},${position.latitude}',
-        baseUrl: Config.amapBaseUrl,
-      );
-
-      if (resp is Map) {
-        final regeocode = resp['regeocode'];
-        final addressComponent = regeocode is Map
-            ? regeocode['addressComponent']
-            : null;
-        final adcode = addressComponent is Map
-            ? addressComponent['adcode']?.toString()
-            : null;
-        if (adcode != null && adcode.isNotEmpty && adcode != '[]') {
-          return adcode;
-        }
-      }
-
-      debugPrint('逆地理编码未返回有效 adcode: $resp');
-    } catch (e) {
-      debugPrint('GPS 定位/逆地理编码异常: $e');
-    }
-
-    if (!context.mounted) return null;
-    return _pickRegionAdcode(context);
+      },
+    );
   }
 
   Future<String?> _pickRegionAdcode(BuildContext context) async {
