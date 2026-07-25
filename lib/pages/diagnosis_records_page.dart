@@ -1,13 +1,9 @@
-import 'dart:convert';
-
-import 'package:farm_flutter/config/province_config.dart';
 import 'package:farm_flutter/pages/widgets/analyzePage/components/highlight_utils.dart';
 import 'package:farm_flutter/providers/diagnosis_records_provider.dart';
 import 'package:farm_flutter/providers/user_provider.dart';
 import 'package:farm_flutter/utils/app_colors.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 
 class DiagnosisRecordsPage extends StatefulWidget {
@@ -18,8 +14,6 @@ class DiagnosisRecordsPage extends StatefulWidget {
 }
 
 class _DiagnosisRecordsPageState extends State<DiagnosisRecordsPage> {
-  final Map<String, String> _adcodeNameMap = {};
-
   static const _barColors = [
     AppColors.error,
     AppColors.warning,
@@ -33,49 +27,10 @@ class _DiagnosisRecordsPageState extends State<DiagnosisRecordsPage> {
   @override
   void initState() {
     super.initState();
-    _loadAdcodeNames();
+    // 地区名称（adcode -> 完整地名）的解析逻辑收拢在 Provider 里，和
+    // RegionOptionLoader 共用一份实现，页面这里只是触发加载。
+    context.read<DiagnosisRecordsProvider>().loadAdcodeNameMap();
     _fetchRecords();
-  }
-
-  Future<void> _loadAdcodeNames() async {
-    try {
-      final provinceName = currentProvince.name;
-      final cityJson = await rootBundle.loadString(currentProvince.cityGeoJsonPath);
-      final districtJson = await rootBundle.loadString(currentProvince.districtGeoJsonPath);
-
-      final cityData = jsonDecode(cityJson) as Map<String, dynamic>;
-      final districtData = jsonDecode(districtJson) as Map<String, dynamic>;
-
-      for (final feature in cityData['features'] ?? []) {
-        final props = feature['properties'] ?? {};
-        final adcode = props['adcode']?.toString();
-        final name = props['name']?.toString();
-        if (adcode != null && name != null) {
-          _adcodeNameMap[adcode] = '$provinceName$name';
-        }
-      }
-
-      for (final feature in districtData['features'] ?? []) {
-        final props = feature['properties'] ?? {};
-        final adcode = props['adcode']?.toString();
-        final name = props['name']?.toString();
-        final parent = props['parent'] as Map<String, dynamic>?;
-        final parentAdcode = parent?['adcode']?.toString();
-        if (adcode != null && name != null) {
-          final cityName = _adcodeNameMap[parentAdcode] ?? provinceName;
-          _adcodeNameMap[adcode] = '$cityName$name';
-        }
-      }
-
-      if (mounted) setState(() {});
-    } catch (e) {
-      debugPrint('加载地区名称失败: $e');
-    }
-  }
-
-  String _getLocationName(String? adcode) {
-    if (adcode == null || adcode.isEmpty) return '';
-    return _adcodeNameMap[adcode] ?? adcode;
   }
 
   Future<void> _fetchRecords() async {
@@ -633,7 +588,7 @@ borderRadius: BorderRadius.circular(2),
                       ],
                     ],
                   ),
-                  if (_getLocationName(record.location).isNotEmpty) ...[
+                  if (recordsProvider.locationName(record.location).isNotEmpty) ...[
                     const SizedBox(height: 4),
                     Row(
                       children: [
@@ -641,7 +596,7 @@ borderRadius: BorderRadius.circular(2),
                         const SizedBox(width: 6),
                         Expanded(
                           child: Text(
-                            _getLocationName(record.location),
+                            recordsProvider.locationName(record.location),
                             style: TextStyle(fontFamily: "serif", fontSize: 12, color: AppColors.muted, fontStyle: FontStyle.italic),
                             overflow: TextOverflow.ellipsis,
                           ),

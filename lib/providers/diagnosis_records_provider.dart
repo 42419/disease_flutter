@@ -1,7 +1,7 @@
 import 'dart:async';
 
-import 'package:farm_flutter/config/config.dart';
 import 'package:farm_flutter/models/diagnosis.dart';
+import 'package:farm_flutter/services/region_option_loader.dart';
 import 'package:farm_flutter/utils/datetime_util.dart';
 import 'package:farm_flutter/utils/http_util.dart';
 import 'package:flutter/foundation.dart';
@@ -16,6 +16,13 @@ class DiagnosisRecordsProvider extends ChangeNotifier {
   bool _sortDescending = true;
   List<MapEntry<String, int>> _stats = [];
   int _fetchGeneration = 0;
+
+  // ---- 地区名称（adcode -> 完整地名），供页面展示定位地区用 ----
+  // 之前这段 GeoJSON 解析逻辑直接写在 DiagnosisRecordsPage 里，且和
+  // RegionOptionLoader 里的解析逻辑重复了一份；现在统一收拢到这里，复用
+  // RegionOptionLoader，页面只读取 [adcodeNameMap]。
+  final Map<String, String> _adcodeNameMap = {};
+  bool _adcodeNameMapLoaded = false;
 
   // ---- 定时轮询 ----
   Timer? _refreshTimer;
@@ -35,6 +42,7 @@ class DiagnosisRecordsProvider extends ChangeNotifier {
   int? get expandedId => _expandedId;
   bool get sortDescending => _sortDescending;
   List<MapEntry<String, int>> get stats => _stats;
+  Map<String, String> get adcodeNameMap => _adcodeNameMap;
 
   /// 数据是否过期（距上次成功拉取超过 [staleThreshold]）
   bool get isStale =>
@@ -50,6 +58,26 @@ class DiagnosisRecordsProvider extends ChangeNotifier {
     _sortDescending = value;
     _resortRecords();
     notifyListeners();
+  }
+
+  /// 加载 adcode -> 完整地名 的映射，重复调用是安全的（只会真正加载一次）。
+  Future<void> loadAdcodeNameMap() async {
+    if (_adcodeNameMapLoaded) return;
+    try {
+      final regions = await const RegionOptionLoader().loadCurrentProvinceRegions();
+      _adcodeNameMap
+        ..clear()
+        ..addEntries(regions.map((r) => MapEntry(r.adcode, r.name)));
+      _adcodeNameMapLoaded = true;
+      notifyListeners();
+    } catch (e) {
+      debugPrint('加载地区名称失败: $e');
+    }
+  }
+
+  String locationName(String? adcode) {
+    if (adcode == null || adcode.isEmpty) return '';
+    return _adcodeNameMap[adcode] ?? adcode;
   }
 
   // ---- Timer 生命周期 ----
@@ -132,10 +160,8 @@ class DiagnosisRecordsProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
-      final resp = await HttpUtil.get(
-        '/get_all_dg',
-        headers: {'X-API-Token': Config.apiToken},
-      );
+      // 默认后端的 X-API-Token 由 HttpUtil 统一自动注入，无需在这里手传。
+      final resp = await HttpUtil.get('/get_all_dg');
 
       // 跳过过期请求的结果
       if (generation != _fetchGeneration) return;
