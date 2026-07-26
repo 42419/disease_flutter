@@ -3,7 +3,6 @@ import 'dart:io';
 import 'package:farm_flutter/routes/route.dart';
 import 'package:farm_flutter/config/config.dart';
 import 'package:farm_flutter/utils/http_util.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_displaymode/flutter_displaymode.dart';
 

@@ -22,10 +22,17 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
   bool _isLoggingIn = false;
   final AuthStorage _authStorage = const AuthStorage();
 
-  // 弹出菜单动效相关（参考 HyperOS3 / iOS 弹出式按钮的"锚点展开"手法）：
-  // 展开走物理弹簧曲线，收起走一段更快的普通缓动，控制器本身不设固定时长。
+  // 弹出菜单动效相关：直接照搬 compose-miuix-ui/miuix 仓库里 ListPopup 的真实
+  // 实现（miuix-ui/.../basic/ListPopup.kt 的 ListPopupDefaults +
+  // miuix-ui/.../layout/ListPopupLayout.kt 的 LaunchedEffect），不是自己拍脑袋
+  // 调的参数。三条轨道各自独立播放，语义上对应源码里的三个 Animatable：
+  //   fraction —— 驱动缩放 + 纵向 clip 揭示，物理弹簧
+  //   alpha    —— 菜单内容整体透明度，200ms/150ms 缓动
+  //   dim      —— 背景蒙层透明度，300ms/150ms 缓动
   OverlayEntry? _roleMenuOverlay;
-  late AnimationController _menuAnimController;
+  late AnimationController _fractionCtrl;
+  late AnimationController _alphaCtrl;
+  late AnimationController _dimCtrl;
 
   // 角色选项（顺序即弹出选择器中的顺序）
   static const List<String> _roleKeys = ["0", "1"];
@@ -36,28 +43,39 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
   final GlobalKey _roleFieldKey = GlobalKey();
   bool _isRoleMenuOpen = false;
 
-  // 展开动效的物理弹簧参数：阻尼比 ζ = damping / (2·√(stiffness·mass)) ≈ 0.75，
-  // 只留一丝回弹的"软着陆"感，不做夸张的弹跳（HyperOS3/iOS 系统菜单都是克制的
-  // 微弹，不是橡皮糖那种大幅度弹簧）。
-  static const SpringDescription _menuOpenSpring = SpringDescription(
+  // 对应源码 ListPopupDefaults.FractionAnimationSpec =
+  // spring(dampingRatio = 0.82f, stiffness = 362.5f)。
+  // Flutter 的 SpringDescription 用 (mass, stiffness, damping) 描述物理弹簧，
+  // 换算关系：damping = dampingRatio · 2 · √(stiffness · mass)
+  //          = 0.82 · 2 · √362.5 ≈ 31.22
+  static const SpringDescription _fractionSpring = SpringDescription(
     mass: 1,
-    stiffness: 480,
-    damping: 34,
+    stiffness: 362.5,
+    damping: 31.22,
   );
-  // 收起统一走一小段快速缓动，不复用展开的弹簧曲线——系统菜单的收起动画
-  // 几乎都是"唰"一下比展开快，不会反向播放一遍弹簧。
-  static const Duration _menuCloseDuration = Duration(milliseconds: 140);
+  // 对应源码 AlphaEnterAnimationSpec / AlphaExitAnimationSpec：
+  // tween(200) / tween(150)，Compose 里 tween 不传 easing 时默认就是
+  // FastOutSlowInEasing——和 Flutter 的 Curves.fastOutSlowIn 是同一条
+  // 三次贝塞尔曲线 (0.4, 0.0, 0.2, 1.0)，不是近似，是完全一致。
+  static const Duration _alphaEnterDuration = Duration(milliseconds: 200);
+  static const Duration _alphaExitDuration = Duration(milliseconds: 150);
+  // 对应源码 DimEnterAnimationSpec / DimExitAnimationSpec：
+  // tween(300, SinOutEasing) / tween(150, SinOutEasing)。
+  // SinOutEasing 的定义就是 sin(fraction·π/2)，和 Flutter 内置的
+  // Curves.easeOutSine 逐字节对得上，同样不是近似。
+  static const Duration _dimEnterDuration = Duration(milliseconds: 300);
+  static const Duration _dimExitDuration = Duration(milliseconds: 150);
 
   @override
   void initState() {
     super.initState();
     _loadSavedData();
-    // 展开时用 animateWith(SpringSimulation) 驱动，不依赖这里的 duration；
-    // 收起时会显式传 duration，这里给个兜底值即可。
-    _menuAnimController = AnimationController(
+    _fractionCtrl = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 320),
+      duration: const Duration(milliseconds: 320), // animateWith 不看这个值
     );
+    _alphaCtrl = AnimationController(vsync: this, duration: _alphaEnterDuration);
+    _dimCtrl = AnimationController(vsync: this, duration: _dimEnterDuration);
   }
 
   Future<void> _loadSavedData() async {
@@ -76,7 +94,9 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
 
   @override
   void dispose() {
-    _menuAnimController.dispose();
+    _fractionCtrl.dispose();
+    _alphaCtrl.dispose();
+    _dimCtrl.dispose();
     _roleMenuOverlay?.remove();
     _usernameController.dispose();
     _passwordController.dispose();
@@ -194,9 +214,8 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
     );
   }
 
-  // 弹出菜单展开逻辑：动效参考 HyperOS3/Miuix 的 popupClipReveal（锚点 clip
-  // 裁剪展开 + 物理弹簧）以及 iOS 弹出式/下拉式按钮的克制回弹，具体实现见
-  // 下方 AnimatedBuilder 里的注释、_menuOpenSpring 常量、_RevealClipper。
+  // 弹出菜单展开逻辑：直接照搬 compose-miuix-ui/miuix 的 ListPopup 真实实现，
+  // 而不是自己设计的近似效果。具体对照关系见下面各处注释。
   Future<void> _showRoleMenu(FormFieldState<String> field) async {
     FocusScope.of(context).unfocus();
     // 如果已有菜单在显示，先关闭
@@ -227,9 +246,10 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
     if (menuLeft + menuWidth > screenSize.width - 8) {
       menuLeft = screenSize.width - menuWidth - 8;
     }
-    // 菜单是否要向上弹出（下方空间不够时），展开动画要跟着从对应的角展开，
-    // 而不是永远固定右上角——不然从字段上方弹出时会显得方向拧巴。
-    bool expandFromTop = true;
+    // 菜单是否要向上弹出（下方空间不够时）。对应源码 PopupLayoutPosition 里
+    // showBelow / showAbove 两种情形，clip 揭示的方向要跟着切换，不然从字段
+    // 上方弹出时会显得方向拧巴。
+    bool expandFromTop = true; // true ≈ 源码的 showBelow，false ≈ showAbove
     if (menuTop + menuHeight > screenSize.height - 8) {
       menuTop = buttonPos.dy - menuHeight - 6; // 上方弹出
       expandFromTop = false;
@@ -240,52 +260,51 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
     _roleMenuOverlay = OverlayEntry(
       builder: (context) {
         return AnimatedBuilder(
-          animation: _menuAnimController,
+          animation: Listenable.merge([_fractionCtrl, _alphaCtrl, _dimCtrl]),
           builder: (context, _) {
-            // 弹簧仿真在回弹阶段会短暂越过 1.0 再落回来，这是有意保留的物理
-            // 特性；但用来算透明度/裁剪范围时必须夹到 [0,1]，否则会触发
-            // Opacity 断言或裁剪越界。
-            final raw = _menuAnimController.value;
-            final t = raw.clamp(0.0, 1.0);
-            // 蒙层比菜单本体更快淡入完成（前 55% 区间），参考系统菜单"背景先
-            // 暗下来、菜单紧跟着展开"的先后顺序。
-            final overlayOpacity = (t / 0.55).clamp(0.0, 1.0);
-            final menuOpacity = (t / 0.5).clamp(0.0, 1.0);
-            // 整体只做一个非常轻的缩放回弹（0.97 ↔ 1.0 附近），幅度小到不会
-            // 让文字看起来模糊变形，纯粹是给"落地"那一下加一点物理感；真正
-            // 承担"从小到大展开"视觉效果的是下面的 clip 裁剪，而不是缩放。
-            final settleScale = 0.97 + 0.03 * raw.clamp(0.0, 1.2);
+            // fraction 是弹簧仿真的原始值，回弹阶段会短暂越过 1.0——这是源码
+            // 里就有意保留的物理特性（源码注释：coerceIn(0f, 1f) 只在算 clip
+            // 时夹，缩放的 fraction 不夹），所以这里也只在算 clip 时夹到
+            // [0,1]，缩放继续用未夹住的原始值，弹跳感才出得来。
+            final fraction = _fractionCtrl.value;
+            final clipFraction = fraction.clamp(0.0, 1.0);
+            // 对应源码 ListPopupContent 里的
+            // `val scale = 0.15f + 0.85f * fraction`。
+            final scale = 0.15 + 0.85 * fraction;
+            final alpha = _alphaCtrl.value.clamp(0.0, 1.0);
+            final dimAlpha = _dimCtrl.value.clamp(0.0, 1.0);
 
             return Stack(
               children: [
-                // 半透明蒙层（淡入）
+                // 背景蒙层：对应 dimProgress，300ms 进 / 150ms 出，SinOutEasing。
                 Positioned.fill(
                   child: GestureDetector(
                     onTap: () => _closeRoleMenu(field: field),
                     behavior: HitTestBehavior.translucent,
                     child: Opacity(
-                      opacity: overlayOpacity,
+                      opacity: dimAlpha,
                       child: Container(color: Colors.black.withValues(alpha: 0.16)),
                     ),
                   ),
                 ),
-                // 菜单主体：从触发字段的角上用 clip 裁剪"展开"，而不是整体缩放
-                // 文字——参考 HyperOS3/Miuix 的 popupClipReveal 和 iOS 弹出式
-                // 按钮从锚点长出菜单的手法。
+                // 菜单主体：整体缩放（scale，0.15→1.0，回弹靠这个体现）叠加
+                // 纵向 clip 揭示（_RevealClipper，只裁高度不裁宽度——对应源码
+                // popupClipReveal 只按 size.height 算 visibleHeight，宽度始终
+                // 是满的），两者叠加才是源码里"从锚点长出来"的真实效果。
                 Positioned(
                   left: menuLeft,
                   top: menuTop,
                   child: Opacity(
-                    opacity: menuOpacity,
+                    opacity: alpha,
                     child: Transform.scale(
                       alignment: expandFromTop
                           ? Alignment.topRight
                           : Alignment.bottomRight,
-                      scale: settleScale,
+                      scale: scale,
                       child: ClipPath(
                         clipper: _RevealClipper(
-                          progress: raw,
-                          radius: 20,
+                          progress: clipFraction,
+                          radius: 16, // 对应源码 ListPopupContent 的 cornerRadius = 16.dp
                           fromTop: expandFromTop,
                         ),
                         child: SizedBox(
@@ -294,8 +313,12 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
                             color: Colors.white,
                             elevation: 16,
                             shadowColor: Colors.black.withValues(alpha: 0.22),
+                            // Flutter 没有真正的 squircle（源码用
+                            // addSquircleRect 画的连续曲率角），
+                            // ContinuousRectangleBorder 是内置形状里最接近的
+                            // 近似，这里如实标注不是逐像素还原。
                             shape: const ContinuousRectangleBorder(
-                              borderRadius: BorderRadius.all(Radius.circular(20)),
+                              borderRadius: BorderRadius.all(Radius.circular(16)),
                             ),
                             child: Padding(
                               padding: const EdgeInsets.symmetric(vertical: 8),
@@ -305,10 +328,6 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
                                   for (int i = 0; i < _roleKeys.length; i++)
                                     _buildRoleMenuItem(
                                       _roleKeys[i],
-                                      // 每一项在整体淡入的基础上再错开一点点，
-                                      // 呼应 Miuix 级联列表逐项展开的观感，
-                                      // 幅度很克制，避免变成"打字机"效果。
-                                      itemProgress: ((t - i * 0.06) / 0.4).clamp(0.0, 1.0),
                                       onTap: () => _closeRoleMenu(
                                         field: field,
                                         result: _roleKeys[i],
@@ -331,25 +350,43 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
     );
 
     Overlay.of(context).insert(_roleMenuOverlay!);
-    // 用物理弹簧仿真驱动展开：不是固定时长的缓动曲线，而是真的按质量/刚度/
-    // 阻尼算出来的运动轨迹，停止时机由弹簧自己收敛决定。
-    _menuAnimController
+    // 对应源码 LaunchedEffect(show) 里 show=true 分支：三条轨道并行播放，
+    // 互不等待。
+    _fractionCtrl
       ..stop()
       ..value = 0
-      ..animateWith(SpringSimulation(_menuOpenSpring, 0, 1, 0));
+      ..animateWith(SpringSimulation(_fractionSpring, 0, 1, 0));
+    _alphaCtrl
+      ..value = 0
+      ..animateTo(1, duration: _alphaEnterDuration, curve: Curves.fastOutSlowIn);
+    _dimCtrl
+      ..value = 0
+      ..animateTo(1, duration: _dimEnterDuration, curve: Curves.easeOutSine);
   }
 
   Future<void> _closeRoleMenu({
     required FormFieldState<String> field,
     String? result,
   }) async {
-    // 收起统一走一小段快速缓动，不复用展开的弹簧——系统菜单收起基本都是
-    // "唰"一下比展开快，不会把弹簧动画倒放一遍。
-    await _menuAnimController.animateTo(
-      0,
-      duration: _menuCloseDuration,
-      curve: Curves.easeIn,
+    // 对应源码 LaunchedEffect(show) 里 show=false 分支：fraction 弹簧和 dim
+    // 都是 launch 出去、不等它们播完；真正决定"什么时候可以摘掉 overlay"的
+    // 只有 alpha 淡出（150ms）——源码原注释是"Alpha controls the master
+    // timing: once content fades out, unmount immediately"。所以这里只
+    // await alpha，其它两条各播各的，最后强制归零，跟源码的收尾方式一致。
+    final fractionVelocity = _fractionCtrl.isAnimating ? _fractionCtrl.velocity : 0.0;
+    _fractionCtrl.animateWith(
+      SpringSimulation(_fractionSpring, _fractionCtrl.value, 0, fractionVelocity),
     );
+    _dimCtrl.animateTo(0, duration: _dimExitDuration, curve: Curves.easeOutSine);
+    await _alphaCtrl.animateTo(0, duration: _alphaExitDuration, curve: Curves.fastOutSlowIn);
+
+    // 强制把三条轨道都归零，避免下次展开时残留上一次没播完的状态
+    // （源码里同样有这一步：fractionProgress.snapTo(0f) 等）。
+    _fractionCtrl.stop();
+    _fractionCtrl.value = 0;
+    _alphaCtrl.value = 0;
+    _dimCtrl.value = 0;
+
     _roleMenuOverlay?.remove();
     _roleMenuOverlay = null;
     if (mounted) setState(() => _isRoleMenuOpen = false);
@@ -360,45 +397,37 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
     }
   }
 
-  Widget _buildRoleMenuItem(
-    String key, {
-    required double itemProgress,
-    required VoidCallback onTap,
-  }) {
+  Widget _buildRoleMenuItem(String key, {required VoidCallback onTap}) {
+    // 源码里 ListPopupColumn 本身不对单个列表项做错峰/入场动画，条目是随着
+    // 外层整体的 scale+clip+alpha 一起出现的，这里就不再画蛇添足加逐项动画。
     final bool selected = key == _selectedRole;
-    return Opacity(
-      opacity: itemProgress,
-      child: Transform.translate(
-        offset: Offset(0, (1 - itemProgress) * 6),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-          child: Material(
-            color: selected
-                ? AppColors.primary.withValues(alpha: 0.08)
-                : Colors.transparent,
-            borderRadius: BorderRadius.circular(14),
-            child: InkWell(
-              borderRadius: BorderRadius.circular(14),
-              onTap: onTap,
-              child: Container(
-                width: double.infinity,
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      _roleLabels[key]!,
-                      style: TextStyle(
-                        fontSize: 16,
-                        color: selected ? AppColors.primary : AppColors.ink,
-                        fontWeight: selected ? FontWeight.w600 : FontWeight.w400,
-                      ),
-                    ),
-                    if (selected)
-                      Icon(Icons.check_rounded, color: AppColors.primary, size: 20),
-                  ],
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+      child: Material(
+        color: selected
+            ? AppColors.primary.withValues(alpha: 0.08)
+            : Colors.transparent,
+        borderRadius: BorderRadius.circular(12),
+        child: InkWell(
+          borderRadius: BorderRadius.circular(12),
+          onTap: onTap,
+          child: Container(
+            width: double.infinity,
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  _roleLabels[key]!,
+                  style: TextStyle(
+                    fontSize: 16,
+                    color: selected ? AppColors.primary : AppColors.ink,
+                    fontWeight: selected ? FontWeight.w600 : FontWeight.w400,
+                  ),
                 ),
-              ),
+                if (selected)
+                  Icon(Icons.check_rounded, color: AppColors.primary, size: 20),
+              ],
             ),
           ),
         ),
@@ -814,16 +843,23 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
   }
 }
 
-/// 让菜单从触发字段的一角（右上角展开时用 topRight，向上弹出时用
-/// bottomRight）"生长"出来的裁剪器：随 [progress] 从 0 到 1，裁剪矩形从锚点
-/// 处的一个点逐渐扩大到整个菜单尺寸。
+/// 纵向 clip 揭示裁剪器，逐字节对照 compose-miuix-ui/miuix 仓库
+/// `miuix-ui/src/commonMain/kotlin/top/yukonga/miuix/kmp/basic/ListPopup.kt`
+/// 里的 `Modifier.popupClipReveal` 移植：随 [progress] 从 0 到 1，一条与菜单
+/// 等宽的横向色带从靠近触发字段的那条边（[fromTop] 为 true 时是顶边，为
+/// false 时是底边）逐渐向另一侧长高，宽度全程保持满宽——**只裁高度，不裁
+/// 宽度**，这一点和常见的"从角上对角线生长"的裁剪写法不一样，是刻意照抄
+/// 源码的效果，不是随手实现的近似版本。
 ///
-/// 和直接用 [ScaleTransition] 整体缩放菜单相比，这种写法始终按 1:1 尺寸布局、
-/// 渲染文字，只是逐步"揭开"更多区域——不会出现缩放过程中文字被压扁、模糊的
-/// 观感，这也是 HyperOS3/Miuix 的 `popupClipReveal` 和 iOS 系统菜单展开动画
-/// 采用的思路。
+/// 源码原文（简化）：
+/// ```kotlin
+/// val visibleHeight = height * progress
+/// val clipStart = if (showBelow) 0f else height * (1f - progress)
+/// ```
+/// 真正的"从小到大"视觉效果主要靠外层 [Transform.scale]（0.15→1.0）叠加
+/// 这里的纵向揭示共同完成，二者缺一都不是源码的真实效果。
 class _RevealClipper extends CustomClipper<Path> {
-  final double progress;
+  final double progress; // 调用方已经 clamp 到 [0,1]
   final double radius;
   final bool fromTop;
 
@@ -835,17 +871,9 @@ class _RevealClipper extends CustomClipper<Path> {
 
   @override
   Path getClip(Size size) {
-    // 弹簧仿真回弹阶段可能短暂越过 1.0，这里夹到合理范围，裁剪矩形最大也
-    // 就是菜单自身尺寸，不会真的"溢出"到外面去。
-    final t = progress.clamp(0.0, 1.0);
-    final width = size.width * t;
-    final height = size.height * t;
-    final left = size.width - width; // 右边缘固定，向左生长
-
-    final rect = fromTop
-        ? Rect.fromLTWH(left, 0, width, height) // 从右上角展开
-        : Rect.fromLTWH(left, size.height - height, width, height); // 从右下角展开
-
+    final visibleHeight = size.height * progress;
+    final clipStart = fromTop ? 0.0 : size.height - visibleHeight;
+    final rect = Rect.fromLTWH(0, clipStart, size.width, visibleHeight);
     return Path()..addRRect(RRect.fromRectAndRadius(rect, Radius.circular(radius)));
   }
 
