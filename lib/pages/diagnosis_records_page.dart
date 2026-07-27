@@ -1,4 +1,5 @@
 import 'package:farm_flutter/pages/widgets/analyzePage/components/highlight_utils.dart';
+import 'package:farm_flutter/pages/widgets/common/miuix_dropdown_menu.dart';
 import 'package:farm_flutter/providers/diagnosis_records_provider.dart';
 import 'package:farm_flutter/providers/user_provider.dart';
 import 'package:farm_flutter/utils/app_colors.dart';
@@ -13,7 +14,8 @@ class DiagnosisRecordsPage extends StatefulWidget {
   State<DiagnosisRecordsPage> createState() => _DiagnosisRecordsPageState();
 }
 
-class _DiagnosisRecordsPageState extends State<DiagnosisRecordsPage> {
+class _DiagnosisRecordsPageState extends State<DiagnosisRecordsPage>
+    with TickerProviderStateMixin {
   static const _barColors = [
     AppColors.error,
     AppColors.warning,
@@ -24,6 +26,10 @@ class _DiagnosisRecordsPageState extends State<DiagnosisRecordsPage> {
     AppColors.body,
   ];
 
+  // 排序方式下拉菜单，跟登录页角色菜单共用同一套 MiuixDropdownMenu。
+  late final MiuixDropdownMenu<bool> _sortMenu = MiuixDropdownMenu<bool>(vsync: this);
+  final GlobalKey _sortButtonKey = GlobalKey();
+
   @override
   void initState() {
     super.initState();
@@ -31,6 +37,33 @@ class _DiagnosisRecordsPageState extends State<DiagnosisRecordsPage> {
     // RegionOptionLoader 共用一份实现，页面这里只是触发加载。
     context.read<DiagnosisRecordsProvider>().loadAdcodeNameMap();
     _fetchRecords();
+  }
+
+  @override
+  void dispose() {
+    _sortMenu.dispose();
+    super.dispose();
+  }
+
+  Future<void> _showSortMenu(DiagnosisRecordsProvider recordsProvider) async {
+    if (_sortMenu.isOpen) {
+      await _sortMenu.close();
+      return;
+    }
+    await _sortMenu.show(
+      context: context,
+      anchorKey: _sortButtonKey,
+      items: const [
+        MiuixMenuItem(value: true, label: '最新在前'),
+        MiuixMenuItem(value: false, label: '最早在前'),
+      ],
+      selectedValue: recordsProvider.sortDescending,
+      onSelected: (value) {
+        if (recordsProvider.sortDescending != value) {
+          recordsProvider.setSortDescending(value);
+        }
+      },
+    );
   }
 
   Future<void> _fetchRecords() async {
@@ -83,30 +116,17 @@ class _DiagnosisRecordsPageState extends State<DiagnosisRecordsPage> {
         ),
         centerTitle: true,
         actions: [
-          PopupMenuButton<bool>(
+          IconButton(
+            key: _sortButtonKey,
+            tooltip: '排序方式',
+            onPressed: () => _showSortMenu(recordsProvider),
             icon: Icon(
-              recordsProvider.sortDescending ? Icons.arrow_downward_rounded : Icons.arrow_upward_rounded,
+              recordsProvider.sortDescending
+                  ? Icons.arrow_downward_rounded
+                  : Icons.arrow_upward_rounded,
               color: AppColors.muted,
               size: 20,
             ),
-            tooltip: '排序方式',
-            onSelected: (value) {
-              if (recordsProvider.sortDescending != value) {
-                context.read<DiagnosisRecordsProvider>().setSortDescending(value);
-              }
-            },
-            itemBuilder: (context) => [
-              CheckedPopupMenuItem<bool>(
-                value: true,
-                checked: recordsProvider.sortDescending,
-                child: const Text('最新在前'),
-              ),
-              CheckedPopupMenuItem<bool>(
-                value: false,
-                checked: !recordsProvider.sortDescending,
-                child: const Text('最早在前'),
-              ),
-            ],
           ),
           const SizedBox(width: 4),
         ],
