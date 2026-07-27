@@ -346,9 +346,9 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
                                             duration: const Duration(milliseconds: 200),
                                             curve: Curves.easeOutCubic,
                                             child: Icon(
-                                              Icons.unfold_more_rounded,
+                                              Icons.expand_more_outlined,
                                               color: AppColors.muted,
-                                              size: 20,
+                                              size: 23,
                                             ),
                                           ),
                                         ],
