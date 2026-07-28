@@ -271,50 +271,57 @@ class _MineViewState extends State<MineView> with AutomaticKeepAliveClientMixin 
                     children: [
                       Padding(
                         padding: const EdgeInsets.symmetric(vertical: 16),
-                        child: Row(
-                          crossAxisAlignment: CrossAxisAlignment.center,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Expanded(
-                              child: Text(
-                                "深色模式",
-                                style: TextStyle(
-                                  fontFamily: "serif",
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w600,
-                                  color: AppColors.ink,
-                                ),
+                            Text(
+                              "颜色主题",
+                              style: TextStyle(
+                                fontFamily: "serif",
+                                fontSize: 16,
+                                fontWeight: FontWeight.w600,
+                                color: AppColors.ink,
                               ),
                             ),
-                            SegmentedButton<ThemeMode>(
-                              segments: const [
-                                ButtonSegment(
-                                  value: ThemeMode.system,
-                                  icon: Icon(Icons.brightness_auto_rounded, size: 18),
-                                  label: Text("跟随系统"),
+                            const SizedBox(height: 12),
+                            SizedBox(
+                              width: double.infinity,
+                              child: SegmentedButton<ThemeMode>(
+                                segments: const [
+                                  ButtonSegment(
+                                    value: ThemeMode.system,
+                                    icon: Icon(Icons.brightness_auto_rounded, size: 16),
+                                    label: Text("跟随系统"),
+                                  ),
+                                  ButtonSegment(
+                                    value: ThemeMode.light,
+                                    icon: Icon(Icons.light_mode_rounded, size: 16),
+                                    label: Text("浅色"),
+                                  ),
+                                  ButtonSegment(
+                                    value: ThemeMode.dark,
+                                    icon: Icon(Icons.dark_mode_rounded, size: 16),
+                                    label: Text("深色"),
+                                  ),
+                                ],
+                                selected: {themeController.themeMode},
+                                showSelectedIcon: false,
+                                onSelectionChanged: (selection) {
+                                  themeController.setThemeMode(selection.first);
+                                },
+                                style: SegmentedButton.styleFrom(
+                                  backgroundColor: AppColors.surfaceSoft,
+                                  foregroundColor: AppColors.muted,
+                                  // 选中态背景固定用品牌珊瑚色、文字固定用 canvas（浅色模式下
+                                  // canvas 接近白，深色模式下 canvas 接近黑），两种模式下都能跟
+                                  // 珊瑚色背景形成清晰对比，不会出现"背景和字同色"的问题。
+                                  selectedForegroundColor: AppColors.canvas,
+                                  selectedBackgroundColor: AppColors.primary,
+                                  side: BorderSide(color: AppColors.hairline),
+                                  textStyle: const TextStyle(fontSize: 12),
+                                  visualDensity: VisualDensity.compact,
+                                  padding: const EdgeInsets.symmetric(horizontal: 4),
                                 ),
-                                ButtonSegment(
-                                  value: ThemeMode.light,
-                                  icon: Icon(Icons.light_mode_rounded, size: 18),
-                                  label: Text("浅色"),
-                                ),
-                                ButtonSegment(
-                                  value: ThemeMode.dark,
-                                  icon: Icon(Icons.dark_mode_rounded, size: 18),
-                                  label: Text("深色"),
-                                ),
-                              ],
-                              selected: {themeController.themeMode},
-                              showSelectedIcon: false,
-                              onSelectionChanged: (selection) {
-                                themeController.setThemeMode(selection.first);
-                              },
-                              style: SegmentedButton.styleFrom(
-                                foregroundColor: AppColors.muted,
-                                selectedForegroundColor: AppColors.onPrimary,
-                                selectedBackgroundColor: AppColors.ink,
-                                side: BorderSide(color: AppColors.hairline),
-                                textStyle: const TextStyle(fontSize: 12),
-                                visualDensity: VisualDensity.compact,
                               ),
                             ),
                           ],
