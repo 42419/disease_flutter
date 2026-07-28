@@ -6,6 +6,7 @@ import 'package:farm_flutter/providers/user_provider.dart';
 import 'package:farm_flutter/utils/app_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:farm_flutter/providers/theme_mode_provider.dart';
 
 class AdminMainPage extends StatefulWidget {
   const AdminMainPage({super.key});
@@ -58,6 +59,7 @@ class _AdminMainPageState extends State<AdminMainPage> with WidgetsBindingObserv
 
   @override
   Widget build(BuildContext context) {
+    context.watch<ThemeModeController>(); // 深色模式切换时用于触发本页面重建
     final navProvider = context.watch<MainNavigationProvider>();
 
     return Scaffold(
@@ -72,7 +74,7 @@ class _AdminMainPageState extends State<AdminMainPage> with WidgetsBindingObserv
       bottomNavigationBar: Theme(
         data: Theme.of(context).copyWith(
           navigationBarTheme: NavigationBarThemeData(
-            backgroundColor: AppColors.white,
+            backgroundColor: AppColors.canvas,
             elevation: 0,
             indicatorColor: AppColors.primaryLightest,
             labelTextStyle: WidgetStateProperty.resolveWith((states) {

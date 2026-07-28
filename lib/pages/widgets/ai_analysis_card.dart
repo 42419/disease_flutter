@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:farm_flutter/utils/app_colors.dart';
+import 'package:provider/provider.dart';
+import 'package:farm_flutter/providers/theme_mode_provider.dart';
 
 class AiAnalysisCard extends StatelessWidget {
   final String diseaseName;
@@ -8,6 +10,7 @@ class AiAnalysisCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    context.watch<ThemeModeController>(); // 深色模式切换时用于触发本页面重建
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 28),
@@ -33,7 +36,7 @@ class AiAnalysisCard extends StatelessWidget {
               const SizedBox(width: 12),
               Text(
                 '智能识别',
-                style: const TextStyle(
+                style: TextStyle(
                   fontFamily: "serif",
                   fontSize: 20,
                   fontWeight: FontWeight.w600,
@@ -45,7 +48,7 @@ class AiAnalysisCard extends StatelessWidget {
           const SizedBox(height: 16),
           Text(
             diseaseName.isEmpty ? '未知病害' : diseaseName,
-            style: const TextStyle(
+            style: TextStyle(
               fontFamily: "serif",
               fontSize: 28,
               fontWeight: FontWeight.w600,

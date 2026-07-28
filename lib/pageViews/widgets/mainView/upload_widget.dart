@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:farm_flutter/utils/app_colors.dart';
 import 'package:provider/provider.dart';
+import 'package:farm_flutter/providers/theme_mode_provider.dart';
 
 class UploadWidget extends StatefulWidget {
   const UploadWidget({super.key});
@@ -19,7 +20,7 @@ class _UploadWidgetState extends State<UploadWidget> {
     showDialog(
       context: context,
       builder: (dialogContext) => Dialog(
-        backgroundColor: AppColors.white,
+        backgroundColor: AppColors.surfaceCard,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         child: Padding(
           padding: EdgeInsets.all(20),
@@ -330,25 +331,25 @@ class _UploadWidgetState extends State<UploadWidget> {
                     ),
                   ),
                 ),
-                const Divider(height: 1, color: AppColors.hairline),
+                Divider(height: 1, color: AppColors.hairline),
                 Expanded(
                   child: ListView.separated(
                     itemCount: regions.length,
                     separatorBuilder: (_, _) =>
-                        const Divider(height: 1, color: AppColors.hairline),
+                        Divider(height: 1, color: AppColors.hairline),
                     itemBuilder: (_, index) {
                       final region = regions[index];
                       return ListTile(
                         title: Text(
                           region.name,
-                          style: const TextStyle(
+                          style: TextStyle(
                             color: AppColors.ink,
                             fontSize: 15,
                           ),
                         ),
                         subtitle: Text(
                           '${region.level.isEmpty ? '区域' : region.level} · ${region.adcode}',
-                          style: const TextStyle(
+                          style: TextStyle(
                             color: AppColors.muted,
                             fontSize: 12,
                           ),
@@ -466,6 +467,7 @@ class _UploadWidgetState extends State<UploadWidget> {
 
   @override
   Widget build(BuildContext context) {
+    context.watch<ThemeModeController>(); // 深色模式切换时用于触发本页面重建
     final uploadProvider = context.watch<UploadProvider>();
     final heatmapBytes = PredictionResult(
       result: uploadProvider.result ?? '',
@@ -676,7 +678,7 @@ class _UploadWidgetState extends State<UploadWidget> {
                               border: Border.all(color: AppColors.hairline),
                             ),
                             child: heatmapBytes == null
-                                ? const SizedBox(
+                                ? SizedBox(
                                     height: 140,
                                     child: Center(
                                       child: Text(

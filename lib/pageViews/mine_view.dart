@@ -7,6 +7,7 @@ import 'package:farm_flutter/services/auth_storage.dart';
 import 'package:farm_flutter/utils/app_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:farm_flutter/providers/theme_mode_provider.dart';
 
 class MineView extends StatefulWidget {
   const MineView({super.key});
@@ -81,6 +82,7 @@ class _MineViewState extends State<MineView> with AutomaticKeepAliveClientMixin 
 
   @override
   Widget build(BuildContext context) {
+    final themeController = context.watch<ThemeModeController>();
     super.build(context);
     final user = context.watch<UserProvider>();
     final recordsProvider = context.watch<DiagnosisRecordsProvider>();
@@ -267,6 +269,58 @@ class _MineViewState extends State<MineView> with AutomaticKeepAliveClientMixin 
                   ),
                   child: Column(
                     children: [
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            Expanded(
+                              child: Text(
+                                "深色模式",
+                                style: TextStyle(
+                                  fontFamily: "serif",
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w600,
+                                  color: AppColors.ink,
+                                ),
+                              ),
+                            ),
+                            SegmentedButton<ThemeMode>(
+                              segments: const [
+                                ButtonSegment(
+                                  value: ThemeMode.system,
+                                  icon: Icon(Icons.brightness_auto_rounded, size: 18),
+                                  label: Text("跟随系统"),
+                                ),
+                                ButtonSegment(
+                                  value: ThemeMode.light,
+                                  icon: Icon(Icons.light_mode_rounded, size: 18),
+                                  label: Text("浅色"),
+                                ),
+                                ButtonSegment(
+                                  value: ThemeMode.dark,
+                                  icon: Icon(Icons.dark_mode_rounded, size: 18),
+                                  label: Text("深色"),
+                                ),
+                              ],
+                              selected: {themeController.themeMode},
+                              showSelectedIcon: false,
+                              onSelectionChanged: (selection) {
+                                themeController.setThemeMode(selection.first);
+                              },
+                              style: SegmentedButton.styleFrom(
+                                foregroundColor: AppColors.muted,
+                                selectedForegroundColor: AppColors.onPrimary,
+                                selectedBackgroundColor: AppColors.ink,
+                                side: BorderSide(color: AppColors.hairline),
+                                textStyle: const TextStyle(fontSize: 12),
+                                visualDensity: VisualDensity.compact,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      Divider(height: 1, color: AppColors.hairline),
                       ListTile(
                         contentPadding: EdgeInsets.symmetric(horizontal: 0, vertical: 4),
                         title: Text(

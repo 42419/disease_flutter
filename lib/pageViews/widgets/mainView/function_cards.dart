@@ -1,5 +1,7 @@
 import 'package:farm_flutter/utils/app_colors.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:farm_flutter/providers/theme_mode_provider.dart';
 
 class FunctionCards extends StatefulWidget {
   const FunctionCards({super.key});
@@ -35,6 +37,7 @@ class _FunctionCardsState extends State<FunctionCards> {
 
   @override
   Widget build(BuildContext context) {
+    context.watch<ThemeModeController>(); // 深色模式切换时用于触发本页面重建
     return Column(
       children: List.generate(_getCardsInfo.length, (index) {
         final item = _getCardsInfo[index];

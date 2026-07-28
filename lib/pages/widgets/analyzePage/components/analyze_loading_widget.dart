@@ -1,6 +1,8 @@
 import 'package:farm_flutter/pages/widgets/analyzePage/components/looping_dot.dart';
 import 'package:farm_flutter/utils/app_colors.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:farm_flutter/providers/theme_mode_provider.dart';
 
 class AnalyzeLoadingWidget extends StatefulWidget {
   final ValueNotifier<String> streamingTextNotifier;
@@ -48,6 +50,7 @@ class _AnalyzeLoadingWidgetState extends State<AnalyzeLoadingWidget> {
 
   @override
   Widget build(BuildContext context) {
+    context.watch<ThemeModeController>(); // 深色模式切换时用于触发本页面重建
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -119,7 +122,7 @@ class _AnalyzeLoadingWidgetState extends State<AnalyzeLoadingWidget> {
                             ),
                           ),
                           const Spacer(),
-                          const SizedBox(
+                          SizedBox(
                             width: 12,
                             height: 12,
                             child: CircularProgressIndicator(
@@ -169,7 +172,7 @@ class _AnalyzeLoadingWidgetState extends State<AnalyzeLoadingWidget> {
         color: AppColors.primaryLightest,
         borderRadius: BorderRadius.circular(6),
       ),
-      child: const Icon(
+      child: Icon(
         Icons.auto_awesome,
         size: 14,
         color: AppColors.primary,

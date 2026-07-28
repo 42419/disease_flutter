@@ -2,6 +2,8 @@ import 'package:farm_flutter/pages/widgets/analyzePage/components/highlight_util
 import 'package:farm_flutter/pages/widgets/analyzePage/components/suggestion_item.dart';
 import 'package:farm_flutter/utils/app_colors.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:farm_flutter/providers/theme_mode_provider.dart';
 
 class AnalyzeResultWidget extends StatelessWidget {
   final String? diseaseType;
@@ -23,6 +25,7 @@ class AnalyzeResultWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    context.watch<ThemeModeController>(); // 深色模式切换时用于触发本页面重建
     return ValueListenableBuilder<List<String>>(
       valueListenable: displayedSuggestionsNotifier,
       builder: (context, suggestions, _) {
@@ -104,7 +107,7 @@ class AnalyzeResultWidget extends StatelessWidget {
                   ),
                   child: RichText(
                     text: TextSpan(
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 13.5,
                         color: AppColors.textPrimary,
                       ),
@@ -115,7 +118,7 @@ class AnalyzeResultWidget extends StatelessWidget {
                         ),
                         TextSpan(
                           text: diseaseType,
-                          style: const TextStyle(
+                          style: TextStyle(
                             color: AppColors.danger,
                             fontWeight: FontWeight.w700,
                           ),
@@ -152,7 +155,7 @@ class AnalyzeResultWidget extends StatelessWidget {
         const SizedBox(width: 10),
         Text(
           title,
-          style: const TextStyle(
+          style: TextStyle(
             fontFamily: "serif",
             fontSize: 16,
             fontWeight: FontWeight.w600,
@@ -264,7 +267,7 @@ class AnalyzeResultWidget extends StatelessWidget {
             Expanded(
               child: RichText(
                 text: TextSpan(
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontFamily: "serif",
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
@@ -273,7 +276,7 @@ class AnalyzeResultWidget extends StatelessWidget {
                   children: [
                     TextSpan(text: line),
                     if (showCursor)
-                      const TextSpan(
+                      TextSpan(
                         text: '▎',
                         style: TextStyle(
                           color: AppColors.danger,
@@ -311,7 +314,7 @@ class AnalyzeResultWidget extends StatelessWidget {
               const SizedBox(width: 8),
               Text(
                 label,
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.w700,
                   color: AppColors.textPrimary,
@@ -324,7 +327,7 @@ class AnalyzeResultWidget extends StatelessWidget {
             padding: const EdgeInsets.only(left: 11),
             child: RichText(
               text: TextSpan(
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 14,
                   color: AppColors.textPrimary,
                   height: 1.55,
@@ -332,7 +335,7 @@ class AnalyzeResultWidget extends StatelessWidget {
                 children: [
                   ...buildHighlightedSpans(body),
                   if (showCursor)
-                    const TextSpan(
+                    TextSpan(
                       text: '▎',
                       style: TextStyle(
                         color: AppColors.danger,
@@ -372,7 +375,7 @@ class AnalyzeResultWidget extends StatelessWidget {
               const SizedBox(width: 10),
               Text(
                 header,
-                style: const TextStyle(
+                style: TextStyle(
                   fontFamily: "serif",
                   fontSize: 16,
                   fontWeight: FontWeight.w600,
@@ -385,7 +388,7 @@ class AnalyzeResultWidget extends StatelessWidget {
           if (stages.isEmpty && showCursor)
             Padding(
               padding: const EdgeInsets.only(left: leftPad + 10),
-              child: const Text(
+              child: Text(
                 '▎',
                 style: TextStyle(
                   color: AppColors.danger,
@@ -456,7 +459,7 @@ class AnalyzeResultWidget extends StatelessWidget {
                         children: [
                           RichText(
                             text: TextSpan(
-                              style: const TextStyle(
+                              style: TextStyle(
                                 fontSize: 14,
                                 fontWeight: FontWeight.w700,
                                 color: AppColors.textPrimary,
@@ -464,7 +467,7 @@ class AnalyzeResultWidget extends StatelessWidget {
                               children: [
                                 TextSpan(text: label),
                                 if (showStageCursor && !hasColon)
-                                  const TextSpan(
+                                  TextSpan(
                                     text: '▎',
                                     style: TextStyle(
                                       color: AppColors.danger,
@@ -478,7 +481,7 @@ class AnalyzeResultWidget extends StatelessWidget {
                           if (hasColon)
                             RichText(
                               text: TextSpan(
-                                style: const TextStyle(
+                                style: TextStyle(
                                   fontSize: 13.5,
                                   color: AppColors.textSecondary,
                                   height: 1.55,
@@ -486,7 +489,7 @@ class AnalyzeResultWidget extends StatelessWidget {
                                 children: [
                                   ...buildHighlightedSpans(body),
                                   if (showStageCursor)
-                                    const TextSpan(
+                                    TextSpan(
                                       text: '▎',
                                       style: TextStyle(
                                         color: AppColors.danger,

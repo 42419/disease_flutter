@@ -9,6 +9,8 @@ import 'package:farm_flutter/utils/app_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
+import 'package:provider/provider.dart';
+import 'package:farm_flutter/providers/theme_mode_provider.dart';
 
 class AdminMapView extends StatefulWidget {
   const AdminMapView({super.key});
@@ -50,6 +52,7 @@ class AdminMapViewState extends State<AdminMapView> {
 
   // ---- 多边形/标记缓存 ----
   List<Polygon<String>> _cachedPolygons = const [];
+  bool _lastIsDark = AppColors.isDark;
   List<Marker> _cachedLabels = const [];
 
   // ---- 计算属性 ----
@@ -206,7 +209,7 @@ class AdminMapViewState extends State<AdminMapView> {
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
               decoration: BoxDecoration(
-                color: Colors.white.withValues(
+                color: AppColors.canvas.withValues(
                   alpha: dim ? 0.28 : (isSelected ? 0.92 : 0.82),
                 ),
                 borderRadius: BorderRadius.circular(6),
@@ -458,8 +461,15 @@ class AdminMapViewState extends State<AdminMapView> {
 
   @override
   Widget build(BuildContext context) {
+    context.watch<ThemeModeController>(); // 深色模式切换时用于触发本页面重建
+    if (_lastIsDark != AppColors.isDark) {
+      // 亮度变化后，_cachedPolygons/_cachedLabels 里缓存的颜色是旧主题算出来的，
+      // 这里强制重新计算一次，避免地图图层颜色和其余 UI 不同步。
+      _lastIsDark = AppColors.isDark;
+      _rebuildCache();
+    }
     if (_isLoading) {
-      return const Scaffold(
+      return Scaffold(
         backgroundColor: AppColors.backgroundLight,
         body: SafeArea(
           child: Center(
