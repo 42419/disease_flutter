@@ -132,7 +132,9 @@ class MiuixDropdownMenu<T> {
                         child: SizedBox(
                           width: menuWidth,
                           child: Material(
-                            color: AppColors.surfaceCard,
+                            color: AppColors.isDark
+                                ? AppColors.surfaceCard
+                                : AppColors.canvas,
                             elevation: 16,
                             shadowColor: Colors.black.withValues(alpha: 0.22),
                             shape: const ContinuousRectangleBorder(
