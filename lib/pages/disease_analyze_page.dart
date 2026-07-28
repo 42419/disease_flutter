@@ -4,6 +4,7 @@ import 'package:farm_flutter/providers/disease_analyze_provider.dart';
 import 'package:farm_flutter/utils/app_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:farm_flutter/providers/theme_mode_provider.dart';
 
 class DiseaseAnalyzePage extends StatefulWidget {
   const DiseaseAnalyzePage({super.key});
@@ -23,6 +24,7 @@ class _DiseaseAnalyzePageState extends State<DiseaseAnalyzePage> {
 
   @override
   Widget build(BuildContext context) {
+    context.watch<ThemeModeController>(); // 深色模式切换时用于触发本页面重建
     var args = ModalRoute.of(context)?.settings.arguments?.toString() ?? '';
     if (args == 'null') args = '';
 
@@ -34,7 +36,7 @@ class _DiseaseAnalyzePageState extends State<DiseaseAnalyzePage> {
         elevation: 0,
         scrolledUnderElevation: 0,
         leading: IconButton(
-          icon: const Icon(
+          icon: Icon(
             Icons.arrow_back_ios_new,
             color: AppColors.ink,
           ),
@@ -46,7 +48,7 @@ class _DiseaseAnalyzePageState extends State<DiseaseAnalyzePage> {
             Navigator.pop(context);
           },
         ),
-        title: const Text(
+        title: Text(
           '智能病因分析',
           style: TextStyle(
             fontFamily: "serif",
@@ -55,7 +57,7 @@ class _DiseaseAnalyzePageState extends State<DiseaseAnalyzePage> {
             fontWeight: FontWeight.w600,
           ),
         ),
-        bottom: const PreferredSize(
+        bottom: PreferredSize(
           preferredSize: Size.fromHeight(1.0),
           child: Divider(height: 1, color: AppColors.hairline),
         ),

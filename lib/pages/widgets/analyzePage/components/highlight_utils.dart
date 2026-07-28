@@ -110,7 +110,7 @@ List<InlineSpan> buildHighlightedSpans(String text) {
       spans.add(
         TextSpan(
           text: label,
-          style: const TextStyle(
+          style: TextStyle(
             color: AppColors.textPrimary,
             fontWeight: FontWeight.w700,
           ),
@@ -157,7 +157,7 @@ List<InlineSpan> _buildKeywordSpans(String text, List<String> keywords) {
     spans.add(
       TextSpan(
         text: earliestKeyword!,
-        style: const TextStyle(
+        style: TextStyle(
           color: AppColors.danger,
           fontWeight: FontWeight.w600,
         ),

@@ -6,6 +6,7 @@ import 'package:farm_flutter/providers/upload_provider.dart';
 import 'package:farm_flutter/utils/app_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:farm_flutter/providers/theme_mode_provider.dart';
 
 class DiseaseAnalyzeWidget extends StatefulWidget {
   final String initialDiseaseName;
@@ -70,6 +71,7 @@ class _DiseaseAnalyzeWidgetState extends State<DiseaseAnalyzeWidget> {
 
   @override
   Widget build(BuildContext context) {
+    context.watch<ThemeModeController>(); // 深色模式切换时用于触发本页面重建
     final analyzeProvider = context.watch<DiseaseAnalyzeProvider>();
 
     if (analyzeProvider.showInput) return _buildInputWidget();
@@ -81,13 +83,13 @@ class _DiseaseAnalyzeWidgetState extends State<DiseaseAnalyzeWidget> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Icon(
+              Icon(
                 Icons.error_outline,
                 color: AppColors.danger,
                 size: 48,
               ),
               const SizedBox(height: 16),
-              const Text(
+              Text(
                 '分析失败',
                 style: TextStyle(
                   fontFamily: "serif",
@@ -99,7 +101,7 @@ class _DiseaseAnalyzeWidgetState extends State<DiseaseAnalyzeWidget> {
               const SizedBox(height: 8),
               Text(
                 analyzeProvider.errorMessage ?? '',
-                style: const TextStyle(
+                style: TextStyle(
                   color: AppColors.textSecondary,
                   fontSize: 13,
                 ),
@@ -156,7 +158,7 @@ class _DiseaseAnalyzeWidgetState extends State<DiseaseAnalyzeWidget> {
               const SizedBox(width: 12),
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
-                children: const [
+                children: [
                   Text(
                     '输入病害名称',
                     style: TextStyle(
@@ -182,10 +184,10 @@ class _DiseaseAnalyzeWidgetState extends State<DiseaseAnalyzeWidget> {
           TextField(
             controller: _inputController,
             autofocus: true,
-            style: const TextStyle(fontSize: 16, color: AppColors.textPrimary),
+            style: TextStyle(fontSize: 16, color: AppColors.textPrimary),
             decoration: InputDecoration(
               hintText: '例如：苹果黑斑病',
-              hintStyle: const TextStyle(
+              hintStyle: TextStyle(
                 color: AppColors.textTertiary,
                 fontSize: 15,
               ),
@@ -197,15 +199,15 @@ class _DiseaseAnalyzeWidgetState extends State<DiseaseAnalyzeWidget> {
               ),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(2),
-                borderSide: const BorderSide(color: AppColors.hairline),
+                borderSide: BorderSide(color: AppColors.hairline),
               ),
               enabledBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(2),
-                borderSide: const BorderSide(color: AppColors.hairline),
+                borderSide: BorderSide(color: AppColors.hairline),
               ),
               focusedBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(2),
-                borderSide: const BorderSide(
+                borderSide: BorderSide(
                   color: AppColors.inputBorderFocused,
                   width: 1.5,
                 ),
@@ -257,7 +259,7 @@ class _DiseaseAnalyzeWidgetState extends State<DiseaseAnalyzeWidget> {
         const SizedBox(width: 12),
         Column(
           crossAxisAlignment: CrossAxisAlignment.start,
-          children: const [
+          children: [
             Text(
               '病因分析',
               style: TextStyle(

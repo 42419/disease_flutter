@@ -1,6 +1,8 @@
 import 'package:farm_flutter/pages/widgets/analyzePage/components/highlight_utils.dart';
 import 'package:farm_flutter/utils/app_colors.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:farm_flutter/providers/theme_mode_provider.dart';
 
 class SuggestionItem extends StatelessWidget {
   final String suggestion;
@@ -14,6 +16,7 @@ class SuggestionItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    context.watch<ThemeModeController>(); // 深色模式切换时用于触发本页面重建
     String? title;
     String body = suggestion;
 
@@ -42,7 +45,7 @@ class SuggestionItem extends StatelessWidget {
                   Container(
                     width: 8,
                     height: 8,
-                    decoration: const BoxDecoration(
+                    decoration: BoxDecoration(
                       color: AppColors.success,
                       shape: BoxShape.circle,
                     ),
@@ -51,7 +54,7 @@ class SuggestionItem extends StatelessWidget {
                   Expanded(
                     child: RichText(
                       text: TextSpan(
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontFamily: "serif",
                           fontSize: 15,
                           fontWeight: FontWeight.w600,
@@ -77,7 +80,7 @@ class SuggestionItem extends StatelessWidget {
                 children: [
                   ...buildHighlightedSpans(body),
                   if (showCursor)
-                    const TextSpan(
+                    TextSpan(
                       text: '\u258E',
                       style: TextStyle(
                         color: AppColors.danger,
