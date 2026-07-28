@@ -1,6 +1,8 @@
 import 'package:fl_chart/fl_chart.dart';
 import 'package:farm_flutter/utils/app_colors.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:farm_flutter/providers/theme_mode_provider.dart';
 
 /// 地图弹窗中的病害分布柱状图。
 class DiseaseChartMarker extends StatelessWidget {
@@ -8,7 +10,7 @@ class DiseaseChartMarker extends StatelessWidget {
 
   const DiseaseChartMarker({super.key, required this.summary});
 
-  static const _barColors = [
+  static List<Color> get _barColors => [
     AppColors.error,
     AppColors.warning,
     AppColors.accentAmber,
@@ -20,6 +22,7 @@ class DiseaseChartMarker extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    context.watch<ThemeModeController>(); // 深色模式切换时用于触发本页面重建
     final displayStats = summary.take(7).toList();
     final maxCount = displayStats.first.value;
     const cardWidth = 300.0;
@@ -93,7 +96,7 @@ class DiseaseChartMarker extends StatelessWidget {
                                   width: 46,
                                   child: Text(
                                     _formatChartLabel(displayStats[idx].key),
-                                    style: const TextStyle(
+                                    style: TextStyle(
                                       fontSize: 9,
                                       color: AppColors.textSecondary,
                                       fontWeight: FontWeight.w500,
@@ -123,7 +126,7 @@ class DiseaseChartMarker extends StatelessWidget {
                                 padding: const EdgeInsets.only(right: 6),
                                 child: Text(
                                   '$v',
-                                  style: const TextStyle(
+                                  style: TextStyle(
                                     fontSize: 10,
                                     color: AppColors.textTertiary,
                                     fontWeight: FontWeight.w500,

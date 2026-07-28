@@ -6,6 +6,7 @@ import 'package:farm_flutter/utils/app_colors.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:farm_flutter/providers/theme_mode_provider.dart';
 
 class DiagnosisRecordsPage extends StatefulWidget {
   const DiagnosisRecordsPage({super.key});
@@ -16,7 +17,7 @@ class DiagnosisRecordsPage extends StatefulWidget {
 
 class _DiagnosisRecordsPageState extends State<DiagnosisRecordsPage>
     with TickerProviderStateMixin {
-  static const _barColors = [
+  static List<Color> get _barColors => [
     AppColors.error,
     AppColors.warning,
     AppColors.accentAmber,
@@ -76,6 +77,7 @@ class _DiagnosisRecordsPageState extends State<DiagnosisRecordsPage>
 
   @override
   Widget build(BuildContext context) {
+    context.watch<ThemeModeController>(); // 深色模式切换时用于触发本页面重建
     final recordsProvider = context.watch<DiagnosisRecordsProvider>();
     final user = context.watch<UserProvider>();
 
@@ -86,7 +88,7 @@ class _DiagnosisRecordsPageState extends State<DiagnosisRecordsPage>
         surfaceTintColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios, color: AppColors.textPrimary),
+          icon: Icon(Icons.arrow_back_ios, color: AppColors.textPrimary),
           onPressed: () => Navigator.pop(context),
         ),
         title: Column(
@@ -177,14 +179,14 @@ class _DiagnosisRecordsPageState extends State<DiagnosisRecordsPage>
                   color: AppColors.danger.withAlpha(26),
                   shape: BoxShape.circle,
                 ),
-                child: const Icon(
+                child: Icon(
                   Icons.wifi_off_rounded,
                   size: 40,
                   color: AppColors.danger,
                 ),
               ),
               const SizedBox(height: 20),
-              const Text(
+              Text(
                 '加载失败',
                 style: TextStyle(
                   fontSize: 17,
@@ -195,7 +197,7 @@ class _DiagnosisRecordsPageState extends State<DiagnosisRecordsPage>
               const SizedBox(height: 8),
               Text(
                 recordsProvider.errorMessage!,
-                style: const TextStyle(
+                style: TextStyle(
                   color: AppColors.textSecondary,
                   fontSize: 13,
                 ),
@@ -235,7 +237,7 @@ class _DiagnosisRecordsPageState extends State<DiagnosisRecordsPage>
                 color: AppColors.primaryLightest.withAlpha(100),
                 shape: BoxShape.circle,
               ),
-              child: const Icon(
+              child: Icon(
                 Icons.content_paste_off_rounded,
                 size: 36,
                 color: AppColors.textTertiary,
@@ -401,7 +403,7 @@ borderRadius: BorderRadius.circular(2),
                             children: [
                               Text(
                                 line1,
-                                style: const TextStyle(
+                                style: TextStyle(
                                   fontSize: 10,
                                   color: AppColors.textSecondary,
                                   fontWeight: FontWeight.w500,
@@ -413,7 +415,7 @@ borderRadius: BorderRadius.circular(2),
                               if (line2.isNotEmpty)
                                 Text(
                                   line2,
-                                  style: const TextStyle(
+                                  style: TextStyle(
                                     fontSize: 10,
                                     color: AppColors.textSecondary,
                                     fontWeight: FontWeight.w500,
@@ -442,7 +444,7 @@ borderRadius: BorderRadius.circular(2),
                           padding: const EdgeInsets.only(right: 6),
                           child: Text(
                             '$v',
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontSize: 11,
                               color: AppColors.textTertiary,
                               fontWeight: FontWeight.w500,
@@ -575,7 +577,7 @@ borderRadius: BorderRadius.circular(2),
                       AnimatedRotation(
                         turns: isExpanded ? 0.5 : 0,
                         duration: const Duration(milliseconds: 250),
-                        child: const Icon(
+                        child: Icon(
                           Icons.keyboard_arrow_down_rounded,
                           size: 20,
                           color: AppColors.textTertiary,
