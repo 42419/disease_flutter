@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 
 import '../../../utils/app_colors.dart';
+import 'package:provider/provider.dart';
+import 'package:farm_flutter/providers/theme_mode_provider.dart';
 
 class FarmNews extends StatefulWidget {
   const FarmNews({super.key});
@@ -27,6 +29,7 @@ class _FarmNewsState extends State<FarmNews> {
 
   @override
   Widget build(BuildContext context) {
+    context.watch<ThemeModeController>(); // 深色模式切换时用于触发本页面重建
     return Column(
       children: [
         Column(

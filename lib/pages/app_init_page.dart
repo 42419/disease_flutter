@@ -3,6 +3,7 @@ import 'package:farm_flutter/providers/user_provider.dart';
 import 'package:farm_flutter/services/auth_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:farm_flutter/providers/theme_mode_provider.dart';
 
 class AppInitPage extends StatefulWidget {
   const AppInitPage({super.key});
@@ -53,6 +54,7 @@ class _AppInitPageState extends State<AppInitPage> {
 
   @override
   Widget build(BuildContext context) {
+    context.watch<ThemeModeController>(); // 深色模式切换时用于触发本页面重建
     return Scaffold(
       backgroundColor: AppColors.canvas,
       body: Center(
