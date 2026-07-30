@@ -36,10 +36,7 @@ class _DiseaseAnalyzePageState extends State<DiseaseAnalyzePage> {
         elevation: 0,
         scrolledUnderElevation: 0,
         leading: IconButton(
-          icon: Icon(
-            Icons.arrow_back_ios_new,
-            color: AppColors.ink,
-          ),
+          icon: Icon(Icons.arrow_back_ios_new, color: AppColors.ink),
           onPressed: () {
             // 离开分析页时取消进行中的 SSE 请求和打字机动画
             if (context.mounted) {

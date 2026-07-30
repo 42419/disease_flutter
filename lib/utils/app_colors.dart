@@ -62,8 +62,10 @@ class AppColors {
   // 更亮一级的深色卡片面，形成和浅色模式一致的层级关系。
   // ==========================================
   static Color get canvas => isDark ? _Dark.canvas : _Light.canvas;
-  static Color get surfaceSoft => isDark ? _Dark.surfaceSoft : _Light.surfaceSoft;
-  static Color get surfaceCard => isDark ? _Dark.surfaceCard : _Light.surfaceCard;
+  static Color get surfaceSoft =>
+      isDark ? _Dark.surfaceSoft : _Light.surfaceSoft;
+  static Color get surfaceCard =>
+      isDark ? _Dark.surfaceCard : _Light.surfaceCard;
   static Color get surfaceCreamStrong =>
       isDark ? _Dark.surfaceStrong : _Light.surfaceCreamStrong;
 

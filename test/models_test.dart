@@ -89,8 +89,12 @@ void main() {
     group('formattedTime', () {
       test('解析标准日期时间格式', () {
         final d = Diagnosis(
-          id: 1, imgname: 'a.jpg', bhname: '病',
-          bhreason: '', bhadvice: '', username: 'u',
+          id: 1,
+          imgname: 'a.jpg',
+          bhname: '病',
+          bhreason: '',
+          bhadvice: '',
+          username: 'u',
           dtime: '2026-05-08 15:47:30',
         );
         expect(d.formattedTime, '2026年05月08日 15:47:30');
@@ -98,8 +102,12 @@ void main() {
 
       test('解析 RFC 1123 格式', () {
         final d = Diagnosis(
-          id: 1, imgname: 'a.jpg', bhname: '病',
-          bhreason: '', bhadvice: '', username: 'u',
+          id: 1,
+          imgname: 'a.jpg',
+          bhname: '病',
+          bhreason: '',
+          bhadvice: '',
+          username: 'u',
           dtime: 'Fri, 08 May 2026 15:47:30 GMT',
         );
         expect(d.formattedTime, contains('2026'));
@@ -109,8 +117,12 @@ void main() {
 
       test('无法解析的时间格式原样返回', () {
         final d = Diagnosis(
-          id: 1, imgname: 'a.jpg', bhname: '病',
-          bhreason: '', bhadvice: '', username: 'u',
+          id: 1,
+          imgname: 'a.jpg',
+          bhname: '病',
+          bhreason: '',
+          bhadvice: '',
+          username: 'u',
           dtime: 'bad-time-format',
         );
         expect(d.formattedTime, 'bad-time-format');
@@ -118,8 +130,12 @@ void main() {
 
       test('空字符串原样返回', () {
         final d = Diagnosis(
-          id: 1, imgname: 'a.jpg', bhname: '病',
-          bhreason: '', bhadvice: '', username: 'u',
+          id: 1,
+          imgname: 'a.jpg',
+          bhname: '病',
+          bhreason: '',
+          bhadvice: '',
+          username: 'u',
           dtime: '',
         );
         expect(d.formattedTime, '');
@@ -155,7 +171,9 @@ void main() {
       });
 
       test('top5class 缺失时抛出异常', () {
-        final response = {'predicttop5': [0.9]};
+        final response = {
+          'predicttop5': [0.9],
+        };
         expect(
           () => PredictionResult.fromResponse(response),
           throwsA(isA<FormatException>()),
@@ -163,7 +181,9 @@ void main() {
       });
 
       test('predicttop5 缺失时抛出异常', () {
-        final response = {'top5class': ['病']};
+        final response = {
+          'top5class': ['病'],
+        };
         expect(
           () => PredictionResult.fromResponse(response),
           throwsA(isA<FormatException>()),
@@ -215,7 +235,8 @@ void main() {
     group('displayCount', () {
       test('两个数组等长时取较小值', () {
         final r = PredictionResult(
-          result: '病', heatmapData: null,
+          result: '病',
+          heatmapData: null,
           top5Classes: ['a', 'b', 'c'],
           predictTop5: [0.1, 0.2, 0.3],
         );
@@ -224,7 +245,8 @@ void main() {
 
       test('top5Classes 较短时取 top5Classes 长度', () {
         final r = PredictionResult(
-          result: '病', heatmapData: null,
+          result: '病',
+          heatmapData: null,
           top5Classes: ['a'],
           predictTop5: [0.1, 0.2, 0.3],
         );
@@ -233,7 +255,8 @@ void main() {
 
       test('predictTop5 较短时取 predictTop5 长度', () {
         final r = PredictionResult(
-          result: '病', heatmapData: null,
+          result: '病',
+          heatmapData: null,
           top5Classes: ['a', 'b', 'c', 'd', 'e'],
           predictTop5: [0.1],
         );
@@ -242,7 +265,8 @@ void main() {
 
       test('最大显示数为 5', () {
         final r = PredictionResult(
-          result: '病', heatmapData: null,
+          result: '病',
+          heatmapData: null,
           top5Classes: ['a', 'b', 'c', 'd', 'e', 'f', 'g'],
           predictTop5: [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7],
         );
@@ -253,24 +277,30 @@ void main() {
     group('tryDecodeHeatmap', () {
       test('heatmap 为 null 时返回 null', () {
         final r = PredictionResult(
-          result: '病', heatmapData: null,
-          top5Classes: const [], predictTop5: const [],
+          result: '病',
+          heatmapData: null,
+          top5Classes: const [],
+          predictTop5: const [],
         );
         expect(r.tryDecodeHeatmap(), isNull);
       });
 
       test('heatmap 为空字符串时返回 null', () {
         final r = PredictionResult(
-          result: '病', heatmapData: '',
-          top5Classes: const [], predictTop5: const [],
+          result: '病',
+          heatmapData: '',
+          top5Classes: const [],
+          predictTop5: const [],
         );
         expect(r.tryDecodeHeatmap(), isNull);
       });
 
       test('heatmap 非法 base64 时返回 null', () {
         final r = PredictionResult(
-          result: '病', heatmapData: '!!!not-base64!!!',
-          top5Classes: const [], predictTop5: const [],
+          result: '病',
+          heatmapData: '!!!not-base64!!!',
+          top5Classes: const [],
+          predictTop5: const [],
         );
         expect(r.tryDecodeHeatmap(), isNull);
       });
@@ -278,8 +308,10 @@ void main() {
       test('合法 base64 正常解码', () {
         final fakeImage = base64Encode([0xFF, 0xD8, 0xFF, 0xE0]);
         final r = PredictionResult(
-          result: '病', heatmapData: fakeImage,
-          top5Classes: const [], predictTop5: const [],
+          result: '病',
+          heatmapData: fakeImage,
+          top5Classes: const [],
+          predictTop5: const [],
         );
         final bytes = r.tryDecodeHeatmap();
         expect(bytes, isNotNull);
@@ -314,32 +346,40 @@ void main() {
   group('SavedCredentials', () {
     test('canAutoLogin 正常情况', () {
       const c = SavedCredentials(
-        rememberMe: true, username: 'user',
-        password: 'pass', role: '0',
+        rememberMe: true,
+        username: 'user',
+        password: 'pass',
+        role: '0',
       );
       expect(c.canAutoLogin, isTrue);
     });
 
     test('canAutoLogin rememberMe 为 false', () {
       const c = SavedCredentials(
-        rememberMe: false, username: 'user',
-        password: 'pass', role: '0',
+        rememberMe: false,
+        username: 'user',
+        password: 'pass',
+        role: '0',
       );
       expect(c.canAutoLogin, isFalse);
     });
 
     test('canAutoLogin 用户名为空', () {
       const c = SavedCredentials(
-        rememberMe: true, username: '',
-        password: 'pass', role: '0',
+        rememberMe: true,
+        username: '',
+        password: 'pass',
+        role: '0',
       );
       expect(c.canAutoLogin, isFalse);
     });
 
     test('canAutoLogin 密码为空', () {
       const c = SavedCredentials(
-        rememberMe: true, username: 'user',
-        password: '', role: '0',
+        rememberMe: true,
+        username: 'user',
+        password: '',
+        role: '0',
       );
       expect(c.canAutoLogin, isFalse);
     });

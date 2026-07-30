@@ -342,10 +342,7 @@ class _UploadWidgetState extends State<UploadWidget> {
                       return ListTile(
                         title: Text(
                           region.name,
-                          style: TextStyle(
-                            color: AppColors.ink,
-                            fontSize: 15,
-                          ),
+                          style: TextStyle(color: AppColors.ink, fontSize: 15),
                         ),
                         subtitle: Text(
                           '${region.level.isEmpty ? '区域' : region.level} · ${region.adcode}',
@@ -492,7 +489,9 @@ class _UploadWidgetState extends State<UploadWidget> {
         children: [
           // 上传区域 - editorial style
           GestureDetector(
-            onTap: uploadProvider.isUploading ? null : () => _showPickOptions(context),
+            onTap: uploadProvider.isUploading
+                ? null
+                : () => _showPickOptions(context),
             child: Container(
               width: double.infinity,
               height: 180,
@@ -501,7 +500,10 @@ class _UploadWidgetState extends State<UploadWidget> {
                 border: Border.all(color: AppColors.ink, width: 1.5),
               ),
               child: uploadProvider.selectedImage != null
-                  ? Image.file(uploadProvider.selectedImage!, fit: BoxFit.contain)
+                  ? Image.file(
+                      uploadProvider.selectedImage!,
+                      fit: BoxFit.contain,
+                    )
                   : Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
@@ -527,7 +529,9 @@ class _UploadWidgetState extends State<UploadWidget> {
           ),
 
           // 类别选择框 - inline editorial style
-          if (uploadProvider.isUploading || uploadProvider.result != null || uploadProvider.errorMessage != null)
+          if (uploadProvider.isUploading ||
+              uploadProvider.result != null ||
+              uploadProvider.errorMessage != null)
             Container(
               margin: EdgeInsets.only(top: 24),
               padding: EdgeInsets.symmetric(horizontal: 16, vertical: 16),
@@ -612,7 +616,10 @@ class _UploadWidgetState extends State<UploadWidget> {
                     ),
                     GestureDetector(
                       onTap: uploadProvider.result != null
-                          ? () => _showCategoryDetails(context, uploadProvider.result!)
+                          ? () => _showCategoryDetails(
+                              context,
+                              uploadProvider.result!,
+                            )
                           : null,
                       child: Icon(
                         Icons.arrow_forward_rounded,
@@ -747,7 +754,9 @@ class _UploadWidgetState extends State<UploadWidget> {
                   ),
                   elevation: 0,
                 ),
-                onPressed: uploadProvider.result == null || uploadProvider.result!.trim().isEmpty
+                onPressed:
+                    uploadProvider.result == null ||
+                        uploadProvider.result!.trim().isEmpty
                     ? null
                     : () {
                         Navigator.pushNamed(

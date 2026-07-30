@@ -47,7 +47,8 @@ class AnalyzeResultWidget extends StatelessWidget {
                   .entries
                   .where((e) => e.value.isNotEmpty)
                   .map((entry) {
-                    final isLast = entry.key ==
+                    final isLast =
+                        entry.key ==
                         suggestions.lastIndexWhere((s) => s.isNotEmpty);
                     return ValueListenableBuilder<bool>(
                       valueListenable: isTypingNotifier,
@@ -76,8 +77,9 @@ class AnalyzeResultWidget extends StatelessWidget {
       return ValueListenableBuilder<String>(
         valueListenable: displayedNotifier,
         builder: (context, displayed, _) {
-          final content =
-              displayed.isNotEmpty ? displayed : (causeAnalysis ?? '');
+          final content = displayed.isNotEmpty
+              ? displayed
+              : (causeAnalysis ?? '');
           return _buildStructuredAnalysisContent(content);
         },
       );
@@ -99,8 +101,10 @@ class AnalyzeResultWidget extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 5,
+                  ),
                   decoration: BoxDecoration(
                     color: AppColors.danger.withAlpha(18),
                     borderRadius: BorderRadius.circular(6),
@@ -218,19 +222,23 @@ class AnalyzeResultWidget extends StatelessWidget {
         }
         final cursorOnSymptom =
             showCursor && i + symptomLines.length == rawLines.length - 1;
-        widgets.add(_buildSymptomTimeline(
-          rawLines[i],
-          symptomLines,
-          showCursor: cursorOnSymptom,
-        ));
+        widgets.add(
+          _buildSymptomTimeline(
+            rawLines[i],
+            symptomLines,
+            showCursor: cursorOnSymptom,
+          ),
+        );
         i = j - 1;
       } else {
         final isLast = i == rawLines.length - 1;
-        widgets.add(_buildAnalysisRow(
-          rawLines[i],
-          showCursor: showCursor && isLast,
-          isLast: isLast,
-        ));
+        widgets.add(
+          _buildAnalysisRow(
+            rawLines[i],
+            showCursor: showCursor && isLast,
+            isLast: isLast,
+          ),
+        );
       }
     }
 
@@ -351,8 +359,11 @@ class AnalyzeResultWidget extends StatelessWidget {
     );
   }
 
-  Widget _buildSymptomTimeline(String header, List<String> stages,
-      {bool showCursor = false}) {
+  Widget _buildSymptomTimeline(
+    String header,
+    List<String> stages, {
+    bool showCursor = false,
+  }) {
     const lineWidth = 2.0;
     const dotSize = 10.0;
     const leftPad = 14.0;
@@ -406,8 +417,9 @@ class AnalyzeResultWidget extends StatelessWidget {
             final label = hasColon
                 ? stageLine.substring(0, colonIdx)
                 : stageLine;
-            final body =
-                hasColon ? stageLine.substring(colonIdx + 1).trimLeft() : '';
+            final body = hasColon
+                ? stageLine.substring(colonIdx + 1).trimLeft()
+                : '';
             final showStageCursor = showCursor && isLast;
 
             return IntrinsicHeight(

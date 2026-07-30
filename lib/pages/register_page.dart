@@ -55,22 +55,34 @@ class _RegisterPageState extends State<RegisterPage> {
                     color: AppColors.inputBorder,
                     width: 1,
                   ),
-                  borderRadius: BorderRadius.only(topLeft: Radius.circular(8), topRight: Radius.circular(8)),
+                  borderRadius: BorderRadius.only(
+                    topLeft: Radius.circular(8),
+                    topRight: Radius.circular(8),
+                  ),
                 ),
                 focusedBorder: OutlineInputBorder(
                   borderSide: BorderSide(
                     color: AppColors.inputBorderFocused,
                     width: 2,
                   ),
-                  borderRadius: BorderRadius.only(topLeft: Radius.circular(8), topRight: Radius.circular(8)),
+                  borderRadius: BorderRadius.only(
+                    topLeft: Radius.circular(8),
+                    topRight: Radius.circular(8),
+                  ),
                 ),
                 errorBorder: OutlineInputBorder(
                   borderSide: BorderSide(color: AppColors.error, width: 1),
-                  borderRadius: BorderRadius.only(topLeft: Radius.circular(8), topRight: Radius.circular(8)),
+                  borderRadius: BorderRadius.only(
+                    topLeft: Radius.circular(8),
+                    topRight: Radius.circular(8),
+                  ),
                 ),
                 focusedErrorBorder: OutlineInputBorder(
                   borderSide: BorderSide(color: AppColors.error, width: 2),
-                  borderRadius: BorderRadius.only(topLeft: Radius.circular(8), topRight: Radius.circular(8)),
+                  borderRadius: BorderRadius.only(
+                    topLeft: Radius.circular(8),
+                    topRight: Radius.circular(8),
+                  ),
                 ),
               ),
             ),
@@ -88,9 +100,7 @@ class _RegisterPageState extends State<RegisterPage> {
                   color: AppColors.iconDefault,
                 ),
                 hintStyle: TextStyle(color: AppColors.textTertiary),
-                labelStyle: TextStyle(
-                  color: AppColors.textSecondary,
-                ),
+                labelStyle: TextStyle(color: AppColors.textSecondary),
                 filled: true,
                 fillColor: AppColors.inputBackground,
                 enabledBorder: OutlineInputBorder(
@@ -106,19 +116,13 @@ class _RegisterPageState extends State<RegisterPage> {
                   ),
                 ),
                 errorBorder: OutlineInputBorder(
-                  borderSide: BorderSide(
-                    color: AppColors.error,
-                    width: 1,
-                  ),
+                  borderSide: BorderSide(color: AppColors.error, width: 1),
                 ),
                 focusedErrorBorder: OutlineInputBorder(
-                  borderSide: BorderSide(
-                    color: AppColors.error,
-                    width: 2,
-                  ),
+                  borderSide: BorderSide(color: AppColors.error, width: 2),
                 ),
               ),
-            )
+            ),
           ],
         ),
       ),

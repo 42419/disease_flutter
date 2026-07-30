@@ -16,7 +16,8 @@ class MineView extends StatefulWidget {
   State<MineView> createState() => _MineViewState();
 }
 
-class _MineViewState extends State<MineView> with AutomaticKeepAliveClientMixin {
+class _MineViewState extends State<MineView>
+    with AutomaticKeepAliveClientMixin {
   final AuthStorage _authStorage = const AuthStorage();
 
   @override
@@ -63,9 +64,9 @@ class _MineViewState extends State<MineView> with AutomaticKeepAliveClientMixin 
           ),
           const SizedBox(height: 8),
           Text(
-            label, 
+            label,
             style: TextStyle(
-              color: AppColors.muted, 
+              color: AppColors.muted,
               fontSize: 13,
               fontWeight: FontWeight.w500,
               letterSpacing: 0.5,
@@ -106,10 +107,7 @@ class _MineViewState extends State<MineView> with AutomaticKeepAliveClientMixin 
         elevation: 0,
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(1.0),
-          child: Container(
-            color: AppColors.hairline,
-            height: 1.0,
-          ),
+          child: Container(color: AppColors.hairline, height: 1.0),
         ),
       ),
       body: ListView(
@@ -118,9 +116,7 @@ class _MineViewState extends State<MineView> with AutomaticKeepAliveClientMixin 
           // 1. 第一版块：个人资料简介
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
-            decoration: BoxDecoration(
-              color: AppColors.canvas,
-            ),
+            decoration: BoxDecoration(color: AppColors.canvas),
             child: GestureDetector(
               onTap: () {
                 ScaffoldMessenger.of(context).clearSnackBars();
@@ -157,14 +153,20 @@ class _MineViewState extends State<MineView> with AutomaticKeepAliveClientMixin 
                         ),
                         const SizedBox(height: 12),
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 10,
+                            vertical: 4,
+                          ),
                           decoration: BoxDecoration(
                             border: Border.all(color: AppColors.hairline),
                             borderRadius: BorderRadius.circular(20),
                           ),
                           child: Text(
                             "编辑资料",
-                            style: TextStyle(fontSize: 12, color: AppColors.ink),
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: AppColors.ink,
+                            ),
                           ),
                         ),
                       ],
@@ -178,8 +180,7 @@ class _MineViewState extends State<MineView> with AutomaticKeepAliveClientMixin 
                     ),
                     child: CircleAvatar(
                       radius: 36,
-                      backgroundImage:
-                          user.userAvatarUrl.isNotEmpty
+                      backgroundImage: user.userAvatarUrl.isNotEmpty
                           ? AssetImage(user.userAvatarUrl)
                           : null,
                       backgroundColor: AppColors.surfaceCard,
@@ -192,7 +193,7 @@ class _MineViewState extends State<MineView> with AutomaticKeepAliveClientMixin 
               ),
             ),
           ),
-          
+
           // 2. 第二版块：数据概览区（使用柔和底色区隔）
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
@@ -218,22 +219,23 @@ class _MineViewState extends State<MineView> with AutomaticKeepAliveClientMixin 
                 const SizedBox(height: 6),
                 Text(
                   "您参与的所有病害分析与历史记录概况。",
-                  style: TextStyle(
-                    fontSize: 13,
-                    color: AppColors.muted,
-                  ),
+                  style: TextStyle(fontSize: 13, color: AppColors.muted),
                 ),
                 const SizedBox(height: 24),
                 Row(
                   children: [
                     _summaryItem(
-                      recordsProvider.isLoading ? '...' : '${recordsProvider.records.length}',
+                      recordsProvider.isLoading
+                          ? '...'
+                          : '${recordsProvider.records.length}',
                       '诊断总记录数',
                       AppColors.ink,
                     ),
                     _summaryDivider(),
                     _summaryItem(
-                      recordsProvider.isLoading ? '...' : '${recordsProvider.stats.length}',
+                      recordsProvider.isLoading
+                          ? '...'
+                          : '${recordsProvider.stats.length}',
                       '已识别病害种类',
                       AppColors.ink,
                     ),
@@ -242,7 +244,7 @@ class _MineViewState extends State<MineView> with AutomaticKeepAliveClientMixin 
               ],
             ),
           ),
-          
+
           // 3. 第三版块：系统与偏好
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
@@ -259,7 +261,7 @@ class _MineViewState extends State<MineView> with AutomaticKeepAliveClientMixin 
                   ),
                 ),
                 const SizedBox(height: 20),
-                
+
                 Container(
                   decoration: BoxDecoration(
                     border: Border(
@@ -290,17 +292,26 @@ class _MineViewState extends State<MineView> with AutomaticKeepAliveClientMixin 
                                 segments: const [
                                   ButtonSegment(
                                     value: ThemeMode.system,
-                                    icon: Icon(Icons.brightness_auto_rounded, size: 16),
+                                    icon: Icon(
+                                      Icons.brightness_auto_rounded,
+                                      size: 16,
+                                    ),
                                     label: Text("跟随系统"),
                                   ),
                                   ButtonSegment(
                                     value: ThemeMode.light,
-                                    icon: Icon(Icons.light_mode_rounded, size: 16),
+                                    icon: Icon(
+                                      Icons.light_mode_rounded,
+                                      size: 16,
+                                    ),
                                     label: Text("浅色"),
                                   ),
                                   ButtonSegment(
                                     value: ThemeMode.dark,
-                                    icon: Icon(Icons.dark_mode_rounded, size: 16),
+                                    icon: Icon(
+                                      Icons.dark_mode_rounded,
+                                      size: 16,
+                                    ),
                                     label: Text("深色"),
                                   ),
                                 ],
@@ -320,7 +331,9 @@ class _MineViewState extends State<MineView> with AutomaticKeepAliveClientMixin 
                                   side: BorderSide(color: AppColors.hairline),
                                   textStyle: const TextStyle(fontSize: 12),
                                   visualDensity: VisualDensity.compact,
-                                  padding: const EdgeInsets.symmetric(horizontal: 4),
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 4,
+                                  ),
                                 ),
                               ),
                             ),
@@ -329,7 +342,10 @@ class _MineViewState extends State<MineView> with AutomaticKeepAliveClientMixin 
                       ),
                       Divider(height: 1, color: AppColors.hairline),
                       ListTile(
-                        contentPadding: EdgeInsets.symmetric(horizontal: 0, vertical: 4),
+                        contentPadding: EdgeInsets.symmetric(
+                          horizontal: 0,
+                          vertical: 4,
+                        ),
                         title: Text(
                           "诊断历史存档",
                           style: TextStyle(
@@ -352,7 +368,7 @@ class _MineViewState extends State<MineView> with AutomaticKeepAliveClientMixin 
                   ),
                 ),
                 const SizedBox(height: 36),
-                
+
                 SizedBox(
                   width: double.infinity,
                   height: 52,
@@ -368,11 +384,14 @@ class _MineViewState extends State<MineView> with AutomaticKeepAliveClientMixin 
                     onPressed: () async {
                       // 先缓存 provider 引用，避免 await 后 context 可能失效
                       final authStorage = _authStorage;
-                      final recordsProvider = context.read<DiagnosisRecordsProvider>();
-                      final analyzeProvider = context.read<DiseaseAnalyzeProvider>();
+                      final recordsProvider = context
+                          .read<DiagnosisRecordsProvider>();
+                      final analyzeProvider = context
+                          .read<DiseaseAnalyzeProvider>();
                       final uploadProvider = context.read<UploadProvider>();
                       final userProvider = context.read<UserProvider>();
-                      final navProvider = context.read<MainNavigationProvider>();
+                      final navProvider = context
+                          .read<MainNavigationProvider>();
                       final nav = Navigator.of(context);
                       await authStorage.clearCredentials();
                       if (!mounted) return;
@@ -382,10 +401,7 @@ class _MineViewState extends State<MineView> with AutomaticKeepAliveClientMixin 
                       uploadProvider.reset();
                       userProvider.clear();
                       navProvider.setCurrentIndex(0);
-                      nav.pushNamedAndRemoveUntil(
-                        "/login",
-                        (route) => false,
-                      );
+                      nav.pushNamedAndRemoveUntil("/login", (route) => false);
                     },
                     child: Text(
                       "退出当前账号",

@@ -28,7 +28,9 @@ class _DiagnosisRecordsPageState extends State<DiagnosisRecordsPage>
   ];
 
   // 排序方式下拉菜单，跟登录页角色菜单共用同一套 MiuixDropdownMenu。
-  late final MiuixDropdownMenu<bool> _sortMenu = MiuixDropdownMenu<bool>(vsync: this);
+  late final MiuixDropdownMenu<bool> _sortMenu = MiuixDropdownMenu<bool>(
+    vsync: this,
+  );
   final GlobalKey _sortButtonKey = GlobalKey();
 
   @override
@@ -103,7 +105,8 @@ class _DiagnosisRecordsPageState extends State<DiagnosisRecordsPage>
                 letterSpacing: 1.5,
               ),
             ),
-            if (!recordsProvider.isLoading && recordsProvider.records.isNotEmpty)
+            if (!recordsProvider.isLoading &&
+                recordsProvider.records.isNotEmpty)
               Text(
                 '共 ${recordsProvider.records.length} 条记录',
                 style: TextStyle(
@@ -137,7 +140,10 @@ class _DiagnosisRecordsPageState extends State<DiagnosisRecordsPage>
     );
   }
 
-  Widget _buildBody(DiagnosisRecordsProvider recordsProvider, UserProvider user) {
+  Widget _buildBody(
+    DiagnosisRecordsProvider recordsProvider,
+    UserProvider user,
+  ) {
     if (recordsProvider.isLoading) {
       return Center(
         child: Column(
@@ -197,10 +203,7 @@ class _DiagnosisRecordsPageState extends State<DiagnosisRecordsPage>
               const SizedBox(height: 8),
               Text(
                 recordsProvider.errorMessage!,
-                style: TextStyle(
-                  color: AppColors.textSecondary,
-                  fontSize: 13,
-                ),
+                style: TextStyle(color: AppColors.textSecondary, fontSize: 13),
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 24),
@@ -276,7 +279,11 @@ class _DiagnosisRecordsPageState extends State<DiagnosisRecordsPage>
         itemCount: recordsProvider.records.length + 1,
         itemBuilder: (context, index) {
           if (index == 0) return _buildChartCard(recordsProvider);
-          return _buildRecordCard(recordsProvider.records[index - 1], recordsProvider, user);
+          return _buildRecordCard(
+            recordsProvider.records[index - 1],
+            recordsProvider,
+            user,
+          );
         },
       ),
     );
@@ -292,7 +299,7 @@ class _DiagnosisRecordsPageState extends State<DiagnosisRecordsPage>
       padding: const EdgeInsets.fromLTRB(20, 20, 20, 12),
       decoration: BoxDecoration(
         color: AppColors.canvas,
-borderRadius: BorderRadius.circular(2),
+        borderRadius: BorderRadius.circular(2),
         border: Border.all(color: AppColors.hairline),
       ),
       child: Column(
@@ -434,7 +441,12 @@ borderRadius: BorderRadius.circular(2),
                     sideTitles: SideTitles(
                       showTitles: true,
                       reservedSize: 32,
-                      interval: maxCount <= 3 ? 1 : (maxCount / 3).ceilToDouble().clamp(1.0, double.infinity),
+                      interval: maxCount <= 3
+                          ? 1
+                          : (maxCount / 3).ceilToDouble().clamp(
+                              1.0,
+                              double.infinity,
+                            ),
                       getTitlesWidget: (value, meta) {
                         final v = value.toInt();
                         if (v < 0 || (maxCount > 0 && v > maxCount)) {
@@ -454,13 +466,22 @@ borderRadius: BorderRadius.circular(2),
                       },
                     ),
                   ),
-                  topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                  rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                  topTitles: const AxisTitles(
+                    sideTitles: SideTitles(showTitles: false),
+                  ),
+                  rightTitles: const AxisTitles(
+                    sideTitles: SideTitles(showTitles: false),
+                  ),
                 ),
                 gridData: FlGridData(
                   show: true,
                   drawVerticalLine: false,
-                  horizontalInterval: maxCount <= 3 ? 1 : (maxCount / 3).ceilToDouble().clamp(1.0, double.infinity),
+                  horizontalInterval: maxCount <= 3
+                      ? 1
+                      : (maxCount / 3).ceilToDouble().clamp(
+                          1.0,
+                          double.infinity,
+                        ),
                   getDrawingHorizontalLine: (value) => FlLine(
                     color: AppColors.divider,
                     strokeWidth: 0.6,
@@ -471,18 +492,21 @@ borderRadius: BorderRadius.circular(2),
                 barTouchData: BarTouchData(
                   enabled: true,
                   touchTooltipData: BarTouchTooltipData(
-                    tooltipPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    tooltipPadding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 8,
+                    ),
                     tooltipMargin: 8,
-                  getTooltipItem: (group, groupIndex, rod, rodIndex) {
-                    return BarTooltipItem(
-                      '${displayStats[group.x].key}\n${rod.toY.toInt()} 条记录',
-                      const TextStyle(
-                        color: Colors.white,
-                        fontSize: 13,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    );
-                  },
+                    getTooltipItem: (group, groupIndex, rod, rodIndex) {
+                      return BarTooltipItem(
+                        '${displayStats[group.x].key}\n${rod.toY.toInt()} 条记录',
+                        const TextStyle(
+                          color: Colors.white,
+                          fontSize: 13,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      );
+                    },
                   ),
                   touchCallback: (event, response) {
                     if (event is FlTapUpEvent && response?.spot != null) {
@@ -498,15 +522,21 @@ borderRadius: BorderRadius.circular(2),
     );
   }
 
-  Widget _buildRecordCard(dynamic record, DiagnosisRecordsProvider recordsProvider, UserProvider user) {
+  Widget _buildRecordCard(
+    dynamic record,
+    DiagnosisRecordsProvider recordsProvider,
+    UserProvider user,
+  ) {
     final isExpanded = recordsProvider.expandedId == record.id;
-    
+
     // Evaluate severity based on name and description keywords
     final severity = _evaluateSeverity(record);
     final badgeColor = _severityBadgeColor(severity);
     final badgeLabel = _severityLabel(severity);
-    
-    final diseaseRank = recordsProvider.stats.indexWhere((e) => e.key == record.bhname);
+
+    final diseaseRank = recordsProvider.stats.indexWhere(
+      (e) => e.key == record.bhname,
+    );
     final accentColor = diseaseRank >= 0
         ? _barColors[diseaseRank % _barColors.length]
         : AppColors.success;
@@ -524,7 +554,9 @@ borderRadius: BorderRadius.circular(2),
           InkWell(
             borderRadius: BorderRadius.circular(2),
             onTap: () {
-              context.read<DiagnosisRecordsProvider>().toggleExpanded(record.id);
+              context.read<DiagnosisRecordsProvider>().toggleExpanded(
+                record.id,
+              );
             },
             child: Padding(
               padding: const EdgeInsets.all(16),
@@ -559,10 +591,13 @@ borderRadius: BorderRadius.circular(2),
                       if (badgeLabel.isNotEmpty)
                         Container(
                           margin: const EdgeInsets.only(left: 8),
-                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 6,
+                            vertical: 2,
+                          ),
                           decoration: BoxDecoration(
                             color: badgeColor.withAlpha(20),
-borderRadius: BorderRadius.circular(2),
+                            borderRadius: BorderRadius.circular(2),
                           ),
                           child: Text(
                             badgeLabel,
@@ -588,38 +623,66 @@ borderRadius: BorderRadius.circular(2),
                   const SizedBox(height: 12),
                   Row(
                     children: [
-                      Icon(Icons.access_time_rounded, size: 14, color: AppColors.textTertiary),
+                      Icon(
+                        Icons.access_time_rounded,
+                        size: 14,
+                        color: AppColors.textTertiary,
+                      ),
                       const SizedBox(width: 6),
                       Text(
                         record.formattedTime,
-                        style: TextStyle(fontFamily: "serif", fontSize: 13, color: AppColors.muted, fontStyle: FontStyle.italic),
+                        style: TextStyle(
+                          fontFamily: "serif",
+                          fontSize: 13,
+                          color: AppColors.muted,
+                          fontStyle: FontStyle.italic,
+                        ),
                       ),
                       const Spacer(),
                       if (user.isAdmin) ...[
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 3,
+                          ),
                           decoration: BoxDecoration(
                             color: AppColors.primaryLightest.withAlpha(60),
                             borderRadius: BorderRadius.circular(2),
                           ),
                           child: Text(
                             record.username,
-                            style: TextStyle(fontFamily: "serif", fontSize: 12, color: AppColors.muted, fontStyle: FontStyle.italic),
+                            style: TextStyle(
+                              fontFamily: "serif",
+                              fontSize: 12,
+                              color: AppColors.muted,
+                              fontStyle: FontStyle.italic,
+                            ),
                           ),
                         ),
                       ],
                     ],
                   ),
-                  if (recordsProvider.locationName(record.location).isNotEmpty) ...[
+                  if (recordsProvider
+                      .locationName(record.location)
+                      .isNotEmpty) ...[
                     const SizedBox(height: 4),
                     Row(
                       children: [
-                        Icon(Icons.location_on_outlined, size: 14, color: AppColors.textTertiary),
+                        Icon(
+                          Icons.location_on_outlined,
+                          size: 14,
+                          color: AppColors.textTertiary,
+                        ),
                         const SizedBox(width: 6),
                         Expanded(
                           child: Text(
                             recordsProvider.locationName(record.location),
-                            style: TextStyle(fontFamily: "serif", fontSize: 12, color: AppColors.muted, fontStyle: FontStyle.italic),
+                            style: TextStyle(
+                              fontFamily: "serif",
+                              fontSize: 12,
+                              color: AppColors.muted,
+                              fontStyle: FontStyle.italic,
+                            ),
                             overflow: TextOverflow.ellipsis,
                           ),
                         ),
@@ -658,7 +721,9 @@ borderRadius: BorderRadius.circular(2),
                 ],
               ),
             ),
-            crossFadeState: isExpanded ? CrossFadeState.showSecond : CrossFadeState.showFirst,
+            crossFadeState: isExpanded
+                ? CrossFadeState.showSecond
+                : CrossFadeState.showFirst,
             duration: const Duration(milliseconds: 280),
           ),
         ],
@@ -728,17 +793,27 @@ borderRadius: BorderRadius.circular(2),
     if (record.bhname.isEmpty || record.bhname == '未知') return 3;
     final name = record.bhname;
     final desc = record.bhreason + record.bhadvice;
-    
+
     // 高危病害关键词
-    if (name.contains('腐烂') || name.contains('枯萎') || 
-        name.contains('疫病') || name.contains('病毒') || name.contains('溃疡') ||
-        desc.contains('严重') || desc.contains('绝产') || desc.contains('致死')) {
+    if (name.contains('腐烂') ||
+        name.contains('枯萎') ||
+        name.contains('疫病') ||
+        name.contains('病毒') ||
+        name.contains('溃疡') ||
+        desc.contains('严重') ||
+        desc.contains('绝产') ||
+        desc.contains('致死')) {
       return 0;
     }
     // 中度病害关键词
-    if (name.contains('斑') || name.contains('霉') || name.contains('锈') || 
-        name.contains('炭疽') || name.contains('黑痘') ||
-        desc.contains('较重') || desc.contains('落叶') || desc.contains('减产')) {
+    if (name.contains('斑') ||
+        name.contains('霉') ||
+        name.contains('锈') ||
+        name.contains('炭疽') ||
+        name.contains('黑痘') ||
+        desc.contains('较重') ||
+        desc.contains('落叶') ||
+        desc.contains('减产')) {
       return 1;
     }
     // 其他确诊均视为轻微

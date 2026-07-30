@@ -48,9 +48,7 @@ class DateTimeUtil {
 
   /// 解析失败时返回 [fallback]（默认本地 epoch）。
   static DateTime parseFlexible(String raw, {DateTime? fallback}) {
-    return tryParse(raw) ??
-        fallback ??
-        DateTime.fromMillisecondsSinceEpoch(0);
+    return tryParse(raw) ?? fallback ?? DateTime.fromMillisecondsSinceEpoch(0);
   }
 
   /// 格式化为 `yyyy年MM月dd日 HH:mm:ss`；无法解析时返回原文。

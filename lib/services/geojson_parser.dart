@@ -19,7 +19,10 @@ class GeoJsonParser {
   /// 从 asset 路径加载并解析 GeoJSON，返回 [GeoDataBundle]。
   Future<GeoDataBundle> loadFromAsset(String assetPath) async {
     final rawJson = await rootBundle.loadString(assetPath);
-    return compute(_parseGeoJsonInBackground, _GeoJsonParseArgs(assetPath, rawJson));
+    return compute(
+      _parseGeoJsonInBackground,
+      _GeoJsonParseArgs(assetPath, rawJson),
+    );
   }
 }
 

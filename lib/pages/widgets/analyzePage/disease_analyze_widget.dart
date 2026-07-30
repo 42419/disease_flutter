@@ -83,11 +83,7 @@ class _DiseaseAnalyzeWidgetState extends State<DiseaseAnalyzeWidget> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(
-                Icons.error_outline,
-                color: AppColors.danger,
-                size: 48,
-              ),
+              Icon(Icons.error_outline, color: AppColors.danger, size: 48),
               const SizedBox(height: 16),
               Text(
                 '分析失败',
@@ -101,10 +97,7 @@ class _DiseaseAnalyzeWidgetState extends State<DiseaseAnalyzeWidget> {
               const SizedBox(height: 8),
               Text(
                 analyzeProvider.errorMessage ?? '',
-                style: TextStyle(
-                  color: AppColors.textSecondary,
-                  fontSize: 13,
-                ),
+                style: TextStyle(color: AppColors.textSecondary, fontSize: 13),
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 24),
@@ -187,10 +180,7 @@ class _DiseaseAnalyzeWidgetState extends State<DiseaseAnalyzeWidget> {
             style: TextStyle(fontSize: 16, color: AppColors.textPrimary),
             decoration: InputDecoration(
               hintText: '例如：苹果黑斑病',
-              hintStyle: TextStyle(
-                color: AppColors.textTertiary,
-                fontSize: 15,
-              ),
+              hintStyle: TextStyle(color: AppColors.textTertiary, fontSize: 15),
               filled: true,
               fillColor: AppColors.surfaceSoft,
               contentPadding: const EdgeInsets.symmetric(
@@ -225,9 +215,7 @@ class _DiseaseAnalyzeWidgetState extends State<DiseaseAnalyzeWidget> {
                 backgroundColor: AppColors.ink,
                 foregroundColor: AppColors.canvas,
                 elevation: 0,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.zero,
-                ),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.zero),
               ),
               child: const Text(
                 '开始分析',
@@ -312,7 +300,8 @@ class _DiseaseAnalyzeWidgetState extends State<DiseaseAnalyzeWidget> {
                   ? KeyedSubtree(
                       key: const ValueKey('loading'),
                       child: AnalyzeLoadingWidget(
-                        streamingTextNotifier: analyzeProvider.streamingTextNotifier,
+                        streamingTextNotifier:
+                            analyzeProvider.streamingTextNotifier,
                         scrollController: _effectiveScrollController,
                       ),
                     )
@@ -322,9 +311,11 @@ class _DiseaseAnalyzeWidgetState extends State<DiseaseAnalyzeWidget> {
                         diseaseType: analyzeProvider.diseaseType,
                         causeAnalysis: analyzeProvider.causeAnalysis,
                         symptomCount: analyzeProvider.symptomCount,
-                        displayedAnalysisNotifier: analyzeProvider.displayedAnalysisNotifier,
+                        displayedAnalysisNotifier:
+                            analyzeProvider.displayedAnalysisNotifier,
                         isTypingNotifier: analyzeProvider.isTypingNotifier,
-                        displayedSuggestionsNotifier: analyzeProvider.displayedSuggestionsNotifier,
+                        displayedSuggestionsNotifier:
+                            analyzeProvider.displayedSuggestionsNotifier,
                       ),
                     ),
             ),

@@ -62,7 +62,9 @@ class HttpUtil {
     return InterceptorsWrapper(
       onRequest: (options, handler) {
         if (kDebugMode) {
-          debugPrint('[HTTP] → ${options.method} ${options.baseUrl}${options.path}');
+          debugPrint(
+            '[HTTP] → ${options.method} ${options.baseUrl}${options.path}',
+          );
         }
         handler.next(options);
       },
@@ -99,14 +101,17 @@ class HttpUtil {
       onError: (error, handler) async {
         final options = error.requestOptions;
         final isRetryableMethod = options.method.toUpperCase() == 'GET';
-        final isTransientError = error.type == DioExceptionType.connectionTimeout ||
+        final isTransientError =
+            error.type == DioExceptionType.connectionTimeout ||
             error.type == DioExceptionType.connectionError ||
             error.type == DioExceptionType.receiveTimeout;
         final retryCount = (options.extra['retryCount'] as int?) ?? 0;
 
         if (isRetryableMethod && isTransientError && retryCount < maxRetries) {
           options.extra['retryCount'] = retryCount + 1;
-          await Future<void>.delayed(Duration(milliseconds: 400 * (retryCount + 1)));
+          await Future<void>.delayed(
+            Duration(milliseconds: 400 * (retryCount + 1)),
+          );
           try {
             final response = await dio.fetch(options);
             handler.resolve(response);

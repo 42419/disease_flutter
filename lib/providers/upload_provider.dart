@@ -114,7 +114,10 @@ class UploadProvider extends ChangeNotifier {
     }
 
     try {
-      final pickedFile = await _picker.pickImage(source: source, imageQuality: 80);
+      final pickedFile = await _picker.pickImage(
+        source: source,
+        imageQuality: 80,
+      );
       if (pickedFile == null) return;
 
       debugPrint('图片选择成功: ${pickedFile.path}');
@@ -147,11 +150,9 @@ class UploadProvider extends ChangeNotifier {
       setAdcode(adcode ?? '');
 
       // 默认后端的 X-API-Token 由 HttpUtil 统一自动注入，无需在这里手传。
-      final response = await HttpUtil.postFile(
-        "/predict",
-        [imagePath],
-        fileField: "image",
-      );
+      final response = await HttpUtil.postFile("/predict", [
+        imagePath,
+      ], fileField: "image");
 
       if (generation != _uploadGeneration) return;
 
@@ -168,7 +169,9 @@ class UploadProvider extends ChangeNotifier {
     }
   }
 
-  Future<String?> _resolveAdcode(ManualRegionResolver resolveManualRegion) async {
+  Future<String?> _resolveAdcode(
+    ManualRegionResolver resolveManualRegion,
+  ) async {
     try {
       LocationPermission permission = await Geolocator.checkPermission();
       if (permission == LocationPermission.denied) {

@@ -6,6 +6,7 @@ class ProvinceConfig {
   final String cityGeoJsonPath;
   final String districtGeoJsonPath;
   final LatLng center;
+
   /// 行政区划 adcode 前缀（辽宁 21、河南 41），用于过滤全国接口中的外省数据。
   final String adcodePrefix;
   final double initialZoom;

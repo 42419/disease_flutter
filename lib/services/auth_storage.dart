@@ -14,7 +14,8 @@ class SavedCredentials {
     required this.role,
   });
 
-  bool get canAutoLogin => rememberMe && username.isNotEmpty && password.isNotEmpty;
+  bool get canAutoLogin =>
+      rememberMe && username.isNotEmpty && password.isNotEmpty;
 }
 
 abstract class SecureValueStore {
@@ -48,8 +49,9 @@ class AuthStorage {
 
   final SecureValueStore _secureStore;
 
-  const AuthStorage({SecureValueStore secureStore = const FlutterSecureValueStore()})
-      : _secureStore = secureStore;
+  const AuthStorage({
+    SecureValueStore secureStore = const FlutterSecureValueStore(),
+  }) : _secureStore = secureStore;
 
   Future<SavedCredentials> readCredentials() async {
     final prefs = await SharedPreferences.getInstance();

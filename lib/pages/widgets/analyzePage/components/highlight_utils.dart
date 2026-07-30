@@ -157,10 +157,7 @@ List<InlineSpan> _buildKeywordSpans(String text, List<String> keywords) {
     spans.add(
       TextSpan(
         text: earliestKeyword!,
-        style: TextStyle(
-          color: AppColors.danger,
-          fontWeight: FontWeight.w600,
-        ),
+        style: TextStyle(color: AppColors.danger, fontWeight: FontWeight.w600),
       ),
     );
     remaining = remaining.substring(earliestIdx + earliestKeyword.length);

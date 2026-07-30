@@ -59,7 +59,9 @@ class _FunctionCardsState extends State<FunctionCards> {
           child: Container(
             decoration: BoxDecoration(
               border: Border(
-                top: BorderSide(color: index == 0 ? AppColors.hairline : Colors.transparent),
+                top: BorderSide(
+                  color: index == 0 ? AppColors.hairline : Colors.transparent,
+                ),
                 bottom: BorderSide(color: AppColors.hairline),
               ),
             ),
@@ -74,11 +76,7 @@ class _FunctionCardsState extends State<FunctionCards> {
                     color: Colors.transparent,
                     border: Border.all(color: AppColors.ink),
                   ),
-                  child: Icon(
-                    item["icon"], 
-                    color: AppColors.ink,
-                    size: 20,
-                  ),
+                  child: Icon(item["icon"], color: AppColors.ink, size: 20),
                 ),
                 SizedBox(width: 20),
                 Expanded(
@@ -110,8 +108,8 @@ class _FunctionCardsState extends State<FunctionCards> {
                 Padding(
                   padding: const EdgeInsets.only(top: 8.0),
                   child: Icon(
-                    Icons.arrow_forward_rounded, 
-                    size: 20, 
+                    Icons.arrow_forward_rounded,
+                    size: 20,
                     color: AppColors.ink,
                   ),
                 ),

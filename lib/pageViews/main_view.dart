@@ -159,7 +159,7 @@ class MainView extends StatelessWidget {
                           padding: EdgeInsets.zero,
                           minimumSize: Size.zero,
                           tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                          overlayColor: Colors.black
+                          overlayColor: Colors.black,
                         ),
                         child: Row(
                           children: [

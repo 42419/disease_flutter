@@ -44,9 +44,9 @@ Widget getRootWidget() {
 Map<String, Widget Function(BuildContext)> _getRoutes() {
   return {
     "/init": (context) => const AppInitPage(),
-    "/login" : (context) => const LoginPage(),
+    "/login": (context) => const LoginPage(),
     "/registration": (context) => const RegisterPage(),
-    "/main" : (context) => const MainPage(),
+    "/main": (context) => const MainPage(),
     "/admin_main": (context) => const AdminMainPage(),
     "/diagnosis_records": (context) => const DiagnosisRecordsPage(),
     "/analyze": (context) => const DiseaseAnalyzePage(),

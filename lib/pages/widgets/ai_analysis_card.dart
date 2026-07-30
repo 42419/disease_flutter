@@ -59,10 +59,7 @@ class AiAnalysisCard extends StatelessWidget {
           const SizedBox(height: 8),
           Text(
             '基于图像识别结果，正在启动智能病因溯源分析',
-            style: TextStyle(
-              fontSize: 13,
-              color: AppColors.muted,
-            ),
+            style: TextStyle(fontSize: 13, color: AppColors.muted),
           ),
         ],
       ),

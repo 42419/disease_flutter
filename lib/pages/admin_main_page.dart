@@ -15,7 +15,8 @@ class AdminMainPage extends StatefulWidget {
   State<AdminMainPage> createState() => _AdminMainPageState();
 }
 
-class _AdminMainPageState extends State<AdminMainPage> with WidgetsBindingObserver {
+class _AdminMainPageState extends State<AdminMainPage>
+    with WidgetsBindingObserver {
   PageController? _pageController;
 
   PageController get _controller {
