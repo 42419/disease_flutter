@@ -44,8 +44,14 @@ class MiuixDropdownMenu<T> {
       vsync: _vsync,
       duration: const Duration(milliseconds: 320),
     );
-    _alphaCtrl ??= AnimationController(vsync: _vsync, duration: _alphaEnterDuration);
-    _dimCtrl ??= AnimationController(vsync: _vsync, duration: _dimEnterDuration);
+    _alphaCtrl ??= AnimationController(
+      vsync: _vsync,
+      duration: _alphaEnterDuration,
+    );
+    _dimCtrl ??= AnimationController(
+      vsync: _vsync,
+      duration: _dimEnterDuration,
+    );
   }
 
   /// 弹出菜单。[anchorKey] 是触发控件的 GlobalKey，用来定位菜单该出现在哪。
@@ -109,7 +115,9 @@ class MiuixDropdownMenu<T> {
                     behavior: HitTestBehavior.translucent,
                     child: Opacity(
                       opacity: dimAlpha,
-                      child: Container(color: Colors.black.withValues(alpha: 0.16)),
+                      child: Container(
+                        color: Colors.black.withValues(alpha: 0.16),
+                      ),
                     ),
                   ),
                 ),
@@ -138,7 +146,9 @@ class MiuixDropdownMenu<T> {
                             elevation: 16,
                             shadowColor: Colors.black.withValues(alpha: 0.22),
                             shape: const ContinuousRectangleBorder(
-                              borderRadius: BorderRadius.all(Radius.circular(16)),
+                              borderRadius: BorderRadius.all(
+                                Radius.circular(16),
+                              ),
                             ),
                             child: Padding(
                               padding: const EdgeInsets.symmetric(vertical: 8),
@@ -174,7 +184,11 @@ class MiuixDropdownMenu<T> {
       ..animateWith(SpringSimulation(_fractionSpring, 0, 1, 0));
     _alphaCtrl!
       ..value = 0
-      ..animateTo(1, duration: _alphaEnterDuration, curve: Curves.fastOutSlowIn);
+      ..animateTo(
+        1,
+        duration: _alphaEnterDuration,
+        curve: Curves.fastOutSlowIn,
+      );
     _dimCtrl!
       ..value = 0
       ..animateTo(1, duration: _dimEnterDuration, curve: Curves.easeOutSine);
@@ -184,13 +198,27 @@ class MiuixDropdownMenu<T> {
   Future<void> close({T? result}) async {
     if (!isOpen) return;
 
-    final fractionVelocity =
-        _fractionCtrl!.isAnimating ? _fractionCtrl!.velocity : 0.0;
+    final fractionVelocity = _fractionCtrl!.isAnimating
+        ? _fractionCtrl!.velocity
+        : 0.0;
     _fractionCtrl!.animateWith(
-      SpringSimulation(_fractionSpring, _fractionCtrl!.value, 0, fractionVelocity),
+      SpringSimulation(
+        _fractionSpring,
+        _fractionCtrl!.value,
+        0,
+        fractionVelocity,
+      ),
     );
-    _dimCtrl!.animateTo(0, duration: _dimExitDuration, curve: Curves.easeOutSine);
-    await _alphaCtrl!.animateTo(0, duration: _alphaExitDuration, curve: Curves.fastOutSlowIn);
+    _dimCtrl!.animateTo(
+      0,
+      duration: _dimExitDuration,
+      curve: Curves.easeOutSine,
+    );
+    await _alphaCtrl!.animateTo(
+      0,
+      duration: _alphaExitDuration,
+      curve: Curves.fastOutSlowIn,
+    );
 
     if (_disposed) return;
 
@@ -237,7 +265,8 @@ class _MiuixRevealClipper extends CustomClipper<Path> {
     final visibleHeight = size.height * progress;
     final clipStart = fromTop ? 0.0 : size.height - visibleHeight;
     final rect = Rect.fromLTWH(0, clipStart, size.width, visibleHeight);
-    return Path()..addRRect(RRect.fromRectAndRadius(rect, Radius.circular(radius)));
+    return Path()
+      ..addRRect(RRect.fromRectAndRadius(rect, Radius.circular(radius)));
   }
 
   @override

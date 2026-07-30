@@ -49,7 +49,11 @@ class _FarmNewsState extends State<FarmNews> {
               child: Container(
                 decoration: BoxDecoration(
                   border: Border(
-                    top: BorderSide(color: index == 0 ? AppColors.hairline : Colors.transparent),
+                    top: BorderSide(
+                      color: index == 0
+                          ? AppColors.hairline
+                          : Colors.transparent,
+                    ),
                     bottom: BorderSide(color: AppColors.hairline),
                   ),
                 ),
@@ -79,7 +83,7 @@ class _FarmNewsState extends State<FarmNews> {
                                 color: AppColors.muted,
                                 value: progress.expectedTotalBytes != null
                                     ? progress.cumulativeBytesLoaded /
-                                        progress.expectedTotalBytes!
+                                          progress.expectedTotalBytes!
                                     : null,
                               ),
                             ),

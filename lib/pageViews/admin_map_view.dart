@@ -72,8 +72,9 @@ class AdminMapViewState extends State<AdminMapView> {
     if (region == null) return '';
     final provinceName = currentProvince.name;
     if (_showDistrictLayer) {
-      final city =
-          _cityRegions.where((c) => c.id == region.parentAdcode).firstOrNull;
+      final city = _cityRegions
+          .where((c) => c.id == region.parentAdcode)
+          .firstOrNull;
       return '$provinceName${city?.name ?? ''}${region.name}';
     }
     return '$provinceName${region.name}';
@@ -142,19 +143,25 @@ class AdminMapViewState extends State<AdminMapView> {
     int maxCount = 1;
     if (hasGeoData) {
       for (final r in _activeRegions) {
-        final c = _statsService.regionTotalCount(r,
-            showDistrictLayer: _showDistrictLayer);
+        final c = _statsService.regionTotalCount(
+          r,
+          showDistrictLayer: _showDistrictLayer,
+        );
         if (c > maxCount) maxCount = c;
       }
     }
 
     for (final region in _activeRegions) {
       final isSelected = region.id == _selectedRegionId;
-      final hasData = _statsService.regionHasData(region,
-          showDistrictLayer: _showDistrictLayer);
+      final hasData = _statsService.regionHasData(
+        region,
+        showDistrictLayer: _showDistrictLayer,
+      );
       final count = hasData
-          ? _statsService.regionTotalCount(region,
-              showDistrictLayer: _showDistrictLayer)
+          ? _statsService.regionTotalCount(
+              region,
+              showDistrictLayer: _showDistrictLayer,
+            )
           : 0;
       final ratio = maxCount > 1 ? (count / maxCount).clamp(0.0, 1.0) : 0.0;
 
@@ -181,8 +188,8 @@ class AdminMapViewState extends State<AdminMapView> {
             borderStrokeWidth: isSelected
                 ? (showStrongDetail ? 3.2 : 2.8)
                 : (hasGeoData && hasData
-                    ? (showStrongDetail ? 2.2 : 1.6)
-                    : (showStrongDetail ? 1.8 : 1.1)),
+                      ? (showStrongDetail ? 2.2 : 1.6)
+                      : (showStrongDetail ? 1.8 : 1.1)),
             hitValue: region.id,
             label: null,
           ),
@@ -197,12 +204,16 @@ class AdminMapViewState extends State<AdminMapView> {
     final hasGeoData = _statsService.dataAdcodes.isNotEmpty;
     return _activeRegions.map((region) {
       final isSelected = region.id == _selectedRegionId;
-      final hasData = _statsService.regionHasData(region,
-          showDistrictLayer: _showDistrictLayer);
+      final hasData = _statsService.regionHasData(
+        region,
+        showDistrictLayer: _showDistrictLayer,
+      );
       final dim = hasGeoData && !hasData;
       return Marker(
         point: region.center,
-        width: isSelected ? (_showDistrictLayer ? 92 : 100) : (_showDistrictLayer ? 84 : 96),
+        width: isSelected
+            ? (_showDistrictLayer ? 92 : 100)
+            : (_showDistrictLayer ? 84 : 96),
         height: isSelected ? 28 : 24,
         child: IgnorePointer(
           child: Center(
@@ -224,8 +235,8 @@ class AdminMapViewState extends State<AdminMapView> {
                   color: isSelected
                       ? AppColors.danger
                       : dim
-                          ? AppColors.mutedSoft
-                          : AppColors.ink,
+                      ? AppColors.mutedSoft
+                      : AppColors.ink,
                 ),
               ),
             ),
@@ -238,12 +249,16 @@ class AdminMapViewState extends State<AdminMapView> {
   List<Marker> _buildDiseaseInfoMarkers() {
     final region = _selectedRegion;
     if (region == null ||
-        !_statsService.regionHasData(region,
-            showDistrictLayer: _showDistrictLayer)) {
+        !_statsService.regionHasData(
+          region,
+          showDistrictLayer: _showDistrictLayer,
+        )) {
       return [];
     }
-    final summary = _statsService.getDiseaseSummary(region.id,
-        showDistrictLayer: _showDistrictLayer);
+    final summary = _statsService.getDiseaseSummary(
+      region.id,
+      showDistrictLayer: _showDistrictLayer,
+    );
     if (summary.isEmpty) return [];
 
     return [
@@ -283,8 +298,10 @@ class AdminMapViewState extends State<AdminMapView> {
 
     setState(() {
       if (tappedRegion != null &&
-          _statsService.regionHasData(tappedRegion,
-              showDistrictLayer: _showDistrictLayer)) {
+          _statsService.regionHasData(
+            tappedRegion,
+            showDistrictLayer: _showDistrictLayer,
+          )) {
         _selectedRegionId = hitId;
       } else {
         _selectedRegionId = null;
@@ -541,18 +558,21 @@ class AdminMapViewState extends State<AdminMapView> {
     final title = _selectedRegionFullName().isNotEmpty
         ? _selectedRegionFullName()
         : (_showDistrictLayer
-            ? '${currentProvince.name}县区'
-            : '${currentProvince.name}地市');
+              ? '${currentProvince.name}县区'
+              : '${currentProvince.name}地市');
 
-    final hasData = selectedRegion != null &&
-        _statsService.regionHasData(selectedRegion,
-            showDistrictLayer: _showDistrictLayer);
+    final hasData =
+        selectedRegion != null &&
+        _statsService.regionHasData(
+          selectedRegion,
+          showDistrictLayer: _showDistrictLayer,
+        );
 
     final subtitle = hasData
         ? '当前选中${_showDistrictLayer ? '区县' : '地市'}'
         : (selectedRegion == null
-            ? detailLevelText
-            : '当前选中${_showDistrictLayer ? '区县' : '地市'} — 暂无病害数据');
+              ? detailLevelText
+              : '当前选中${_showDistrictLayer ? '区县' : '地市'} — 暂无病害数据');
 
     return Container(
       width: double.infinity,
@@ -628,9 +648,7 @@ class AdminMapViewState extends State<AdminMapView> {
                   keepAlive: true,
                   cameraConstraint: _dragLimitBounds() == null
                       ? const CameraConstraint.unconstrained()
-                      : CameraConstraint.contain(
-                          bounds: _dragLimitBounds()!,
-                        ),
+                      : CameraConstraint.contain(bounds: _dragLimitBounds()!),
                   interactionOptions: const InteractionOptions(
                     flags:
                         InteractiveFlag.drag |
@@ -640,7 +658,8 @@ class AdminMapViewState extends State<AdminMapView> {
                   onPositionChanged: (camera, hasGesture) {
                     final zoom = camera.zoom;
                     if (mounted && (zoom - _currentZoom).abs() >= 0.05) {
-                      final shouldShowDistrictLayer = zoom >= _districtLabelZoom;
+                      final shouldShowDistrictLayer =
+                          zoom >= _districtLabelZoom;
                       setState(() {
                         _currentZoom = zoom;
                         if (shouldShowDistrictLayer != _showDistrictLayer) {
@@ -670,10 +689,7 @@ class AdminMapViewState extends State<AdminMapView> {
                   AnimatedSwitcher(
                     duration: const Duration(milliseconds: 350),
                     transitionBuilder: (child, animation) {
-                      return FadeTransition(
-                        opacity: animation,
-                        child: child,
-                      );
+                      return FadeTransition(opacity: animation, child: child);
                     },
                     child: Stack(
                       key: ValueKey(_showDistrictLayer),
@@ -703,10 +719,7 @@ class AdminMapViewState extends State<AdminMapView> {
             top: 12,
             right: 12,
             child: Container(
-              padding: const EdgeInsets.symmetric(
-                horizontal: 12,
-                vertical: 8,
-              ),
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
               decoration: BoxDecoration(
                 color: AppColors.surfaceSoft,
                 borderRadius: BorderRadius.circular(2),

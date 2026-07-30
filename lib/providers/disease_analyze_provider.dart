@@ -32,7 +32,8 @@ class DiseaseAnalyzeProvider extends ChangeNotifier {
 
   final ValueNotifier<String> streamingTextNotifier = ValueNotifier('');
   final ValueNotifier<String> displayedAnalysisNotifier = ValueNotifier('');
-  final ValueNotifier<List<String>> displayedSuggestionsNotifier = ValueNotifier([]);
+  final ValueNotifier<List<String>> displayedSuggestionsNotifier =
+      ValueNotifier([]);
   final ValueNotifier<bool> isTypingNotifier = ValueNotifier(false);
 
   Timer? _typewriterTimer;
@@ -126,7 +127,11 @@ class DiseaseAnalyzeProvider extends ChangeNotifier {
 
       // Use utf8.decoder transform to correctly handle multi-byte characters
       // crossing chunk boundaries (e.g. Chinese characters split across SSE chunks).
-      await for (final line in stream.cast<List<int>>().transform(utf8.decoder).transform(const LineSplitter())) {
+      await for (final line
+          in stream
+              .cast<List<int>>()
+              .transform(utf8.decoder)
+              .transform(const LineSplitter())) {
         if (_disposed) return;
         final trimmed = line.trim();
         if (trimmed.isEmpty) continue;

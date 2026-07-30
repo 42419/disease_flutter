@@ -64,7 +64,8 @@ class DiagnosisRecordsProvider extends ChangeNotifier {
   Future<void> loadAdcodeNameMap() async {
     if (_adcodeNameMapLoaded) return;
     try {
-      final regions = await const RegionOptionLoader().loadCurrentProvinceRegions();
+      final regions = await const RegionOptionLoader()
+          .loadCurrentProvinceRegions();
       _adcodeNameMap
         ..clear()
         ..addEntries(regions.map((r) => MapEntry(r.adcode, r.name)));
@@ -135,7 +136,11 @@ class DiagnosisRecordsProvider extends ChangeNotifier {
     });
   }
 
-  List<Diagnosis> _filterRecords(List<Diagnosis> all, {required String role, required String nickName}) {
+  List<Diagnosis> _filterRecords(
+    List<Diagnosis> all, {
+    required String role,
+    required String nickName,
+  }) {
     List<Diagnosis> filtered;
     if (role == '1') {
       filtered = all.toList();
@@ -150,7 +155,10 @@ class DiagnosisRecordsProvider extends ChangeNotifier {
     return filtered;
   }
 
-  Future<void> fetchRecords({required String role, required String nickName}) async {
+  Future<void> fetchRecords({
+    required String role,
+    required String nickName,
+  }) async {
     final generation = ++_fetchGeneration;
     _cachedRole = role;
     _cachedNickName = nickName;

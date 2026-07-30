@@ -19,13 +19,13 @@ class LoginResult {
   final String message;
 
   const LoginResult.success({required this.nickName, required this.role})
-      : success = true,
-        message = '';
+    : success = true,
+      message = '';
 
   const LoginResult.failure(this.message)
-      : success = false,
-        nickName = null,
-        role = null;
+    : success = false,
+      nickName = null,
+      role = null;
 }
 
 class UserProvider extends ChangeNotifier {

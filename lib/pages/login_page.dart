@@ -24,8 +24,9 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
   final AuthStorage _authStorage = const AuthStorage();
 
   // 弹出菜单动效抽成通用组件，这里只需要持有一个实例并在触发时调用 show()。
-  late final MiuixDropdownMenu<String> _roleMenu =
-      MiuixDropdownMenu<String>(vsync: this);
+  late final MiuixDropdownMenu<String> _roleMenu = MiuixDropdownMenu<String>(
+    vsync: this,
+  );
 
   // 角色选项（顺序即弹出选择器中的顺序）
   static const List<MiuixMenuItem<String>> _roleOptions = [
@@ -33,10 +34,7 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
     MiuixMenuItem(value: "1", label: "管理员"),
   ];
   // 触发字段本身要显示"当前选中的角色文案"，用这个 map 按 key 查找。
-  static const Map<String, String> _roleLabels = {
-    "0": "农户",
-    "1": "管理员",
-  };
+  static const Map<String, String> _roleLabels = {"0": "农户", "1": "管理员"};
   final GlobalKey _roleFieldKey = GlobalKey();
   bool _isRoleMenuOpen = false;
 
@@ -321,23 +319,27 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
                                   child: AnimatedContainer(
                                     duration: const Duration(milliseconds: 120),
                                     color: _isRoleMenuOpen
-                                        ? AppColors.hairline.withValues(alpha: 0.25)
+                                        ? AppColors.hairline.withValues(
+                                            alpha: 0.25,
+                                          )
                                         : Colors.transparent,
                                     child: InputDecorator(
                                       decoration: _buildMinimalInputDecoration(
                                         hintText: "角色",
                                         icon: Icons.switch_account_outlined,
-                                      ).copyWith(
-                                        errorText: field.errorText,
-                                      ),
+                                      ).copyWith(errorText: field.errorText),
                                       child: Row(
                                         children: [
                                           Expanded(
                                             child: Text(
-                                              _roleLabels[_selectedRole] ?? "请选择角色",
+                                              _roleLabels[_selectedRole] ??
+                                                  "请选择角色",
                                               style: TextStyle(
                                                 color: _selectedRole == null
-                                                    ? AppColors.muted.withValues(alpha: 0.6)
+                                                    ? AppColors.muted
+                                                          .withValues(
+                                                            alpha: 0.6,
+                                                          )
                                                     : AppColors.ink,
                                                 fontSize: 18,
                                               ),
@@ -345,7 +347,9 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
                                           ),
                                           AnimatedRotation(
                                             turns: _isRoleMenuOpen ? 0.5 : 0,
-                                            duration: const Duration(milliseconds: 200),
+                                            duration: const Duration(
+                                              milliseconds: 200,
+                                            ),
                                             curve: Curves.easeOutCubic,
                                             child: Icon(
                                               Icons.expand_more_outlined,
@@ -368,12 +372,12 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
                               children: [
                                 _buildCheckbox(
                                   _rememberMe,
-                                      (v) => setState(() => _rememberMe = v!),
+                                  (v) => setState(() => _rememberMe = v!),
                                 ),
                                 const SizedBox(width: 12),
                                 GestureDetector(
                                   onTap: () => setState(
-                                        () => _rememberMe = !_rememberMe,
+                                    () => _rememberMe = !_rememberMe,
                                   ),
                                   child: Text(
                                     "保持登录状态",
@@ -393,17 +397,17 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
                               children: [
                                 _buildCheckbox(
                                   _isSelected,
-                                      (v) => setState(() => _isSelected = v!),
+                                  (v) => setState(() => _isSelected = v!),
                                 ),
                                 const SizedBox(width: 12),
                                 Expanded(
                                   child: Wrap(
                                     crossAxisAlignment:
-                                    WrapCrossAlignment.center,
+                                        WrapCrossAlignment.center,
                                     children: [
                                       GestureDetector(
                                         onTap: () => setState(
-                                              () => _isSelected = !_isSelected,
+                                          () => _isSelected = !_isSelected,
                                         ),
                                         child: Text(
                                           "已阅读并同意",
@@ -459,9 +463,9 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
                                 onPressed: _isLoggingIn
                                     ? null
                                     : () {
-                                  FocusScope.of(context).unfocus();
-                                  _login();
-                                },
+                                        FocusScope.of(context).unfocus();
+                                        _login();
+                                      },
                                 style: ElevatedButton.styleFrom(
                                   backgroundColor: AppColors.ink,
                                   foregroundColor: AppColors.canvas,
@@ -476,21 +480,21 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
                                 ),
                                 child: _isLoggingIn
                                     ? SizedBox(
-                                  height: 20,
-                                  width: 20,
-                                  child: CircularProgressIndicator(
-                                    color: AppColors.canvas,
-                                    strokeWidth: 2,
-                                  ),
-                                )
+                                        height: 20,
+                                        width: 20,
+                                        child: CircularProgressIndicator(
+                                          color: AppColors.canvas,
+                                          strokeWidth: 2,
+                                        ),
+                                      )
                                     : const Text(
-                                  "登 录",
-                                  style: TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.normal,
-                                    letterSpacing: 4,
-                                  ),
-                                ),
+                                        "登 录",
+                                        style: TextStyle(
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.normal,
+                                          letterSpacing: 4,
+                                        ),
+                                      ),
                               ),
                             ),
                             const SizedBox(height: 32),
@@ -501,7 +505,7 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
                               children: [
                                 _buildTextButton(
                                   "忘记密码",
-                                      () => _showSnack("忘记密码"),
+                                  () => _showSnack("忘记密码"),
                                 ),
                                 Container(
                                   height: 12,
@@ -513,7 +517,7 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
                                 ),
                                 _buildTextButton(
                                   "注册账户",
-                                      () => _showSnack("跳转注册"),
+                                  () => _showSnack("跳转注册"),
                                 ),
                               ],
                             ),

@@ -76,10 +76,7 @@ class _AnalyzeLoadingWidgetState extends State<AnalyzeLoadingWidget> {
                 const SizedBox(width: 8),
                 Row(
                   mainAxisSize: MainAxisSize.min,
-                  children: List.generate(
-                    3,
-                    (i) => LoopingDot(delay: i * 300),
-                  ),
+                  children: List.generate(3, (i) => LoopingDot(delay: i * 300)),
                 ),
               ],
             );
@@ -172,11 +169,7 @@ class _AnalyzeLoadingWidgetState extends State<AnalyzeLoadingWidget> {
         color: AppColors.primaryLightest,
         borderRadius: BorderRadius.circular(6),
       ),
-      child: Icon(
-        Icons.auto_awesome,
-        size: 14,
-        color: AppColors.primary,
-      ),
+      child: Icon(Icons.auto_awesome, size: 14, color: AppColors.primary),
     );
   }
 }

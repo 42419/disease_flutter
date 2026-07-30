@@ -115,10 +115,9 @@ class AppTheme {
         iconTheme: IconThemeData(color: ink),
       ),
       iconTheme: IconThemeData(color: muted),
-      textTheme: ThemeData(brightness: brightness).textTheme.apply(
-        bodyColor: ink,
-        displayColor: ink,
-      ),
+      textTheme: ThemeData(
+        brightness: brightness,
+      ).textTheme.apply(bodyColor: ink, displayColor: ink),
       dividerTheme: DividerThemeData(color: hairline, thickness: 1),
       cardTheme: CardThemeData(
         color: surfaceCard,

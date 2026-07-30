@@ -21,9 +21,12 @@ class RegionOptionLoader {
   const RegionOptionLoader();
 
   Future<List<RegionOption>> loadCurrentProvinceRegions() async {
-    final cityJson = await rootBundle.loadString(currentProvince.cityGeoJsonPath);
-    final districtJson =
-        await rootBundle.loadString(currentProvince.districtGeoJsonPath);
+    final cityJson = await rootBundle.loadString(
+      currentProvince.cityGeoJsonPath,
+    );
+    final districtJson = await rootBundle.loadString(
+      currentProvince.districtGeoJsonPath,
+    );
 
     final cities = parseRegions(cityJson, provinceName: currentProvince.name);
     final cityNames = {for (final city in cities) city.adcode: city.name};
@@ -53,13 +56,18 @@ class RegionOptionLoader {
 
       final adcode = props['adcode']?.toString();
       final rawName = props['name']?.toString();
-      if (adcode == null || adcode.isEmpty || rawName == null || rawName.isEmpty) {
+      if (adcode == null ||
+          adcode.isEmpty ||
+          rawName == null ||
+          rawName.isEmpty) {
         continue;
       }
 
       final parent = props['parent'];
       final parentAdcode = parent is Map ? parent['adcode']?.toString() : null;
-      final parentName = parentAdcode == null ? null : parentNames[parentAdcode];
+      final parentName = parentAdcode == null
+          ? null
+          : parentNames[parentAdcode];
       final fullName = parentName == null
           ? '$provinceName$rawName'
           : '$parentName$rawName';

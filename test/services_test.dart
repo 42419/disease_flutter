@@ -20,8 +20,12 @@ void main() {
       test('区域 id 直接匹配时返回 true', () {
         service.dataAdcodes.add('210701');
         final region = GeoRegion(
-          id: '210701', name: '太和区', level: 'district',
-          parentAdcode: '210700', center: LatLng(41, 121), polygons: [],
+          id: '210701',
+          name: '太和区',
+          level: 'district',
+          parentAdcode: '210700',
+          center: LatLng(41, 121),
+          polygons: [],
         );
         expect(service.regionHasData(region, showDistrictLayer: true), isTrue);
         expect(service.regionHasData(region, showDistrictLayer: false), isTrue);
@@ -30,8 +34,12 @@ void main() {
       test('区县级：父级有数据且自身无数据时返回 true', () {
         service.dataAdcodes.add('210700');
         final region = GeoRegion(
-          id: '210701', name: '太和区', level: 'district',
-          parentAdcode: '210700', center: LatLng(41, 121), polygons: [],
+          id: '210701',
+          name: '太和区',
+          level: 'district',
+          parentAdcode: '210700',
+          center: LatLng(41, 121),
+          polygons: [],
         );
         expect(service.regionHasData(region, showDistrictLayer: true), isTrue);
       });
@@ -41,8 +49,12 @@ void main() {
         // 其父级 cityCode 在 cityCodesWithDistrictData 中
         service.cityCodesWithDistrictData.add('210700');
         final region = GeoRegion(
-          id: '210709', name: '某新区', level: 'district',
-          parentAdcode: '210700', center: LatLng(41, 121), polygons: [],
+          id: '210709',
+          name: '某新区',
+          level: 'district',
+          parentAdcode: '210700',
+          center: LatLng(41, 121),
+          polygons: [],
         );
         expect(service.regionHasData(region, showDistrictLayer: true), isFalse);
       });
@@ -51,24 +63,39 @@ void main() {
         service.dataAdcodes.add('210701');
         service.cityCodesWithDistrictData.add('210700');
         final region = GeoRegion(
-          id: '210700', name: '锦州市', level: 'city',
-          parentAdcode: '210000', center: LatLng(41, 121), polygons: [],
+          id: '210700',
+          name: '锦州市',
+          level: 'city',
+          parentAdcode: '210000',
+          center: LatLng(41, 121),
+          polygons: [],
         );
         expect(service.regionHasData(region, showDistrictLayer: false), isTrue);
       });
 
       test('地市级：无任何下辖数据时返回 false', () {
         final region = GeoRegion(
-          id: '210700', name: '锦州市', level: 'city',
-          parentAdcode: '210000', center: LatLng(41, 121), polygons: [],
+          id: '210700',
+          name: '锦州市',
+          level: 'city',
+          parentAdcode: '210000',
+          center: LatLng(41, 121),
+          polygons: [],
         );
-        expect(service.regionHasData(region, showDistrictLayer: false), isFalse);
+        expect(
+          service.regionHasData(region, showDistrictLayer: false),
+          isFalse,
+        );
       });
 
       test('无数据时返回 false', () {
         final region = GeoRegion(
-          id: '999999', name: '无数据区', level: 'district',
-          parentAdcode: null, center: LatLng(41, 121), polygons: [],
+          id: '999999',
+          name: '无数据区',
+          level: 'district',
+          parentAdcode: null,
+          center: LatLng(41, 121),
+          polygons: [],
         );
         expect(service.regionHasData(region, showDistrictLayer: true), isFalse);
       });
@@ -80,8 +107,12 @@ void main() {
         service.diseaseStatsByCode['210702'] = {'锈病': 2};
 
         final region = GeoRegion(
-          id: '210700', name: '锦州市', level: 'city',
-          parentAdcode: '210000', center: LatLng(41, 121), polygons: [],
+          id: '210700',
+          name: '锦州市',
+          level: 'city',
+          parentAdcode: '210000',
+          center: LatLng(41, 121),
+          polygons: [],
         );
         // 地市级取前4位匹配
         expect(service.regionTotalCount(region, showDistrictLayer: false), 6);
@@ -91,16 +122,24 @@ void main() {
         service.diseaseStatsByCode['210701'] = {'苹果黑斑病': 3};
 
         final region = GeoRegion(
-          id: '210701', name: '太和区', level: 'district',
-          parentAdcode: '210700', center: LatLng(41, 121), polygons: [],
+          id: '210701',
+          name: '太和区',
+          level: 'district',
+          parentAdcode: '210700',
+          center: LatLng(41, 121),
+          polygons: [],
         );
         expect(service.regionTotalCount(region, showDistrictLayer: true), 3);
       });
 
       test('无数据时返回 0', () {
         final region = GeoRegion(
-          id: '999999', name: '无数据', level: 'city',
-          parentAdcode: null, center: LatLng(41, 121), polygons: [],
+          id: '999999',
+          name: '无数据',
+          level: 'city',
+          parentAdcode: null,
+          center: LatLng(41, 121),
+          polygons: [],
         );
         expect(service.regionTotalCount(region, showDistrictLayer: false), 0);
       });
@@ -139,28 +178,36 @@ void main() {
     group('regionFillColor', () {
       test('有 Geo 数据但无病害数据时返回绿色', () {
         final color = service.regionFillColor(
-          hasGeoData: true, hasData: false,
-          isSelected: false, severityRatio: 0,
+          hasGeoData: true,
+          hasData: false,
+          isSelected: false,
+          severityRatio: 0,
         );
         expect(color, AppColors.success.withValues(alpha: 0.30));
       });
 
       test('无 Geo 数据时返回浅绿色', () {
         final color = service.regionFillColor(
-          hasGeoData: false, hasData: false,
-          isSelected: false, severityRatio: 0,
+          hasGeoData: false,
+          hasData: false,
+          isSelected: false,
+          severityRatio: 0,
         );
         expect(color, AppColors.success.withValues(alpha: 0.16));
       });
 
       test('选中状态颜色更深', () {
         final unselected = service.regionFillColor(
-          hasGeoData: true, hasData: false,
-          isSelected: false, severityRatio: 0,
+          hasGeoData: true,
+          hasData: false,
+          isSelected: false,
+          severityRatio: 0,
         );
         final selected = service.regionFillColor(
-          hasGeoData: true, hasData: false,
-          isSelected: true, severityRatio: 0,
+          hasGeoData: true,
+          hasData: false,
+          isSelected: true,
+          severityRatio: 0,
         );
         // selected 应该 alpha 更高
         expect(selected.a, greaterThan(unselected.a));
@@ -168,12 +215,16 @@ void main() {
 
       test('severityRatio 影响颜色', () {
         final low = service.regionFillColor(
-          hasGeoData: true, hasData: true,
-          isSelected: false, severityRatio: 0.0,
+          hasGeoData: true,
+          hasData: true,
+          isSelected: false,
+          severityRatio: 0.0,
         );
         final high = service.regionFillColor(
-          hasGeoData: true, hasData: true,
-          isSelected: false, severityRatio: 1.0,
+          hasGeoData: true,
+          hasData: true,
+          isSelected: false,
+          severityRatio: 1.0,
         );
         expect(low, isNot(equals(high)));
       });
@@ -182,24 +233,30 @@ void main() {
     group('regionBorderColor', () {
       test('选中时返回 error 颜色', () {
         final color = service.regionBorderColor(
-          hasGeoData: true, hasData: true,
-          isSelected: true, severityRatio: 0.5,
+          hasGeoData: true,
+          hasData: true,
+          isSelected: true,
+          severityRatio: 0.5,
         );
         expect(color, AppColors.error);
       });
 
       test('有 Geo 无病害数据时返回绿色边框', () {
         final color = service.regionBorderColor(
-          hasGeoData: true, hasData: false,
-          isSelected: false, severityRatio: 0,
+          hasGeoData: true,
+          hasData: false,
+          isSelected: false,
+          severityRatio: 0,
         );
         expect(color, AppColors.success.withValues(alpha: 0.82));
       });
 
       test('无 Geo 数据时返回浅绿边框', () {
         final color = service.regionBorderColor(
-          hasGeoData: false, hasData: false,
-          isSelected: false, severityRatio: 0,
+          hasGeoData: false,
+          hasData: false,
+          isSelected: false,
+          severityRatio: 0,
         );
         expect(color, AppColors.success.withValues(alpha: 0.60));
       });
@@ -223,11 +280,7 @@ void main() {
           },
           {
             'type': 'Feature',
-            'properties': {
-              'adcode': '210100',
-              'name': '沈阳市',
-              'level': 'city',
-            },
+            'properties': {'adcode': '210100', 'name': '沈阳市', 'level': 'city'},
           },
         ],
       });
@@ -275,10 +328,7 @@ void main() {
     });
 
     test('features 为空列表时返回空结果', () {
-      final json = jsonEncode({
-        'type': 'FeatureCollection',
-        'features': [],
-      });
+      final json = jsonEncode({'type': 'FeatureCollection', 'features': []});
 
       final regions = RegionOptionLoader.parseRegions(
         json,
@@ -302,18 +352,15 @@ void main() {
         'features': [
           {
             'type': 'Feature',
-            'properties': {'name': '锦州市'},  // 无 adcode
+            'properties': {'name': '锦州市'}, // 无 adcode
           },
           {
             'type': 'Feature',
-            'properties': {'adcode': '210700'},  // 无 name
+            'properties': {'adcode': '210700'}, // 无 name
           },
           {
             'type': 'Feature',
-            'properties': {
-              'adcode': '210700',
-              'name': '锦州市',
-            },
+            'properties': {'adcode': '210700', 'name': '锦州市'},
           },
         ],
       });
