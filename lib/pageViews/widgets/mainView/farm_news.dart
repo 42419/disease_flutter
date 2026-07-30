@@ -60,12 +60,38 @@ class _FarmNewsState extends State<FarmNews> {
                     Container(
                       width: 80,
                       height: 80,
+                      clipBehavior: Clip.antiAlias,
                       decoration: BoxDecoration(
                         border: Border.all(color: AppColors.hairline),
+                        color: AppColors.surfaceSoft,
                       ),
                       child: Image.network(
-                        item["picture"], 
+                        item["picture"],
                         fit: BoxFit.cover,
+                        loadingBuilder: (context, child, progress) {
+                          if (progress == null) return child;
+                          return Center(
+                            child: SizedBox(
+                              width: 18,
+                              height: 18,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                color: AppColors.muted,
+                                value: progress.expectedTotalBytes != null
+                                    ? progress.cumulativeBytesLoaded /
+                                        progress.expectedTotalBytes!
+                                    : null,
+                              ),
+                            ),
+                          );
+                        },
+                        errorBuilder: (context, error, stackTrace) {
+                          return Icon(
+                            Icons.image_not_supported_outlined,
+                            color: AppColors.mutedSoft,
+                            size: 22,
+                          );
+                        },
                       ),
                     ),
                     SizedBox(width: 20),
