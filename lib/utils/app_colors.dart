@@ -6,7 +6,8 @@ import 'package:flutter/material.dart';
 /// DESIGN.md 本身只定义了少量"深色卡片"级别的 token（surface-dark 系列），
 /// 这里在同一套暖色调性（暖灰黑，而非冷蓝黑）基础上，补全了一整套用于
 /// 深色模式下的文字、边框、品牌色、状态色，遵循的原则：
-///   1. 深色背景不用纯黑（#000000），沿用 DESIGN.md 的暖炭黑 #181715；
+///   1. 深色背景不用纯黑（#000000），也不追求过深，采用暖炭灰 #201F1C，
+///      降低背景与文字之间过强的黑白冲击对比，兼顾长时间阅读的舒适度；
 ///   2. 品牌珊瑚色 primary 在深色背景上适度提亮，保持辨识度又不刺眼；
 ///   3. 语义色（success/warning/error）在深色背景上同样提亮，保证对比度；
 ///   4. 文字对比度遵循 WCAG AA（正文文字与背景对比度 ≥ 4.5:1）。
@@ -73,12 +74,12 @@ class AppColors {
   // Backgrounds & Surfaces（原始"深色卡片" token，语义不随主题切换，
   // 始终是深色——例如浅色模式下用于个别强调卡片、深色模式下用于所有背景）
   // ==========================================
-  static const Color surfaceDark = Color(0xFF181715);
-  static const Color surfaceDarkElevated = Color(0xFF252320);
-  static const Color surfaceDarkSoft = Color(0xFF1F1E1B);
+  static const Color surfaceDark = Color(0xFF201F1C);
+  static const Color surfaceDarkElevated = Color(0xFF2C2A25);
+  static const Color surfaceDarkSoft = Color(0xFF262521);
 
   static const Color onPrimary = Color(0xFFFFFFFF);
-  static const Color onDark = Color(0xFFFAF9F5);
+  static const Color onDark = Color(0xFFE6E3DB);
   static const Color onDarkSoft = Color(0xFFA09D96);
 
   // ==========================================
@@ -301,16 +302,19 @@ class _Dark {
   static const Color accentTeal = Color(0xFF6FC7B5);
   static const Color accentAmber = Color(0xFFF0B573);
 
-  static const Color ink = onDark; // 主文字：暖白
+  static const Color ink = onDark; // 主文字：暖白（非纯白，降低与背景的冲击对比）
   static const Color body = Color(0xFFC9C6BE); // 正文：介于 onDark 与 onDarkSoft 之间
-  static const Color bodyStrong = Color(0xFFE4E1D9);
+  static const Color bodyStrong = Color(0xFFE0DDD4);
   static const Color muted = onDarkSoft; // 次要文字
   static const Color mutedSoft = Color(0xFF716D64); // 三级/禁用态文字
 
-  static const Color canvas = Color(0xFF181715); // = DESIGN.md surface-dark
-  static const Color surfaceSoft = Color(0xFF1F1E1B); // = surface-dark-soft
-  static const Color surfaceCard = Color(0xFF252320); // = surface-dark-elevated
-  static const Color surfaceStrong = Color(0xFF2F2C27); // 外推：弹层/最高层级
+  // canvas/surfaceSoft/surfaceCard/surfaceStrong 相比早期版本整体调亮了一档，
+  // 避免背景过近纯黑、和暖白文字形成过强对比，长时间阅读更舒适；
+  // 层级间距保持不变，视觉层次感不受影响。
+  static const Color canvas = Color(0xFF201F1C);
+  static const Color surfaceSoft = Color(0xFF262521);
+  static const Color surfaceCard = Color(0xFF2C2A25);
+  static const Color surfaceStrong = Color(0xFF353128);
 
   static const Color hairline = Color(0xFF3A362F);
   static const Color hairlineSoft = Color(0xFF2C2924);
@@ -319,6 +323,6 @@ class _Dark {
   static const Color warning = Color(0xFFE8B93D);
   static const Color error = Color(0xFFE2685F);
 
-  static const Color onDark = Color(0xFFFAF9F5);
+  static const Color onDark = Color(0xFFE6E3DB); // 暖白（约 90% 亮度），而非纯白
   static const Color onDarkSoft = Color(0xFFA09D96);
 }
