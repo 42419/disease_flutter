@@ -34,7 +34,7 @@ Widget getRootWidget() {
           debugShowCheckedModeBanner: false,
           theme: AppTheme.light,
           darkTheme: AppTheme.dark,
-          themeMode: themeController.themeMode,
+          themeMode: ThemeMode.system,
         );
       },
     ),
