@@ -83,7 +83,7 @@ class _MineViewState extends State<MineView>
 
   @override
   Widget build(BuildContext context) {
-    final themeController = context.watch<ThemeModeController>();
+    context.watch<ThemeModeController>(); // 深色模式切换时用于触发本页面重建
     super.build(context);
     final user = context.watch<UserProvider>();
     final recordsProvider = context.watch<DiagnosisRecordsProvider>();
@@ -271,76 +271,6 @@ class _MineViewState extends State<MineView>
                   ),
                   child: Column(
                     children: [
-                      Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 16),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              "颜色主题",
-                              style: TextStyle(
-                                fontFamily: "serif",
-                                fontSize: 16,
-                                fontWeight: FontWeight.w600,
-                                color: AppColors.ink,
-                              ),
-                            ),
-                            const SizedBox(height: 12),
-                            SizedBox(
-                              width: double.infinity,
-                              child: SegmentedButton<ThemeMode>(
-                                segments: const [
-                                  ButtonSegment(
-                                    value: ThemeMode.system,
-                                    icon: Icon(
-                                      Icons.brightness_auto_rounded,
-                                      size: 16,
-                                    ),
-                                    label: Text("跟随系统"),
-                                  ),
-                                  ButtonSegment(
-                                    value: ThemeMode.light,
-                                    icon: Icon(
-                                      Icons.light_mode_rounded,
-                                      size: 16,
-                                    ),
-                                    label: Text("浅色"),
-                                  ),
-                                  ButtonSegment(
-                                    value: ThemeMode.dark,
-                                    icon: Icon(
-                                      Icons.dark_mode_rounded,
-                                      size: 16,
-                                    ),
-                                    label: Text("深色"),
-                                  ),
-                                ],
-                                selected: {themeController.themeMode},
-                                showSelectedIcon: false,
-                                onSelectionChanged: (selection) {
-                                  themeController.setThemeMode(selection.first);
-                                },
-                                style: SegmentedButton.styleFrom(
-                                  backgroundColor: AppColors.surfaceSoft,
-                                  foregroundColor: AppColors.muted,
-                                  // 选中态背景固定用品牌珊瑚色、文字固定用 canvas（浅色模式下
-                                  // canvas 接近白，深色模式下 canvas 接近黑），两种模式下都能跟
-                                  // 珊瑚色背景形成清晰对比，不会出现"背景和字同色"的问题。
-                                  selectedForegroundColor: AppColors.canvas,
-                                  selectedBackgroundColor: AppColors.primary,
-                                  side: BorderSide(color: AppColors.hairline),
-                                  textStyle: const TextStyle(fontSize: 12),
-                                  visualDensity: VisualDensity.compact,
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 4,
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      Divider(height: 1, color: AppColors.hairline),
                       ListTile(
                         contentPadding: EdgeInsets.symmetric(
                           horizontal: 0,
