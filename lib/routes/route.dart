@@ -7,7 +7,6 @@ import 'package:farm_flutter/providers/upload_provider.dart';
 import 'package:farm_flutter/providers/diagnosis_records_provider.dart';
 import 'package:farm_flutter/providers/disease_analyze_provider.dart';
 import 'package:farm_flutter/providers/main_navigation_provider.dart';
-import 'package:farm_flutter/providers/theme_mode_provider.dart';
 import 'package:farm_flutter/utils/app_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -24,19 +23,16 @@ Widget getRootWidget() {
       ChangeNotifierProvider(create: (_) => DiagnosisRecordsProvider()),
       ChangeNotifierProvider(create: (_) => DiseaseAnalyzeProvider()),
       ChangeNotifierProvider(create: (_) => MainNavigationProvider()),
-      ChangeNotifierProvider(create: (_) => ThemeModeController()),
     ],
-    child: Consumer<ThemeModeController>(
-      builder: (context, themeController, _) {
-        return MaterialApp(
-          initialRoute: "/init",
-          routes: _getRoutes(),
-          debugShowCheckedModeBanner: false,
-          theme: AppTheme.light,
-          darkTheme: AppTheme.dark,
-          themeMode: ThemeMode.system,
-        );
-      },
+    child: MaterialApp(
+      initialRoute: "/init",
+      routes: _getRoutes(),
+      debugShowCheckedModeBanner: false,
+      theme: AppTheme.light,
+      darkTheme: AppTheme.dark,
+      // MaterialApp/WidgetsApp 内部会自行监听系统亮度变化并触发重建，
+      // 不需要额外的 Provider/Controller 来驱动深浅色切换。
+      themeMode: ThemeMode.system,
     ),
   );
 }

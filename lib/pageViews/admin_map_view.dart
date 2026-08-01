@@ -6,11 +6,11 @@ import 'package:farm_flutter/pageViews/widgets/adminMap/disease_chart_marker.dar
 import 'package:farm_flutter/services/disease_stats_service.dart';
 import 'package:farm_flutter/services/geojson_parser.dart';
 import 'package:farm_flutter/utils/app_colors.dart';
+import 'package:farm_flutter/utils/app_theme.dart';
+import 'package:farm_flutter/utils/app_spacing.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
-import 'package:provider/provider.dart';
-import 'package:farm_flutter/providers/theme_mode_provider.dart';
 
 class AdminMapView extends StatefulWidget {
   const AdminMapView({super.key});
@@ -52,7 +52,9 @@ class AdminMapViewState extends State<AdminMapView> {
 
   // ---- 多边形/标记缓存 ----
   List<Polygon<String>> _cachedPolygons = const [];
-  bool _lastIsDark = AppColors.isDark;
+  // 字段初始化时 context 还不存在，先给个默认值；build() 里第一次比较
+  // 时会自动发现和当前系统亮度不一致并触发一次 _rebuildCache()，不影响正确性。
+  bool _lastIsDark = false;
   List<Marker> _cachedLabels = const [];
 
   // ---- 计算属性 ----
@@ -171,12 +173,16 @@ class AdminMapViewState extends State<AdminMapView> {
           hasData: hasData,
           isSelected: isSelected,
           severityRatio: ratio,
+          successColor: context.colors.success,
+          errorColor: context.colors.error,
         );
         final borderColor = _statsService.regionBorderColor(
           hasGeoData: hasGeoData,
           hasData: hasData,
           isSelected: isSelected,
           severityRatio: ratio,
+          successColor: context.colors.success,
+          errorColor: context.colors.error,
         );
 
         polygons.add(
@@ -220,8 +226,8 @@ class AdminMapViewState extends State<AdminMapView> {
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
               decoration: BoxDecoration(
-                color: AppColors.canvas.withValues(
-                  alpha: dim ? 0.28 : (isSelected ? 0.92 : 0.82),
+                color: context.colors.canvas.withValues(
+                  alpha: dim ? 0.78 : (isSelected ? 0.92 : 0.82),
                 ),
                 borderRadius: BorderRadius.circular(6),
               ),
@@ -233,10 +239,10 @@ class AdminMapViewState extends State<AdminMapView> {
                   fontSize: isSelected ? 12 : 11,
                   fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
                   color: isSelected
-                      ? AppColors.danger
+                      ? context.colors.error
                       : dim
-                      ? AppColors.mutedSoft
-                      : AppColors.ink,
+                      ? context.colors.muted
+                      : context.colors.ink,
                 ),
               ),
             ),
@@ -478,19 +484,18 @@ class AdminMapViewState extends State<AdminMapView> {
 
   @override
   Widget build(BuildContext context) {
-    context.watch<ThemeModeController>(); // 深色模式切换时用于触发本页面重建
-    if (_lastIsDark != AppColors.isDark) {
+    if (_lastIsDark != context.isDarkMode) {
       // 亮度变化后，_cachedPolygons/_cachedLabels 里缓存的颜色是旧主题算出来的，
       // 这里强制重新计算一次，避免地图图层颜色和其余 UI 不同步。
-      _lastIsDark = AppColors.isDark;
+      _lastIsDark = context.isDarkMode;
       _rebuildCache();
     }
     if (_isLoading) {
       return Scaffold(
-        backgroundColor: AppColors.backgroundLight,
+        backgroundColor: context.colors.canvas,
         body: SafeArea(
           child: Center(
-            child: CircularProgressIndicator(color: AppColors.primary),
+            child: CircularProgressIndicator(color: context.colors.primary),
           ),
         ),
       );
@@ -498,16 +503,16 @@ class AdminMapViewState extends State<AdminMapView> {
 
     if (_errorMessage != null) {
       return Scaffold(
-        backgroundColor: AppColors.backgroundLight,
+        backgroundColor: context.colors.canvas,
         body: SafeArea(
           child: Center(
             child: Padding(
-              padding: const EdgeInsets.all(24),
+              padding: const EdgeInsets.all(AppSpacing.xxl),
               child: Text(
                 _errorMessage!,
                 style: TextStyle(
-                  fontFamily: "serif",
-                  color: AppColors.ink,
+                  fontFamily: kAppFontFamily,
+                  color: context.colors.ink,
                   fontSize: 15,
                 ),
                 textAlign: TextAlign.center,
@@ -519,17 +524,17 @@ class AdminMapViewState extends State<AdminMapView> {
     }
 
     return Scaffold(
-      backgroundColor: AppColors.canvas,
+      backgroundColor: context.colors.canvas,
       appBar: AppBar(
-        backgroundColor: AppColors.canvas,
+        backgroundColor: context.colors.canvas,
         surfaceTintColor: Colors.transparent,
         elevation: 0,
         titleSpacing: 20,
         title: Text(
           '管理员首页',
           style: TextStyle(
-            fontFamily: "serif",
-            color: AppColors.ink,
+            fontFamily: kAppFontFamily,
+            color: context.colors.ink,
             fontWeight: FontWeight.w600,
             fontSize: 20,
             letterSpacing: 1.5,
@@ -576,11 +581,11 @@ class AdminMapViewState extends State<AdminMapView> {
 
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(AppSpacing.lg),
       decoration: BoxDecoration(
-        color: AppColors.canvas,
-        borderRadius: BorderRadius.circular(2),
-        border: Border.all(color: AppColors.hairline),
+        color: context.colors.canvas,
+        borderRadius: BorderRadius.circular(AppRadius.xs),
+        border: Border.all(color: context.colors.hairline),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -588,20 +593,20 @@ class AdminMapViewState extends State<AdminMapView> {
           Text(
             title,
             style: TextStyle(
-              fontFamily: "serif",
+              fontFamily: kAppFontFamily,
               fontSize: 20,
               fontWeight: FontWeight.w600,
-              color: AppColors.ink,
+              color: context.colors.ink,
               letterSpacing: 0.5,
             ),
           ),
-          const SizedBox(height: 4),
+          const SizedBox(height: AppSpacing.xs),
           Text(
             subtitle,
             style: TextStyle(
-              fontFamily: "serif",
+              fontFamily: kAppFontFamily,
               fontSize: 12,
-              color: AppColors.muted,
+              color: context.colors.muted,
               fontStyle: FontStyle.italic,
             ),
           ),
@@ -617,9 +622,9 @@ class AdminMapViewState extends State<AdminMapView> {
     return Container(
       clipBehavior: Clip.antiAlias,
       decoration: BoxDecoration(
-        color: AppColors.canvas,
-        borderRadius: BorderRadius.circular(2),
-        border: Border.all(color: AppColors.hairline),
+        color: context.colors.canvas,
+        borderRadius: BorderRadius.circular(AppRadius.xs),
+        border: Border.all(color: context.colors.hairline),
       ),
       child: Stack(
         children: [
@@ -638,7 +643,7 @@ class AdminMapViewState extends State<AdminMapView> {
                       ? null
                       : CameraFit.bounds(
                           bounds: bounds,
-                          padding: const EdgeInsets.all(24),
+                          padding: const EdgeInsets.all(AppSpacing.xxl),
                         ),
                   initialCenter:
                       selectedRegion?.center ?? currentProvince.center,
@@ -685,7 +690,7 @@ class AdminMapViewState extends State<AdminMapView> {
                   },
                 ),
                 children: [
-                  Container(color: AppColors.backgroundLight),
+                  Container(color: context.colors.canvas),
                   AnimatedSwitcher(
                     duration: const Duration(milliseconds: 350),
                     transitionBuilder: (child, animation) {
@@ -721,16 +726,16 @@ class AdminMapViewState extends State<AdminMapView> {
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
               decoration: BoxDecoration(
-                color: AppColors.surfaceSoft,
-                borderRadius: BorderRadius.circular(2),
-                border: Border.all(color: AppColors.hairline),
+                color: context.colors.surfaceSoft,
+                borderRadius: BorderRadius.circular(AppRadius.xs),
+                border: Border.all(color: context.colors.hairline),
               ),
               child: Text(
                 '默认显示市级，放大后切换到县区级',
                 style: TextStyle(
-                  fontFamily: "serif",
+                  fontFamily: kAppFontFamily,
                   fontSize: 12,
-                  color: AppColors.muted,
+                  color: context.colors.muted,
                   fontWeight: FontWeight.w500,
                 ),
               ),

@@ -2,327 +2,174 @@ import 'package:flutter/material.dart';
 
 /// 农业种植病虫害防治 APP - 配色方案 (Claude Design System)
 ///
-/// 基于项目 DESIGN.md 中的 Claude 品牌配色体系扩展出完整的深色模式。
-/// DESIGN.md 本身只定义了少量"深色卡片"级别的 token（surface-dark 系列），
-/// 这里在同一套暖色调性（暖灰黑，而非冷蓝黑）基础上，补全了一整套用于
-/// 深色模式下的文字、边框、品牌色、状态色，遵循的原则：
+/// 通过 [ThemeExtension] 把配色挂在 [ThemeData] 上，替代此前"全局可变
+/// 静态 getter（`AppColors.ink` 等） + 每个 Widget 手动
+/// `context.watch<ThemeModeController>()` 才能在深色模式切换时重建"的方案：
+///   - 颜色值现在是 `ThemeData.extensions` 的一部分，属于 InheritedWidget；
+///   - Widget 只要在 build() 里通过 `context.colors.xxx` 读取（内部调用
+///     `Theme.of(context)`），Flutter 会自动建立依赖——主题变化时该 Widget
+///     自动重建，不存在"忘记 watch 导致颜色没刷新"的隐患；
+///   - light/dark 两套取值集中定义在本文件，[AppTheme] 直接复用，
+///     不再有第二份重复的颜色常量需要手动保持同步。
+///
+/// 用法：`context.colors.primary`、`context.colors.canvas` 等。
+///
+/// 配色原则（与 DESIGN.md 的 Claude 品牌配色体系一致）：
 ///   1. 深色背景不用纯黑（#000000），也不追求过深，采用暖炭灰 #201F1C，
 ///      降低背景与文字之间过强的黑白冲击对比，兼顾长时间阅读的舒适度；
 ///   2. 品牌珊瑚色 primary 在深色背景上适度提亮，保持辨识度又不刺眼；
 ///   3. 语义色（success/warning/error）在深色背景上同样提亮，保证对比度；
 ///   4. 文字对比度遵循 WCAG AA（正文文字与背景对比度 ≥ 4.5:1）。
-///
-/// 用法保持不变：`AppColors.ink`、`AppColors.canvas` 等，所有字段现在是
-/// 会根据当前亮度动态返回取值的 getter，而不是编译期常量——因此不能再用
-/// 在 `const` 表达式里（例如 `const TextStyle(color: AppColors.ink)` 需要
-/// 去掉外层的 const）。
-class AppColors {
-  AppColors._();
+@immutable
+class AppColorsX extends ThemeExtension<AppColorsX> {
+  const AppColorsX({
+    required this.primary,
+    required this.primaryActive,
+    required this.accentTeal,
+    required this.accentAmber,
+    required this.ink,
+    required this.body,
+    required this.muted,
+    required this.mutedSoft,
+    required this.canvas,
+    required this.surfaceSoft,
+    required this.surfaceCard,
+    required this.hairline,
+    required this.success,
+    required this.warning,
+    required this.error,
+    required this.white,
+  });
 
-  // ==========================================
-  // 全局亮度状态
-  // ==========================================
+  /// 浅色模式调色板 —— 与 DESIGN.md `colors:` 部分一一对应，数值未改动。
+  static const light = AppColorsX(
+    primary: Color(0xFFCC785C),
+    primaryActive: Color(0xFFA9583E),
+    accentTeal: Color(0xFF5DB8A6),
+    accentAmber: Color(0xFFE8A55A),
+    ink: Color(0xFF141413),
+    body: Color(0xFF3D3D3A),
+    muted: Color(0xFF6C6A64),
+    mutedSoft: Color(0xFF8E8B82),
+    canvas: Color(0xFFFAF9F5),
+    surfaceSoft: Color(0xFFF5F0E8),
+    surfaceCard: Color(0xFFEFE9DE),
+    hairline: Color(0xFFE6DFD8),
+    success: Color(0xFF5DB872),
+    warning: Color(0xFFD4A017),
+    error: Color(0xFFC64545),
+    white: Color(0xFFFFFFFF),
+  );
 
-  static Brightness _brightness = Brightness.light;
+  /// 深色模式调色板。
+  ///
+  /// canvas/surfaceSoft/surfaceCard 采用暖炭灰而非纯黑；主文字 ink 用暖白
+  /// #E6E3DB 而非纯白，与 canvas 的对比度约 12.8:1（仍远超 WCAG AA 的
+  /// 4.5:1），比早期"纯黑配纯白"（约 17:1）更适合长时间阅读。
+  /// 品牌色与语义色统一提亮，避免"又暗又灰"的低对比度观感。
+  static const dark = AppColorsX(
+    primary: Color(0xFFDB9673), // 提亮版珊瑚色，保持品牌辨识度
+    primaryActive: Color(0xFFC97C58),
+    accentTeal: Color(0xFF6FC7B5),
+    accentAmber: Color(0xFFF0B573),
+    ink: Color(0xFFE6E3DB), // 暖白（约 90% 亮度），而非纯白
+    body: Color(0xFFC9C6BE),
+    muted: Color(0xFFA09D96),
+    mutedSoft: Color(0xFF716D64),
+    canvas: Color(0xFF201F1C),
+    surfaceSoft: Color(0xFF262521),
+    surfaceCard: Color(0xFF2C2A25),
+    hairline: Color(0xFF3A362F),
+    success: Color(0xFF6FCB86),
+    warning: Color(0xFFE8B93D),
+    error: Color(0xFFE2685F),
+    white: Color(0xFFFFFFFF),
+  );
 
-  /// 由 [ThemeModeController] 在主题变化时调用，同步当前应处于的亮度。
-  /// 必须在触发相关 Widget 重建（notifyListeners）之前调用，
-  /// 这样重建时读取到的所有 AppColors.xxx 才是最新值。
-  static void setBrightness(Brightness brightness) {
-    _brightness = brightness;
+  final Color primary;
+  final Color primaryActive;
+  final Color accentTeal;
+  final Color accentAmber;
+  final Color ink;
+  final Color body;
+  final Color muted;
+  final Color mutedSoft;
+  final Color canvas;
+  final Color surfaceSoft;
+  final Color surfaceCard;
+  final Color hairline;
+  final Color success;
+  final Color warning;
+  final Color error;
+  final Color white;
+
+  @override
+  AppColorsX copyWith({
+    Color? primary,
+    Color? primaryActive,
+    Color? accentTeal,
+    Color? accentAmber,
+    Color? ink,
+    Color? body,
+    Color? muted,
+    Color? mutedSoft,
+    Color? canvas,
+    Color? surfaceSoft,
+    Color? surfaceCard,
+    Color? hairline,
+    Color? success,
+    Color? warning,
+    Color? error,
+    Color? white,
+  }) {
+    return AppColorsX(
+      primary: primary ?? this.primary,
+      primaryActive: primaryActive ?? this.primaryActive,
+      accentTeal: accentTeal ?? this.accentTeal,
+      accentAmber: accentAmber ?? this.accentAmber,
+      ink: ink ?? this.ink,
+      body: body ?? this.body,
+      muted: muted ?? this.muted,
+      mutedSoft: mutedSoft ?? this.mutedSoft,
+      canvas: canvas ?? this.canvas,
+      surfaceSoft: surfaceSoft ?? this.surfaceSoft,
+      surfaceCard: surfaceCard ?? this.surfaceCard,
+      hairline: hairline ?? this.hairline,
+      success: success ?? this.success,
+      warning: warning ?? this.warning,
+      error: error ?? this.error,
+      white: white ?? this.white,
+    );
   }
 
-  static bool get isDark => _brightness == Brightness.dark;
-
-  // ==========================================
-  // Brand & Accent
-  // ==========================================
-  static Color get primary => isDark ? _Dark.primary : _Light.primary;
-  static Color get primaryActive =>
-      isDark ? _Dark.primaryActive : _Light.primaryActive;
-  static Color get primaryDisabled =>
-      isDark ? _Dark.primaryDisabled : _Light.primaryDisabled;
-
-  static Color get accentTeal => isDark ? _Dark.accentTeal : _Light.accentTeal;
-  static Color get accentAmber =>
-      isDark ? _Dark.accentAmber : _Light.accentAmber;
-
-  // ==========================================
-  // Core Text & Foreground
-  // ==========================================
-  static Color get ink => isDark ? _Dark.ink : _Light.ink;
-  static Color get body => isDark ? _Dark.body : _Light.body;
-  static Color get bodyStrong => isDark ? _Dark.bodyStrong : _Light.bodyStrong;
-  static Color get muted => isDark ? _Dark.muted : _Light.muted;
-  static Color get mutedSoft => isDark ? _Dark.mutedSoft : _Light.mutedSoft;
-
-  // ==========================================
-  // Backgrounds & Surfaces
-  // 浅色模式下这组就是暖白/奶油背景；深色模式下 canvas 自动切换为
-  // DESIGN.md 的 surface-dark 暖炭黑，surfaceCard/surfaceSoft 依次对应
-  // 更亮一级的深色卡片面，形成和浅色模式一致的层级关系。
-  // ==========================================
-  static Color get canvas => isDark ? _Dark.canvas : _Light.canvas;
-  static Color get surfaceSoft =>
-      isDark ? _Dark.surfaceSoft : _Light.surfaceSoft;
-  static Color get surfaceCard =>
-      isDark ? _Dark.surfaceCard : _Light.surfaceCard;
-  static Color get surfaceCreamStrong =>
-      isDark ? _Dark.surfaceStrong : _Light.surfaceCreamStrong;
-
-  // ==========================================
-  // Backgrounds & Surfaces（原始"深色卡片" token，语义不随主题切换，
-  // 始终是深色——例如浅色模式下用于个别强调卡片、深色模式下用于所有背景）
-  // ==========================================
-  static const Color surfaceDark = Color(0xFF201F1C);
-  static const Color surfaceDarkElevated = Color(0xFF2C2A25);
-  static const Color surfaceDarkSoft = Color(0xFF262521);
-
-  static const Color onPrimary = Color(0xFFFFFFFF);
-  static const Color onDark = Color(0xFFE6E3DB);
-  static const Color onDarkSoft = Color(0xFFA09D96);
-
-  // ==========================================
-  // Borders & Dividers
-  // ==========================================
-  static Color get hairline => isDark ? _Dark.hairline : _Light.hairline;
-  static Color get hairlineSoft =>
-      isDark ? _Dark.hairlineSoft : _Light.hairlineSoft;
-
-  // ==========================================
-  // Feedback & Status
-  // ==========================================
-  static Color get success => isDark ? _Dark.success : _Light.success;
-  static Color get warning => isDark ? _Dark.warning : _Light.warning;
-  static Color get error => isDark ? _Dark.error : _Light.error;
-
-  // ==========================================
-  // Legacy aliases for compatibility
-  // ==========================================
-  static Color get primaryLight => primaryDisabled;
-  static Color get primaryLightest => surfaceSoft;
-  static Color get primaryDark => primaryActive;
-  static Color get earthBrown => muted;
-  static Color get soilLight => surfaceCard;
-  static Color get harvestGold => accentAmber;
-  static Color get danger => error;
-  static Color get alert => warning;
-  static Color get info => accentTeal;
-
-  static Color get textPrimary => ink;
-  static Color get textSecondary => body;
-  static Color get textTertiary => muted;
-  static Color get textDisabled => mutedSoft;
-
-  /// 恒定纯白，用于品牌色/深色底之上的强制白字白图标等场景，不随主题切换。
-  static const Color white = Color(0xFFFFFFFF);
-  static Color get backgroundLight => canvas;
-  static Color get backgroundDark => surfaceSoft;
-  static Color get divider => hairline;
-  static Color get shadow =>
-      isDark ? const Color(0x66000000) : const Color(0x1A000000);
-  static Color get cardBackground => surfaceSoft;
-  static Color get cardBorder => hairline;
-  static Color get inputBackground => surfaceSoft;
-  static Color get inputBorder => hairline;
-  static Color get inputBorderFocused => primary;
-  static Color get buttonText => onPrimary;
-  static Color get iconDefault => muted;
-
-  /// 输入框背景 - 极浅灰（深色模式下切换为深色输入框底）
-  static Color get inputBackgroundLegacy =>
-      isDark ? _Dark.surfaceSoft : const Color(0xFFF8F8F8);
-
-  /// 输入框边框 - 浅灰
-  static Color get inputBorderLegacy => hairline;
-
-  /// 输入框聚焦边框 - 主色
-  static Color get inputBorderFocusedLegacy => primary;
-
-  /// 按钮文字 - 白色
-  static const Color buttonTextLegacy = Color(0xFFFFFFFF);
-
-  /// 次要按钮文字 - 主色
-  static Color get buttonTextSecondary => ink;
-
-  /// 图标激活 - 主色（或可改为 success 森林绿）
-  static Color get iconActive => ink;
-
-  /// 导航栏背景
-  static Color get appBarBackground => canvas;
-
-  /// 底部导航栏背景
-  static Color get bottomNavBackground => canvas;
-
-  /// 底部导航栏选中
-  static Color get bottomNavSelected => ink;
-
-  /// 底部导航栏未选中 - 灰色
-  static Color get bottomNavUnselected => muted;
-
-  // ==========================================
-  // 病虫害等级颜色
-  // ==========================================
-
-  /// 轻度 - 森林绿
-  static Color get pestLevelLow => success;
-
-  /// 中度 - 赭石黄
-  static Color get pestLevelMedium => accentAmber;
-
-  /// 重度 - 古铜色
-  static Color get pestLevelHigh => warning;
-
-  /// 严重 - 铁锈红
-  static Color get pestLevelSevere => error;
-
-  // ==========================================
-  // 植物状态颜色
-  // ==========================================
-
-  /// 健康 - 森林绿
-  static Color get plantHealthy => success;
-
-  /// 亚健康 - 橄榄绿
-  static Color get plantSubHealthy => accentAmber;
-
-  /// 生病 - 赭石红
-  static Color get plantSick => error;
-
-  /// 枯萎 - 棕灰
-  static Color get plantWithered => muted;
-
-  // ==========================================
-  // 渐变色
-  // ==========================================
-
-  /// 主色渐变 - 从卡片面到墨色
-  static LinearGradient get primaryGradient => LinearGradient(
-    begin: Alignment.topLeft,
-    end: Alignment.bottomRight,
-    colors: [surfaceCard, ink],
-  );
-
-  /// 警告渐变 - 从赭石黄到古铜色
-  static LinearGradient get warningGradient => LinearGradient(
-    begin: Alignment.topLeft,
-    end: Alignment.bottomRight,
-    colors: [accentAmber, warning],
-  );
-
-  /// 危险渐变 - 从古铜色到铁锈红
-  static LinearGradient get dangerGradient => LinearGradient(
-    begin: Alignment.topLeft,
-    end: Alignment.bottomRight,
-    colors: [warning, error],
-  );
-
-  // ==========================================
-  // 季节主题色（黑白系）
-  // ==========================================
-
-  /// 春季 - 炭灰
-  static Color get seasonSpring => muted;
-
-  /// 夏季 - 深岩灰
-  static Color get seasonSummer => ink;
-
-  /// 秋季 - 中灰
-  static Color get seasonAutumn => mutedSoft;
-
-  /// 冬季 - 浅灰
-  static Color get seasonWinter => hairline;
-
-  // ==========================================
-  // 特殊用途颜色
-  // ==========================================
-
-  /// 上传区域背景
-  static Color get uploadAreaBackground => surfaceSoft;
-
-  /// 上传区域边框
-  static Color get uploadAreaBorder => hairline;
-
-  /// 图片占位背景
-  static Color get imagePlaceholder => surfaceCard;
-
-  /// 加载中颜色 - 主色
-  static Color get loading => primary;
-
-  /// 水印颜色 - 半透明黑（深色模式下改为半透明白，避免在深色图片上不可见）
-  static Color get watermark =>
-      isDark ? const Color(0x40FFFFFF) : const Color(0x40000000);
+  @override
+  AppColorsX lerp(covariant ThemeExtension<AppColorsX>? other, double t) {
+    if (other is! AppColorsX) return this;
+    return AppColorsX(
+      primary: Color.lerp(primary, other.primary, t)!,
+      primaryActive: Color.lerp(primaryActive, other.primaryActive, t)!,
+      accentTeal: Color.lerp(accentTeal, other.accentTeal, t)!,
+      accentAmber: Color.lerp(accentAmber, other.accentAmber, t)!,
+      ink: Color.lerp(ink, other.ink, t)!,
+      body: Color.lerp(body, other.body, t)!,
+      muted: Color.lerp(muted, other.muted, t)!,
+      mutedSoft: Color.lerp(mutedSoft, other.mutedSoft, t)!,
+      canvas: Color.lerp(canvas, other.canvas, t)!,
+      surfaceSoft: Color.lerp(surfaceSoft, other.surfaceSoft, t)!,
+      surfaceCard: Color.lerp(surfaceCard, other.surfaceCard, t)!,
+      hairline: Color.lerp(hairline, other.hairline, t)!,
+      success: Color.lerp(success, other.success, t)!,
+      warning: Color.lerp(warning, other.warning, t)!,
+      error: Color.lerp(error, other.error, t)!,
+      white: Color.lerp(white, other.white, t)!,
+    );
+  }
 }
 
-/// 浅色模式调色板 —— 与 DESIGN.md `colors:` 部分一一对应，数值未改动。
-class _Light {
-  _Light._();
+/// 在 build() 里通过 `context.colors` 读取当前主题下的配色；
+/// `context.isDarkMode` 等价于 `Theme.of(context).brightness == Brightness.dark`。
+extension AppColorsContext on BuildContext {
+  AppColorsX get colors => Theme.of(this).extension<AppColorsX>()!;
 
-  static const Color primary = Color(0xFFCC785C);
-  static const Color primaryActive = Color(0xFFA9583E);
-  static const Color primaryDisabled = Color(0xFFE6DFD8);
-
-  static const Color accentTeal = Color(0xFF5DB8A6);
-  static const Color accentAmber = Color(0xFFE8A55A);
-
-  static const Color ink = Color(0xFF141413);
-  static const Color body = Color(0xFF3D3D3A);
-  static const Color bodyStrong = Color(0xFF252523);
-  static const Color muted = Color(0xFF6C6A64);
-  static const Color mutedSoft = Color(0xFF8E8B82);
-
-  static const Color canvas = Color(0xFFFAF9F5);
-  static const Color surfaceSoft = Color(0xFFF5F0E8);
-  static const Color surfaceCard = Color(0xFFEFE9DE);
-  static const Color surfaceCreamStrong = Color(0xFFE8E0D2);
-
-  static const Color hairline = Color(0xFFE6DFD8);
-  static const Color hairlineSoft = Color(0xFFEBE6DF);
-
-  static const Color success = Color(0xFF5DB872);
-  static const Color warning = Color(0xFFD4A017);
-  static const Color error = Color(0xFFC64545);
-}
-
-/// 深色模式调色板。
-///
-/// canvas/surfaceSoft/surfaceCard 直接复用 DESIGN.md 里已经定义好的
-/// surface-dark（#181715）→ surface-dark-soft（#1F1E1B）→
-/// surface-dark-elevated（#252320）三级层次；surfaceStrong 是在同一色相
-/// 上外推出的第四级（弹窗/下拉菜单等最上层的面）。文字沿用 on-dark /
-/// on-dark-soft，并在此基础上补出 bodyStrong / muted / mutedSoft 的层级。
-/// 品牌色与语义色统一提亮，避免"又暗又灰"的低对比度观感。
-class _Dark {
-  _Dark._();
-
-  static const Color primary = Color(0xFFDB9673); // 提亮版珊瑚色，保持品牌辨识度
-  static const Color primaryActive = Color(0xFFC97C58);
-  static const Color primaryDisabled = Color(0xFF3D3630);
-
-  static const Color accentTeal = Color(0xFF6FC7B5);
-  static const Color accentAmber = Color(0xFFF0B573);
-
-  static const Color ink = onDark; // 主文字：暖白（非纯白，降低与背景的冲击对比）
-  static const Color body = Color(0xFFC9C6BE); // 正文：介于 onDark 与 onDarkSoft 之间
-  static const Color bodyStrong = Color(0xFFE0DDD4);
-  static const Color muted = onDarkSoft; // 次要文字
-  static const Color mutedSoft = Color(0xFF716D64); // 三级/禁用态文字
-
-  // canvas/surfaceSoft/surfaceCard/surfaceStrong 相比早期版本整体调亮了一档，
-  // 避免背景过近纯黑、和暖白文字形成过强对比，长时间阅读更舒适；
-  // 层级间距保持不变，视觉层次感不受影响。
-  static const Color canvas = Color(0xFF201F1C);
-  static const Color surfaceSoft = Color(0xFF262521);
-  static const Color surfaceCard = Color(0xFF2C2A25);
-  static const Color surfaceStrong = Color(0xFF353128);
-
-  static const Color hairline = Color(0xFF3A362F);
-  static const Color hairlineSoft = Color(0xFF2C2924);
-
-  static const Color success = Color(0xFF6FCB86);
-  static const Color warning = Color(0xFFE8B93D);
-  static const Color error = Color(0xFFE2685F);
-
-  static const Color onDark = Color(0xFFE6E3DB); // 暖白（约 90% 亮度），而非纯白
-  static const Color onDarkSoft = Color(0xFFA09D96);
+  bool get isDarkMode => Theme.of(this).brightness == Brightness.dark;
 }
