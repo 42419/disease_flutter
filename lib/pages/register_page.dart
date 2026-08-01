@@ -1,8 +1,7 @@
+import 'package:farm_flutter/utils/app_spacing.dart';
 import 'package:flutter/material.dart';
 
 import '../utils/app_colors.dart';
-import 'package:provider/provider.dart';
-import 'package:farm_flutter/providers/theme_mode_provider.dart';
 
 class RegisterPage extends StatefulWidget {
   const RegisterPage({super.key});
@@ -24,7 +23,6 @@ class _RegisterPageState extends State<RegisterPage> {
 
   @override
   Widget build(BuildContext context) {
-    context.watch<ThemeModeController>(); // 深色模式切换时用于触发本页面重建
     return Scaffold(
       body: Padding(
         padding: const EdgeInsets.only(left: 20, right: 20, top: 150),
@@ -44,15 +42,15 @@ class _RegisterPageState extends State<RegisterPage> {
                 labelText: "用户名",
                 prefixIcon: Icon(
                   Icons.account_circle_outlined,
-                  color: AppColors.iconDefault,
+                  color: context.colors.muted,
                 ),
-                hintStyle: TextStyle(color: AppColors.textTertiary),
-                labelStyle: TextStyle(color: AppColors.textSecondary),
+                hintStyle: TextStyle(color: context.colors.muted),
+                labelStyle: TextStyle(color: context.colors.body),
                 filled: true,
-                fillColor: AppColors.inputBackground,
+                fillColor: context.colors.surfaceSoft,
                 enabledBorder: OutlineInputBorder(
                   borderSide: BorderSide(
-                    color: AppColors.inputBorder,
+                    color: context.colors.hairline,
                     width: 1,
                   ),
                   borderRadius: BorderRadius.only(
@@ -62,7 +60,7 @@ class _RegisterPageState extends State<RegisterPage> {
                 ),
                 focusedBorder: OutlineInputBorder(
                   borderSide: BorderSide(
-                    color: AppColors.inputBorderFocused,
+                    color: context.colors.primary,
                     width: 2,
                   ),
                   borderRadius: BorderRadius.only(
@@ -71,14 +69,14 @@ class _RegisterPageState extends State<RegisterPage> {
                   ),
                 ),
                 errorBorder: OutlineInputBorder(
-                  borderSide: BorderSide(color: AppColors.error, width: 1),
+                  borderSide: BorderSide(color: context.colors.error, width: 1),
                   borderRadius: BorderRadius.only(
                     topLeft: Radius.circular(8),
                     topRight: Radius.circular(8),
                   ),
                 ),
                 focusedErrorBorder: OutlineInputBorder(
-                  borderSide: BorderSide(color: AppColors.error, width: 2),
+                  borderSide: BorderSide(color: context.colors.error, width: 2),
                   borderRadius: BorderRadius.only(
                     topLeft: Radius.circular(8),
                     topRight: Radius.circular(8),
@@ -86,7 +84,7 @@ class _RegisterPageState extends State<RegisterPage> {
                 ),
               ),
             ),
-            const SizedBox(height: 20),
+            const SizedBox(height: AppSpacing.xl),
             TextFormField(
               maxLines: 1,
               obscureText: true,
@@ -97,29 +95,29 @@ class _RegisterPageState extends State<RegisterPage> {
                 labelText: "密码",
                 prefixIcon: Icon(
                   Icons.password_rounded,
-                  color: AppColors.iconDefault,
+                  color: context.colors.muted,
                 ),
-                hintStyle: TextStyle(color: AppColors.textTertiary),
-                labelStyle: TextStyle(color: AppColors.textSecondary),
+                hintStyle: TextStyle(color: context.colors.muted),
+                labelStyle: TextStyle(color: context.colors.body),
                 filled: true,
-                fillColor: AppColors.inputBackground,
+                fillColor: context.colors.surfaceSoft,
                 enabledBorder: OutlineInputBorder(
                   borderSide: BorderSide(
-                    color: AppColors.inputBorder,
+                    color: context.colors.hairline,
                     width: 1,
                   ),
                 ),
                 focusedBorder: OutlineInputBorder(
                   borderSide: BorderSide(
-                    color: AppColors.inputBorderFocused,
+                    color: context.colors.primary,
                     width: 2,
                   ),
                 ),
                 errorBorder: OutlineInputBorder(
-                  borderSide: BorderSide(color: AppColors.error, width: 1),
+                  borderSide: BorderSide(color: context.colors.error, width: 1),
                 ),
                 focusedErrorBorder: OutlineInputBorder(
-                  borderSide: BorderSide(color: AppColors.error, width: 2),
+                  borderSide: BorderSide(color: context.colors.error, width: 2),
                 ),
               ),
             ),

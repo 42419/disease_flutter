@@ -1,8 +1,8 @@
 import 'package:fl_chart/fl_chart.dart';
 import 'package:farm_flutter/utils/app_colors.dart';
+import 'package:farm_flutter/utils/app_theme.dart';
+import 'package:farm_flutter/utils/app_spacing.dart';
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import 'package:farm_flutter/providers/theme_mode_provider.dart';
 
 /// 地图弹窗中的病害分布柱状图。
 class DiseaseChartMarker extends StatelessWidget {
@@ -10,19 +10,18 @@ class DiseaseChartMarker extends StatelessWidget {
 
   const DiseaseChartMarker({super.key, required this.summary});
 
-  static List<Color> get _barColors => [
-    AppColors.error,
-    AppColors.warning,
-    AppColors.accentAmber,
-    AppColors.accentTeal,
-    AppColors.success,
-    AppColors.muted,
-    AppColors.body,
+  List<Color> _barColors(BuildContext context) => [
+    context.colors.error,
+    context.colors.warning,
+    context.colors.accentAmber,
+    context.colors.accentTeal,
+    context.colors.success,
+    context.colors.muted,
+    context.colors.body,
   ];
 
   @override
   Widget build(BuildContext context) {
-    context.watch<ThemeModeController>(); // 深色模式切换时用于触发本页面重建
     final displayStats = summary.take(7).toList();
     final maxCount = displayStats.first.value;
     const cardWidth = 300.0;
@@ -31,6 +30,7 @@ class DiseaseChartMarker extends StatelessWidget {
     final yInterval = maxCount <= 3
         ? 1.0
         : (maxCount / 3).ceilToDouble().clamp(1.0, double.infinity);
+    final barColors = _barColors(context);
 
     return SizedBox(
       width: cardWidth + 20,
@@ -41,15 +41,15 @@ class DiseaseChartMarker extends StatelessWidget {
             width: cardWidth,
             padding: const EdgeInsets.fromLTRB(16, 14, 16, 10),
             decoration: BoxDecoration(
-              color: AppColors.canvas.withAlpha(244),
-              borderRadius: BorderRadius.circular(2),
-              border: Border.all(color: AppColors.hairline),
+              color: context.colors.canvas.withAlpha(244),
+              borderRadius: BorderRadius.circular(AppRadius.xs),
+              border: Border.all(color: context.colors.hairline),
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                _buildHeader(displayStats),
-                const SizedBox(height: 8),
+                _buildHeader(context, displayStats),
+                const SizedBox(height: AppSpacing.sm),
                 SizedBox(
                   height: 152,
                   child: BarChart(
@@ -63,7 +63,7 @@ class DiseaseChartMarker extends StatelessWidget {
                           barRods: [
                             BarChartRodData(
                               toY: displayStats[i].value.toDouble(),
-                              color: _barColors[i % _barColors.length],
+                              color: barColors[i % barColors.length],
                               width: 20,
                               borderRadius: const BorderRadius.only(
                                 topLeft: Radius.circular(2),
@@ -72,7 +72,7 @@ class DiseaseChartMarker extends StatelessWidget {
                               backDrawRodData: BackgroundBarChartRodData(
                                 show: true,
                                 toY: chartMaxY,
-                                color: AppColors.backgroundDark.withAlpha(80),
+                                color: context.colors.surfaceSoft.withAlpha(80),
                               ),
                             ),
                           ],
@@ -98,7 +98,7 @@ class DiseaseChartMarker extends StatelessWidget {
                                     _formatChartLabel(displayStats[idx].key),
                                     style: TextStyle(
                                       fontSize: 9,
-                                      color: AppColors.textSecondary,
+                                      color: context.colors.body,
                                       fontWeight: FontWeight.w500,
                                       height: 1.15,
                                     ),
@@ -128,7 +128,7 @@ class DiseaseChartMarker extends StatelessWidget {
                                   '$v',
                                   style: TextStyle(
                                     fontSize: 10,
-                                    color: AppColors.textTertiary,
+                                    color: context.colors.muted,
                                     fontWeight: FontWeight.w500,
                                   ),
                                 ),
@@ -148,7 +148,7 @@ class DiseaseChartMarker extends StatelessWidget {
                         drawVerticalLine: false,
                         horizontalInterval: yInterval,
                         getDrawingHorizontalLine: (value) => FlLine(
-                          color: AppColors.divider,
+                          color: context.colors.hairline,
                           strokeWidth: 0.6,
                           dashArray: [4, 4],
                         ),
@@ -185,25 +185,28 @@ class DiseaseChartMarker extends StatelessWidget {
     );
   }
 
-  Widget _buildHeader(List<MapEntry<String, int>> displayStats) {
+  Widget _buildHeader(
+    BuildContext context,
+    List<MapEntry<String, int>> displayStats,
+  ) {
     return Row(
       children: [
         Container(
           width: 3,
           height: 16,
           decoration: BoxDecoration(
-            color: AppColors.primary,
-            borderRadius: BorderRadius.circular(2),
+            color: context.colors.primary,
+            borderRadius: BorderRadius.circular(AppRadius.xs),
           ),
         ),
-        const SizedBox(width: 8),
+        const SizedBox(width: AppSpacing.sm),
         Text(
           '病害分布',
           style: TextStyle(
-            fontFamily: "serif",
+            fontFamily: kAppFontFamily,
             fontSize: 14,
             fontWeight: FontWeight.w600,
-            color: AppColors.ink,
+            color: context.colors.ink,
             letterSpacing: 0.5,
           ),
         ),
@@ -211,15 +214,15 @@ class DiseaseChartMarker extends StatelessWidget {
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
           decoration: BoxDecoration(
-            color: AppColors.surfaceSoft,
-            borderRadius: BorderRadius.circular(2),
+            color: context.colors.surfaceSoft,
+            borderRadius: BorderRadius.circular(AppRadius.xs),
           ),
           child: Text(
             '${displayStats.length} 种',
             style: TextStyle(
-              fontFamily: "serif",
+              fontFamily: kAppFontFamily,
               fontSize: 11,
-              color: AppColors.muted,
+              color: context.colors.muted,
               fontWeight: FontWeight.w500,
             ),
           ),

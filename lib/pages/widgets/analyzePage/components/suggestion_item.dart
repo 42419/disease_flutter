@@ -1,8 +1,8 @@
 import 'package:farm_flutter/pages/widgets/analyzePage/components/highlight_utils.dart';
 import 'package:farm_flutter/utils/app_colors.dart';
+import 'package:farm_flutter/utils/app_theme.dart';
+import 'package:farm_flutter/utils/app_spacing.dart';
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import 'package:farm_flutter/providers/theme_mode_provider.dart';
 
 class SuggestionItem extends StatelessWidget {
   final String suggestion;
@@ -16,7 +16,6 @@ class SuggestionItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    context.watch<ThemeModeController>(); // 深色模式切换时用于触发本页面重建
     String? title;
     String body = suggestion;
 
@@ -30,11 +29,11 @@ class SuggestionItem extends StatelessWidget {
       padding: const EdgeInsets.only(bottom: 8),
       child: Container(
         width: double.infinity,
-        padding: const EdgeInsets.all(12),
+        padding: const EdgeInsets.all(AppSpacing.md),
         decoration: BoxDecoration(
-          color: AppColors.canvas,
-          borderRadius: BorderRadius.circular(2),
-          border: Border.all(color: AppColors.hairline),
+          color: context.colors.canvas,
+          borderRadius: BorderRadius.circular(AppRadius.xs),
+          border: Border.all(color: context.colors.hairline),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -46,21 +45,25 @@ class SuggestionItem extends StatelessWidget {
                     width: 8,
                     height: 8,
                     decoration: BoxDecoration(
-                      color: AppColors.success,
+                      color: context.colors.success,
                       shape: BoxShape.circle,
                     ),
                   ),
-                  const SizedBox(width: 8),
+                  const SizedBox(width: AppSpacing.sm),
                   Expanded(
                     child: RichText(
                       text: TextSpan(
                         style: TextStyle(
-                          fontFamily: "serif",
+                          fontFamily: kAppFontFamily,
                           fontSize: 15,
                           fontWeight: FontWeight.w600,
-                          color: AppColors.textPrimary,
+                          color: context.colors.ink,
                         ),
-                        children: buildHighlightedSpans(title),
+                        children: buildHighlightedSpans(
+                          title,
+                          labelColor: context.colors.ink,
+                          highlightColor: context.colors.error,
+                        ),
                       ),
                     ),
                   ),
@@ -73,17 +76,21 @@ class SuggestionItem extends StatelessWidget {
                 style: TextStyle(
                   fontSize: 13.5,
                   color: title != null
-                      ? AppColors.textSecondary
-                      : AppColors.textPrimary,
+                      ? context.colors.body
+                      : context.colors.ink,
                   height: 1.55,
                 ),
                 children: [
-                  ...buildHighlightedSpans(body),
+                  ...buildHighlightedSpans(
+                    body,
+                    labelColor: context.colors.ink,
+                    highlightColor: context.colors.error,
+                  ),
                   if (showCursor)
                     TextSpan(
                       text: '\u258E',
                       style: TextStyle(
-                        color: AppColors.danger,
+                        color: context.colors.error,
                         fontWeight: FontWeight.bold,
                         fontSize: 14,
                       ),

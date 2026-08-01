@@ -1,13 +1,15 @@
 import 'dart:async';
 
 import 'package:farm_flutter/models/diagnosis.dart';
+import 'package:farm_flutter/providers/polling_controller.dart';
 import 'package:farm_flutter/services/region_option_loader.dart';
 import 'package:farm_flutter/utils/datetime_util.dart';
 import 'package:farm_flutter/utils/http_util.dart';
 import 'package:flutter/foundation.dart';
 
-/// 诊断记录数据提供者，负责记录的获取、排序、统计，以及定时轮询刷新。
-/// MainPage / AdminMainPage 通过 startTimer / stopTimer 控制轮询生命周期。
+/// 诊断记录数据提供者，负责记录的获取、排序、统计。
+/// 定时轮询的生命周期（启停、过期判断）交给 [PollingController]；
+/// MainPage / AdminMainPage 通过 startTimer / stopTimer 控制轮询。
 class DiagnosisRecordsProvider extends ChangeNotifier {
   List<Diagnosis> _records = [];
   bool _isLoading = true;
@@ -24,9 +26,8 @@ class DiagnosisRecordsProvider extends ChangeNotifier {
   final Map<String, String> _adcodeNameMap = {};
   bool _adcodeNameMapLoaded = false;
 
-  // ---- 定时轮询 ----
-  Timer? _refreshTimer;
-  DateTime? _lastFetchTime;
+  // ---- 定时轮询：只缓存"轮询到期时该用谁的身份重新拉取"，Timer 本身
+  // 和过期判断都交给 PollingController。----
   String? _cachedRole;
   String? _cachedNickName;
 
@@ -35,6 +36,16 @@ class DiagnosisRecordsProvider extends ChangeNotifier {
 
   /// 数据过期阈值
   static const Duration staleThreshold = Duration(seconds: 60);
+
+  late final PollingController _polling = PollingController(
+    interval: pollInterval,
+    staleThreshold: staleThreshold,
+    onDue: () {
+      if (_cachedRole != null && _cachedNickName != null) {
+        fetchRecords(role: _cachedRole!, nickName: _cachedNickName!);
+      }
+    },
+  );
 
   List<Diagnosis> get records => _records;
   bool get isLoading => _isLoading;
@@ -45,9 +56,7 @@ class DiagnosisRecordsProvider extends ChangeNotifier {
   Map<String, String> get adcodeNameMap => _adcodeNameMap;
 
   /// 数据是否过期（距上次成功拉取超过 [staleThreshold]）
-  bool get isStale =>
-      _lastFetchTime == null ||
-      DateTime.now().difference(_lastFetchTime!) > staleThreshold;
+  bool get isStale => _polling.isStale;
 
   void toggleExpanded(int id) {
     _expandedId = _expandedId == id ? null : id;
@@ -81,50 +90,41 @@ class DiagnosisRecordsProvider extends ChangeNotifier {
     return _adcodeNameMap[adcode] ?? adcode;
   }
 
-  // ---- Timer 生命周期 ----
+  // ---- Timer 生命周期（委托给 PollingController） ----
 
   /// 启动定时轮询。重复调用安全，会先取消旧 Timer。
   void startTimer({required String role, required String nickName}) {
     _cachedRole = role;
     _cachedNickName = nickName;
-    _refreshTimer?.cancel();
-    _refreshTimer = Timer.periodic(pollInterval, (_) {
-      if (isStale && _cachedRole != null && _cachedNickName != null) {
-        fetchRecords(role: _cachedRole!, nickName: _cachedNickName!);
-      }
-    });
+    _polling.start();
   }
 
   /// 停止定时轮询（App 切后台时调用）。
   void stopTimer() {
-    _refreshTimer?.cancel();
-    _refreshTimer = null;
+    _polling.stop();
   }
 
   /// 清空所有状态（退出登录时调用）。
   void clear() {
-    stopTimer();
+    _polling.reset();
     _records = [];
     _stats = [];
     _errorMessage = null;
     _expandedId = null;
     _cachedRole = null;
     _cachedNickName = null;
-    _lastFetchTime = null;
     _isLoading = true;
     notifyListeners();
   }
 
   /// 立即刷新（App 恢复前台时调用），仅在数据过期时实际请求。
   void refreshIfStale() {
-    if (isStale && _cachedRole != null && _cachedNickName != null) {
-      fetchRecords(role: _cachedRole!, nickName: _cachedNickName!);
-    }
+    _polling.refreshIfStale();
   }
 
   @override
   void dispose() {
-    stopTimer();
+    _polling.dispose();
     super.dispose();
   }
 
@@ -189,7 +189,7 @@ class DiagnosisRecordsProvider extends ChangeNotifier {
           ..sort((a, b) => b.value.compareTo(a.value));
         _records = filtered;
         _stats = stats;
-        _lastFetchTime = DateTime.now();
+        _polling.markFetched();
         _isLoading = false;
         notifyListeners();
       } else {

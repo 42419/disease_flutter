@@ -5,9 +5,10 @@ import 'package:farm_flutter/providers/user_provider.dart';
 import 'package:farm_flutter/providers/main_navigation_provider.dart';
 import 'package:farm_flutter/services/auth_storage.dart';
 import 'package:farm_flutter/utils/app_colors.dart';
+import 'package:farm_flutter/utils/app_theme.dart';
+import 'package:farm_flutter/utils/app_spacing.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:farm_flutter/providers/theme_mode_provider.dart';
 
 class MineView extends StatefulWidget {
   const MineView({super.key});
@@ -52,21 +53,21 @@ class _MineViewState extends State<MineView>
           Text(
             value,
             style: TextStyle(
-              fontFamily: "serif",
+              fontFamily: kAppFontFamily,
               fontSize: isTime ? 16 : 32,
               fontWeight: FontWeight.w600,
-              color: AppColors.ink,
+              color: context.colors.ink,
               height: isTime ? 1.3 : 1.0,
             ),
             textAlign: TextAlign.center,
             maxLines: isTime ? 2 : 1,
             overflow: TextOverflow.ellipsis,
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: AppSpacing.sm),
           Text(
             label,
             style: TextStyle(
-              color: AppColors.muted,
+              color: context.colors.muted,
               fontSize: 13,
               fontWeight: FontWeight.w500,
               letterSpacing: 0.5,
@@ -78,36 +79,35 @@ class _MineViewState extends State<MineView>
   }
 
   Widget _summaryDivider() {
-    return Container(width: 1, height: 48, color: AppColors.hairline);
+    return Container(width: 1, height: 48, color: context.colors.hairline);
   }
 
   @override
   Widget build(BuildContext context) {
-    context.watch<ThemeModeController>(); // 深色模式切换时用于触发本页面重建
     super.build(context);
     final user = context.watch<UserProvider>();
     final recordsProvider = context.watch<DiagnosisRecordsProvider>();
 
     return Scaffold(
-      backgroundColor: AppColors.canvas,
+      backgroundColor: context.colors.canvas,
       appBar: AppBar(
         title: Text(
           '个人中心',
           style: TextStyle(
-            fontFamily: "serif",
+            fontFamily: kAppFontFamily,
             fontSize: 28,
-            color: AppColors.ink,
+            color: context.colors.ink,
             fontWeight: FontWeight.w600,
           ),
         ),
         titleSpacing: 32,
         centerTitle: false,
-        backgroundColor: AppColors.canvas,
+        backgroundColor: context.colors.canvas,
         surfaceTintColor: Colors.transparent,
         elevation: 0,
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(1.0),
-          child: Container(color: AppColors.hairline, height: 1.0),
+          child: Container(color: context.colors.hairline, height: 1.0),
         ),
       ),
       body: ListView(
@@ -116,7 +116,7 @@ class _MineViewState extends State<MineView>
           // 1. 第一版块：个人资料简介
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
-            decoration: BoxDecoration(color: AppColors.canvas),
+            decoration: BoxDecoration(color: context.colors.canvas),
             child: GestureDetector(
               onTap: () {
                 ScaffoldMessenger.of(context).clearSnackBars();
@@ -124,7 +124,7 @@ class _MineViewState extends State<MineView>
                   SnackBar(
                     content: Text("跳转个人资料"),
                     duration: Duration(milliseconds: 500),
-                    backgroundColor: AppColors.ink,
+                    backgroundColor: context.colors.ink,
                   ),
                 );
               },
@@ -139,7 +139,7 @@ class _MineViewState extends State<MineView>
                           user.nickName,
                           style: TextStyle(
                             fontSize: 28,
-                            color: AppColors.ink,
+                            color: context.colors.ink,
                             fontWeight: FontWeight.w600,
                           ),
                         ),
@@ -147,25 +147,25 @@ class _MineViewState extends State<MineView>
                         Text(
                           user.isAdmin ? '管理员' : '农户',
                           style: TextStyle(
-                            color: AppColors.muted,
+                            color: context.colors.muted,
                             fontSize: 14,
                           ),
                         ),
-                        const SizedBox(height: 12),
+                        const SizedBox(height: AppSpacing.md),
                         Container(
                           padding: const EdgeInsets.symmetric(
                             horizontal: 10,
                             vertical: 4,
                           ),
                           decoration: BoxDecoration(
-                            border: Border.all(color: AppColors.hairline),
-                            borderRadius: BorderRadius.circular(20),
+                            border: Border.all(color: context.colors.hairline),
+                            borderRadius: BorderRadius.circular(AppRadius.xl),
                           ),
                           child: Text(
                             "编辑资料",
                             style: TextStyle(
                               fontSize: 12,
-                              color: AppColors.ink,
+                              color: context.colors.ink,
                             ),
                           ),
                         ),
@@ -173,19 +173,23 @@ class _MineViewState extends State<MineView>
                     ),
                   ),
                   Container(
-                    padding: const EdgeInsets.all(4),
+                    padding: const EdgeInsets.all(AppSpacing.xs),
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
-                      border: Border.all(color: AppColors.ink, width: 2),
+                      border: Border.all(color: context.colors.ink, width: 2),
                     ),
                     child: CircleAvatar(
                       radius: 36,
                       backgroundImage: user.userAvatarUrl.isNotEmpty
                           ? AssetImage(user.userAvatarUrl)
                           : null,
-                      backgroundColor: AppColors.surfaceCard,
+                      backgroundColor: context.colors.surfaceCard,
                       child: (user.userAvatarUrl.isEmpty)
-                          ? Icon(Icons.person, size: 36, color: AppColors.muted)
+                          ? Icon(
+                              Icons.person,
+                              size: 36,
+                              color: context.colors.muted,
+                            )
                           : null,
                     ),
                   ),
@@ -198,10 +202,10 @@ class _MineViewState extends State<MineView>
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
             decoration: BoxDecoration(
-              color: AppColors.surfaceSoft,
+              color: context.colors.surfaceSoft,
               border: Border(
-                top: BorderSide(color: AppColors.ink, width: 1.5),
-                bottom: BorderSide(color: AppColors.hairline),
+                top: BorderSide(color: context.colors.ink, width: 1.5),
+                bottom: BorderSide(color: context.colors.hairline),
               ),
             ),
             child: Column(
@@ -210,18 +214,18 @@ class _MineViewState extends State<MineView>
                 Text(
                   "数据概览",
                   style: TextStyle(
-                    fontFamily: "serif",
+                    fontFamily: kAppFontFamily,
                     fontSize: 20,
-                    color: AppColors.ink,
+                    color: context.colors.ink,
                     fontWeight: FontWeight.w600,
                   ),
                 ),
                 const SizedBox(height: 6),
                 Text(
                   "您参与的所有病害分析与历史记录概况。",
-                  style: TextStyle(fontSize: 13, color: AppColors.muted),
+                  style: TextStyle(fontSize: 13, color: context.colors.muted),
                 ),
-                const SizedBox(height: 24),
+                const SizedBox(height: AppSpacing.xxl),
                 Row(
                   children: [
                     _summaryItem(
@@ -229,7 +233,7 @@ class _MineViewState extends State<MineView>
                           ? '...'
                           : '${recordsProvider.records.length}',
                       '诊断总记录数',
-                      AppColors.ink,
+                      context.colors.ink,
                     ),
                     _summaryDivider(),
                     _summaryItem(
@@ -237,7 +241,7 @@ class _MineViewState extends State<MineView>
                           ? '...'
                           : '${recordsProvider.stats.length}',
                       '已识别病害种类',
-                      AppColors.ink,
+                      context.colors.ink,
                     ),
                   ],
                 ),
@@ -254,19 +258,19 @@ class _MineViewState extends State<MineView>
                 Text(
                   "系统设置",
                   style: TextStyle(
-                    fontFamily: "serif",
+                    fontFamily: kAppFontFamily,
                     fontSize: 20,
-                    color: AppColors.ink,
+                    color: context.colors.ink,
                     fontWeight: FontWeight.w600,
                   ),
                 ),
-                const SizedBox(height: 20),
+                const SizedBox(height: AppSpacing.xl),
 
                 Container(
                   decoration: BoxDecoration(
                     border: Border(
-                      top: BorderSide(color: AppColors.hairline),
-                      bottom: BorderSide(color: AppColors.hairline),
+                      top: BorderSide(color: context.colors.hairline),
+                      bottom: BorderSide(color: context.colors.hairline),
                     ),
                   ),
                   child: Column(
@@ -279,16 +283,16 @@ class _MineViewState extends State<MineView>
                         title: Text(
                           "诊断历史存档",
                           style: TextStyle(
-                            fontFamily: "serif",
+                            fontFamily: kAppFontFamily,
                             fontSize: 16,
                             fontWeight: FontWeight.w600,
-                            color: AppColors.ink,
+                            color: context.colors.ink,
                           ),
                         ),
                         trailing: Icon(
                           Icons.arrow_forward_rounded,
                           size: 20,
-                          color: AppColors.ink,
+                          color: context.colors.ink,
                         ),
                         onTap: () {
                           Navigator.pushNamed(context, "/diagnosis_records");
@@ -304,8 +308,8 @@ class _MineViewState extends State<MineView>
                   height: 52,
                   child: ElevatedButton(
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.ink,
-                      foregroundColor: AppColors.canvas,
+                      backgroundColor: context.colors.ink,
+                      foregroundColor: context.colors.canvas,
                       elevation: 0,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.zero,

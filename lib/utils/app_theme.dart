@@ -1,211 +1,156 @@
+import 'package:farm_flutter/utils/app_colors.dart';
+import 'package:farm_flutter/utils/app_spacing.dart';
 import 'package:flutter/material.dart';
+
+/// 应用全局字体族的唯一声明入口。
+///
+/// 项目里原先有 60+ 处散落的 `TextStyle(fontFamily: "serif", ...)`，
+/// 想统一换字体需要逐处修改；现在收拢成这一个常量，所有调用点改用
+/// `fontFamily: kAppFontFamily`，以后只需要改这一处。
+///
+/// 注意：`pubspec.yaml` 目前没有随包携带任何自定义字体文件，"serif" 是
+/// 平台自带的通用字族名——Android 会映射到系统的 Noto Serif 一类字体，
+/// iOS 没有对应的系统字族名，会回退到系统默认无衬线字体，这也是
+/// ANALYSIS.md 里提到的"iOS 和 Android 观感不一致"的真实原因。要彻底解决
+/// 需要项目提供一份实际的衬线字体文件（如思源宋体/Noto Serif SC 的 .ttf），
+/// 放进 `assets/fonts/` 并在 `pubspec.yaml` 的 `fonts:` 下声明，再把下面
+/// 这个常量指向声明的字族名即可，不需要再改任何调用点。
+const String kAppFontFamily = "serif";
 
 /// 应用级 [ThemeData]，提供给 [MaterialApp] 的 `theme` / `darkTheme`。
 ///
-/// 页面里绝大部分颜色仍然是通过 [AppColors] 的动态 getter 直接取值的
-/// （详见 lib/utils/app_colors.dart 的说明），这里的 ThemeData 主要负责：
-///   1. 让原生 Material 组件（TextField、Dialog、SnackBar、Switch、
-///      NavigationBar 默认态等）在两种模式下也有正确、协调的默认外观；
-///   2. 提供 `MaterialApp.themeMode` 切换所需的、独立于 AppColors 全局
-///      状态之外的一份"静态"深浅色配置（ThemeData 本身必须是不可变的、
-///      light/dark 两份固定实例，不能像 AppColors 那样做成运行时 getter）。
-///
-/// 数值上与 lib/utils/app_colors.dart 中 `_Light` / `_Dark` 两个私有调色板
-/// 保持同步，来源都是项目 DESIGN.md 的 Claude 品牌配色体系。
+/// 所有颜色都直接复用 [AppColorsX.light] / [AppColorsX.dark]（唯一的配色
+/// 数据来源），既用来配置原生 Material 组件（TextField、Dialog、SnackBar、
+/// Switch、NavigationBar 默认态等）的默认外观，也通过 `extensions` 把同一份
+/// [AppColorsX] 暴露给业务 Widget（`context.colors.xxx`），不存在两份需要
+/// 手动保持同步的颜色常量。
 class AppTheme {
   AppTheme._();
 
-  // 浅色 —— 与 _Light 调色板一致
-  static const _lPrimary = Color(0xFFCC785C);
-  static const _lPrimaryActive = Color(0xFFA9583E);
-  static const _lInk = Color(0xFF141413);
-  static const _lBody = Color(0xFF3D3D3A);
-  static const _lMuted = Color(0xFF6C6A64);
-  static const _lCanvas = Color(0xFFFAF9F5);
-  static const _lSurfaceSoft = Color(0xFFF5F0E8);
-  static const _lSurfaceCard = Color(0xFFEFE9DE);
-  static const _lHairline = Color(0xFFE6DFD8);
-  static const _lError = Color(0xFFC64545);
+  static ThemeData get light =>
+      _build(brightness: Brightness.light, colors: AppColorsX.light);
 
-  // 深色 —— 与 _Dark 调色板一致
-  static const _dPrimary = Color(0xFFDB9673);
-  static const _dPrimaryActive = Color(0xFFC97C58);
-  static const _dInk = Color(0xFFFAF9F5);
-  static const _dBody = Color(0xFFC9C6BE);
-  static const _dMuted = Color(0xFFA09D96);
-  static const _dCanvas = Color(0xFF181715);
-  static const _dSurfaceSoft = Color(0xFF1F1E1B);
-  static const _dSurfaceCard = Color(0xFF252320);
-  static const _dHairline = Color(0xFF3A362F);
-  static const _dError = Color(0xFFE2685F);
-
-  static ThemeData get light => _build(
-    brightness: Brightness.light,
-    primary: _lPrimary,
-    primaryActive: _lPrimaryActive,
-    ink: _lInk,
-    body: _lBody,
-    muted: _lMuted,
-    canvas: _lCanvas,
-    surfaceSoft: _lSurfaceSoft,
-    surfaceCard: _lSurfaceCard,
-    hairline: _lHairline,
-    error: _lError,
-    onPrimary: Colors.white,
-  );
-
-  static ThemeData get dark => _build(
-    brightness: Brightness.dark,
-    primary: _dPrimary,
-    primaryActive: _dPrimaryActive,
-    ink: _dInk,
-    body: _dBody,
-    muted: _dMuted,
-    canvas: _dCanvas,
-    surfaceSoft: _dSurfaceSoft,
-    surfaceCard: _dSurfaceCard,
-    hairline: _dHairline,
-    error: _dError,
-    // 深色模式下按钮上的珊瑚色更亮，用墨色文字对比度优于纯白。
-    onPrimary: _dCanvas,
-  );
+  static ThemeData get dark =>
+      _build(brightness: Brightness.dark, colors: AppColorsX.dark);
 
   static ThemeData _build({
     required Brightness brightness,
-    required Color primary,
-    required Color primaryActive,
-    required Color ink,
-    required Color body,
-    required Color muted,
-    required Color canvas,
-    required Color surfaceSoft,
-    required Color surfaceCard,
-    required Color hairline,
-    required Color error,
-    required Color onPrimary,
+    required AppColorsX colors,
   }) {
+    // 深色模式下按钮上的珊瑚色更亮，用墨色文字对比度优于纯白。
+    final onPrimary = brightness == Brightness.dark
+        ? colors.canvas
+        : colors.white;
+
     final colorScheme = ColorScheme(
       brightness: brightness,
-      primary: primary,
+      primary: colors.primary,
       onPrimary: onPrimary,
-      secondary: primary,
+      secondary: colors.primary,
       onSecondary: onPrimary,
-      error: error,
-      onError: Colors.white,
-      surface: canvas,
-      onSurface: ink,
-      surfaceContainerHighest: surfaceCard,
-      outline: hairline,
+      error: colors.error,
+      onError: colors.white,
+      surface: colors.canvas,
+      onSurface: colors.ink,
+      surfaceContainerHighest: colors.surfaceCard,
+      outline: colors.hairline,
     );
 
     return ThemeData(
       useMaterial3: true,
       brightness: brightness,
+      fontFamily: kAppFontFamily,
       colorScheme: colorScheme,
-      scaffoldBackgroundColor: canvas,
-      canvasColor: canvas,
-      dividerColor: hairline,
-      splashColor: primary.withValues(alpha: 0.08),
-      highlightColor: primary.withValues(alpha: 0.04),
+      scaffoldBackgroundColor: colors.canvas,
+      canvasColor: colors.canvas,
+      dividerColor: colors.hairline,
+      splashColor: colors.primary.withValues(alpha: 0.08),
+      highlightColor: colors.primary.withValues(alpha: 0.04),
       appBarTheme: AppBarTheme(
-        backgroundColor: canvas,
-        foregroundColor: ink,
+        backgroundColor: colors.canvas,
+        foregroundColor: colors.ink,
         surfaceTintColor: Colors.transparent,
         elevation: 0,
-        iconTheme: IconThemeData(color: ink),
+        iconTheme: IconThemeData(color: colors.ink),
       ),
-      iconTheme: IconThemeData(color: muted),
+      iconTheme: IconThemeData(color: colors.muted),
       textTheme: ThemeData(
         brightness: brightness,
-      ).textTheme.apply(bodyColor: ink, displayColor: ink),
-      dividerTheme: DividerThemeData(color: hairline, thickness: 1),
+      ).textTheme.apply(bodyColor: colors.ink, displayColor: colors.ink),
+      dividerTheme: DividerThemeData(color: colors.hairline, thickness: 1),
       cardTheme: CardThemeData(
-        color: surfaceCard,
+        color: colors.surfaceCard,
         surfaceTintColor: Colors.transparent,
         elevation: 0,
       ),
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
-        fillColor: surfaceSoft,
-        hintStyle: TextStyle(color: muted),
+        fillColor: colors.surfaceSoft,
+        hintStyle: TextStyle(color: colors.muted),
         border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8),
-          borderSide: BorderSide(color: hairline),
+          borderRadius: BorderRadius.circular(AppRadius.md),
+          borderSide: BorderSide(color: colors.hairline),
         ),
         enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8),
-          borderSide: BorderSide(color: hairline),
+          borderRadius: BorderRadius.circular(AppRadius.md),
+          borderSide: BorderSide(color: colors.hairline),
         ),
         focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8),
-          borderSide: BorderSide(color: primary, width: 1.5),
+          borderRadius: BorderRadius.circular(AppRadius.md),
+          borderSide: BorderSide(color: colors.primary, width: 1.5),
         ),
       ),
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
-          backgroundColor: ink,
-          foregroundColor: canvas,
+          backgroundColor: colors.ink,
+          foregroundColor: colors.canvas,
           elevation: 0,
         ),
       ),
       switchTheme: SwitchThemeData(
         thumbColor: WidgetStateProperty.resolveWith(
-          (states) => states.contains(WidgetState.selected) ? primary : muted,
+          (states) => states.contains(WidgetState.selected)
+              ? colors.primary
+              : colors.muted,
         ),
         trackColor: WidgetStateProperty.resolveWith(
           (states) => states.contains(WidgetState.selected)
-              ? primary.withValues(alpha: 0.4)
-              : hairline,
+              ? colors.primary.withValues(alpha: 0.4)
+              : colors.hairline,
         ),
       ),
       dialogTheme: DialogThemeData(
-        backgroundColor: surfaceCard,
+        backgroundColor: colors.surfaceCard,
         surfaceTintColor: Colors.transparent,
       ),
       snackBarTheme: SnackBarThemeData(
-        backgroundColor: ink,
-        contentTextStyle: TextStyle(color: canvas),
+        backgroundColor: colors.ink,
+        contentTextStyle: TextStyle(color: colors.canvas),
         behavior: SnackBarBehavior.floating,
       ),
       navigationBarTheme: NavigationBarThemeData(
-        backgroundColor: canvas,
+        backgroundColor: colors.canvas,
         surfaceTintColor: Colors.transparent,
-        indicatorColor: primary.withValues(alpha: 0.14),
+        indicatorColor: colors.primary.withValues(alpha: 0.14),
         iconTheme: WidgetStateProperty.resolveWith(
           (states) => IconThemeData(
-            color: states.contains(WidgetState.selected) ? primary : muted,
+            color: states.contains(WidgetState.selected)
+                ? colors.primary
+                : colors.muted,
           ),
         ),
         labelTextStyle: WidgetStateProperty.resolveWith(
           (states) => TextStyle(
             fontSize: 12,
-            color: states.contains(WidgetState.selected) ? primary : muted,
+            color: states.contains(WidgetState.selected)
+                ? colors.primary
+                : colors.muted,
           ),
         ),
       ),
-      progressIndicatorTheme: ProgressIndicatorThemeData(color: primary),
-      // 深色模式下 primaryActive 也一并暴露给需要"按下态"的自定义组件参考。
-      extensions: [_PressedColor(primaryActive)],
+      progressIndicatorTheme: ProgressIndicatorThemeData(color: colors.primary),
+      // 通过 extensions 把完整配色暴露给业务 Widget：`context.colors.xxx`。
+      extensions: [colors],
     );
-  }
-}
-
-/// 少数自定义组件想拿到"主色按下态"时可以用 `Theme.of(context).extension<_PressedColor>()`。
-/// 目前大多数地方仍直接读 AppColors.primaryActive，这里主要是为未来扩展留口子。
-class _PressedColor extends ThemeExtension<_PressedColor> {
-  const _PressedColor(this.color);
-  final Color color;
-
-  @override
-  ThemeExtension<_PressedColor> copyWith({Color? color}) =>
-      _PressedColor(color ?? this.color);
-
-  @override
-  ThemeExtension<_PressedColor> lerp(
-    covariant ThemeExtension<_PressedColor>? other,
-    double t,
-  ) {
-    if (other is! _PressedColor) return this;
-    return _PressedColor(Color.lerp(color, other.color, t) ?? color);
   }
 }

@@ -1,7 +1,5 @@
 import 'package:farm_flutter/utils/app_colors.dart';
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import 'package:farm_flutter/providers/theme_mode_provider.dart';
 
 class LoopingDot extends StatefulWidget {
   final int delay;
@@ -32,7 +30,6 @@ class _LoopingDotState extends State<LoopingDot>
 
   @override
   Widget build(BuildContext context) {
-    context.watch<ThemeModeController>(); // 深色模式切换时用于触发本页面重建
     return AnimatedBuilder(
       animation: _controller,
       builder: (context, child) {
@@ -46,7 +43,7 @@ class _LoopingDotState extends State<LoopingDot>
             width: 6,
             height: 6,
             decoration: BoxDecoration(
-              color: AppColors.textTertiary.withValues(alpha: alpha),
+              color: context.colors.muted.withValues(alpha: alpha),
               shape: BoxShape.circle,
             ),
           ),

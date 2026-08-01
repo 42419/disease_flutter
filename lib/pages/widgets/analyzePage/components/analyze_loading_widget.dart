@@ -1,8 +1,8 @@
 import 'package:farm_flutter/pages/widgets/analyzePage/components/looping_dot.dart';
 import 'package:farm_flutter/utils/app_colors.dart';
+import 'package:farm_flutter/utils/app_theme.dart';
+import 'package:farm_flutter/utils/app_spacing.dart';
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import 'package:farm_flutter/providers/theme_mode_provider.dart';
 
 class AnalyzeLoadingWidget extends StatefulWidget {
   final ValueNotifier<String> streamingTextNotifier;
@@ -50,7 +50,6 @@ class _AnalyzeLoadingWidgetState extends State<AnalyzeLoadingWidget> {
 
   @override
   Widget build(BuildContext context) {
-    context.watch<ThemeModeController>(); // 深色模式切换时用于触发本页面重建
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -65,15 +64,15 @@ class _AnalyzeLoadingWidgetState extends State<AnalyzeLoadingWidget> {
                 Text(
                   text.isEmpty ? '分析中' : '思考中',
                   style: TextStyle(
-                    fontFamily: "serif",
+                    fontFamily: kAppFontFamily,
                     fontSize: 14,
                     fontWeight: FontWeight.w500,
                     color: text.isEmpty
-                        ? AppColors.textTertiary
-                        : AppColors.textSecondary,
+                        ? context.colors.muted
+                        : context.colors.body,
                   ),
                 ),
-                const SizedBox(width: 8),
+                const SizedBox(width: AppSpacing.sm),
                 Row(
                   mainAxisSize: MainAxisSize.min,
                   children: List.generate(3, (i) => LoopingDot(delay: i * 300)),
@@ -92,11 +91,11 @@ class _AnalyzeLoadingWidgetState extends State<AnalyzeLoadingWidget> {
                 const SizedBox(height: 10),
                 Container(
                   width: double.infinity,
-                  padding: const EdgeInsets.all(12),
+                  padding: const EdgeInsets.all(AppSpacing.md),
                   decoration: BoxDecoration(
-                    color: AppColors.canvas,
-                    borderRadius: BorderRadius.circular(2),
-                    border: Border.all(color: AppColors.hairline),
+                    color: context.colors.canvas,
+                    borderRadius: BorderRadius.circular(AppRadius.xs),
+                    border: Border.all(color: context.colors.hairline),
                   ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -106,15 +105,15 @@ class _AnalyzeLoadingWidgetState extends State<AnalyzeLoadingWidget> {
                           Icon(
                             Icons.lightbulb_outline,
                             size: 14,
-                            color: AppColors.textTertiary,
+                            color: context.colors.muted,
                           ),
-                          const SizedBox(width: 4),
+                          const SizedBox(width: AppSpacing.xs),
                           Text(
                             '推理过程',
                             style: TextStyle(
-                              fontFamily: "serif",
+                              fontFamily: kAppFontFamily,
                               fontSize: 12,
-                              color: AppColors.textTertiary,
+                              color: context.colors.muted,
                               fontWeight: FontWeight.w500,
                             ),
                           ),
@@ -124,26 +123,26 @@ class _AnalyzeLoadingWidgetState extends State<AnalyzeLoadingWidget> {
                             height: 12,
                             child: CircularProgressIndicator(
                               strokeWidth: 1.5,
-                              color: AppColors.textTertiary,
+                              color: context.colors.muted,
                             ),
                           ),
                         ],
                       ),
-                      const SizedBox(height: 8),
+                      const SizedBox(height: AppSpacing.sm),
                       Container(
                         height: 140,
                         decoration: BoxDecoration(
-                          color: AppColors.surfaceSoft,
-                          borderRadius: BorderRadius.circular(2),
+                          color: context.colors.surfaceSoft,
+                          borderRadius: BorderRadius.circular(AppRadius.xs),
                         ),
                         child: SingleChildScrollView(
                           controller: _innerScrollController,
-                          padding: const EdgeInsets.all(8),
+                          padding: const EdgeInsets.all(AppSpacing.sm),
                           child: Text(
                             text,
                             style: TextStyle(
                               fontSize: 12,
-                              color: AppColors.textSecondary,
+                              color: context.colors.body,
                               fontStyle: FontStyle.italic,
                               height: 1.5,
                             ),
@@ -166,10 +165,10 @@ class _AnalyzeLoadingWidgetState extends State<AnalyzeLoadingWidget> {
       width: 26,
       height: 26,
       decoration: BoxDecoration(
-        color: AppColors.primaryLightest,
+        color: context.colors.surfaceSoft,
         borderRadius: BorderRadius.circular(6),
       ),
-      child: Icon(Icons.auto_awesome, size: 14, color: AppColors.primary),
+      child: Icon(Icons.auto_awesome, size: 14, color: context.colors.primary),
     );
   }
 }

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/physics.dart';
 
 import 'package:farm_flutter/utils/app_colors.dart';
+import 'package:farm_flutter/utils/app_spacing.dart';
 
 /// 一个下拉菜单选项。
 class MiuixMenuItem<T> {
@@ -140,9 +141,9 @@ class MiuixDropdownMenu<T> {
                         child: SizedBox(
                           width: menuWidth,
                           child: Material(
-                            color: AppColors.isDark
-                                ? AppColors.surfaceCard
-                                : AppColors.canvas,
+                            color: context.isDarkMode
+                                ? context.colors.surfaceCard
+                                : context.colors.canvas,
                             elevation: 16,
                             shadowColor: Colors.black.withValues(alpha: 0.22),
                             shape: const ContinuousRectangleBorder(
@@ -294,11 +295,11 @@ class _MiuixMenuItemTile<T> extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
       child: Material(
         color: selected
-            ? AppColors.primary.withValues(alpha: 0.08)
+            ? context.colors.primary.withValues(alpha: 0.08)
             : Colors.transparent,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(AppRadius.lg),
         child: InkWell(
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(AppRadius.lg),
           onTap: onTap,
           child: Container(
             width: double.infinity,
@@ -310,12 +311,18 @@ class _MiuixMenuItemTile<T> extends StatelessWidget {
                   label,
                   style: TextStyle(
                     fontSize: 16,
-                    color: selected ? AppColors.primary : AppColors.ink,
+                    color: selected
+                        ? context.colors.primary
+                        : context.colors.ink,
                     fontWeight: selected ? FontWeight.w600 : FontWeight.w400,
                   ),
                 ),
                 if (selected)
-                  Icon(Icons.check_rounded, color: AppColors.primary, size: 20),
+                  Icon(
+                    Icons.check_rounded,
+                    color: context.colors.primary,
+                    size: 20,
+                  ),
               ],
             ),
           ),
