@@ -109,10 +109,6 @@ class UploadProvider extends ChangeNotifier {
     ImageSource source, {
     required ManualRegionResolver resolveManualRegion,
   }) async {
-    if (_isUploading) {
-      setUploading(false);
-    }
-
     try {
       final pickedFile = await _picker.pickImage(
         source: source,
@@ -132,10 +128,14 @@ class UploadProvider extends ChangeNotifier {
   Future<void> _uploadImage({
     required ManualRegionResolver resolveManualRegion,
   }) async {
-    if (_isUploading) return;
     final imagePath = _selectedImage?.path;
     if (imagePath == null) return;
 
+    // 取消/丢弃"上一次还没完成的上传"完全依靠下面的 generation 计数器
+    // （每次新的上传自增一次，异步回调里发现 generation 已经变了就直接
+    // return），不需要再额外维护一个 _isUploading 标志位来做同样的事——
+    // 之前这里在 pickAndUpload 里强制把 _isUploading 重置为 false，会导致
+    // 这个判断永远不成立，是一段死代码，容易让人误以为它真的在拦截什么。
     final generation = ++_uploadGeneration;
     setUploading(true);
 

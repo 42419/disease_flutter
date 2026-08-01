@@ -7,6 +7,8 @@ import 'package:farm_flutter/utils/app_colors.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:latlong2/latlong.dart';
 
+const _testColors = AppColorsX.light;
+
 void main() {
   // ==================== DiseaseStatsService ====================
   group('DiseaseStatsService', () {
@@ -182,8 +184,10 @@ void main() {
           hasData: false,
           isSelected: false,
           severityRatio: 0,
+          successColor: _testColors.success,
+          errorColor: _testColors.error,
         );
-        expect(color, AppColors.success.withValues(alpha: 0.30));
+        expect(color, _testColors.success.withValues(alpha: 0.30));
       });
 
       test('无 Geo 数据时返回浅绿色', () {
@@ -192,8 +196,10 @@ void main() {
           hasData: false,
           isSelected: false,
           severityRatio: 0,
+          successColor: _testColors.success,
+          errorColor: _testColors.error,
         );
-        expect(color, AppColors.success.withValues(alpha: 0.16));
+        expect(color, _testColors.success.withValues(alpha: 0.16));
       });
 
       test('选中状态颜色更深', () {
@@ -202,12 +208,16 @@ void main() {
           hasData: false,
           isSelected: false,
           severityRatio: 0,
+          successColor: _testColors.success,
+          errorColor: _testColors.error,
         );
         final selected = service.regionFillColor(
           hasGeoData: true,
           hasData: false,
           isSelected: true,
           severityRatio: 0,
+          successColor: _testColors.success,
+          errorColor: _testColors.error,
         );
         // selected 应该 alpha 更高
         expect(selected.a, greaterThan(unselected.a));
@@ -219,12 +229,16 @@ void main() {
           hasData: true,
           isSelected: false,
           severityRatio: 0.0,
+          successColor: _testColors.success,
+          errorColor: _testColors.error,
         );
         final high = service.regionFillColor(
           hasGeoData: true,
           hasData: true,
           isSelected: false,
           severityRatio: 1.0,
+          successColor: _testColors.success,
+          errorColor: _testColors.error,
         );
         expect(low, isNot(equals(high)));
       });
@@ -237,8 +251,10 @@ void main() {
           hasData: true,
           isSelected: true,
           severityRatio: 0.5,
+          successColor: _testColors.success,
+          errorColor: _testColors.error,
         );
-        expect(color, AppColors.error);
+        expect(color, _testColors.error);
       });
 
       test('有 Geo 无病害数据时返回绿色边框', () {
@@ -247,8 +263,10 @@ void main() {
           hasData: false,
           isSelected: false,
           severityRatio: 0,
+          successColor: _testColors.success,
+          errorColor: _testColors.error,
         );
-        expect(color, AppColors.success.withValues(alpha: 0.82));
+        expect(color, _testColors.success.withValues(alpha: 0.82));
       });
 
       test('无 Geo 数据时返回浅绿边框', () {
@@ -257,8 +275,10 @@ void main() {
           hasData: false,
           isSelected: false,
           severityRatio: 0,
+          successColor: _testColors.success,
+          errorColor: _testColors.error,
         );
-        expect(color, AppColors.success.withValues(alpha: 0.60));
+        expect(color, _testColors.success.withValues(alpha: 0.60));
       });
     });
   });

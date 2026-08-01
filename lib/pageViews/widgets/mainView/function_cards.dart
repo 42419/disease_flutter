@@ -1,7 +1,7 @@
 import 'package:farm_flutter/utils/app_colors.dart';
+import 'package:farm_flutter/utils/app_theme.dart';
+import 'package:farm_flutter/utils/app_spacing.dart';
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import 'package:farm_flutter/providers/theme_mode_provider.dart';
 
 class FunctionCards extends StatefulWidget {
   const FunctionCards({super.key});
@@ -37,7 +37,6 @@ class _FunctionCardsState extends State<FunctionCards> {
 
   @override
   Widget build(BuildContext context) {
-    context.watch<ThemeModeController>(); // 深色模式切换时用于触发本页面重建
     return Column(
       children: List.generate(_getCardsInfo.length, (index) {
         final item = _getCardsInfo[index];
@@ -52,7 +51,7 @@ class _FunctionCardsState extends State<FunctionCards> {
               SnackBar(
                 content: Text("跳转 ${item["title"]}"),
                 duration: Duration(milliseconds: 500),
-                backgroundColor: AppColors.ink,
+                backgroundColor: context.colors.ink,
               ),
             );
           },
@@ -60,9 +59,11 @@ class _FunctionCardsState extends State<FunctionCards> {
             decoration: BoxDecoration(
               border: Border(
                 top: BorderSide(
-                  color: index == 0 ? AppColors.hairline : Colors.transparent,
+                  color: index == 0
+                      ? context.colors.hairline
+                      : Colors.transparent,
                 ),
-                bottom: BorderSide(color: AppColors.hairline),
+                bottom: BorderSide(color: context.colors.hairline),
               ),
             ),
             padding: const EdgeInsets.symmetric(vertical: 24),
@@ -74,11 +75,15 @@ class _FunctionCardsState extends State<FunctionCards> {
                   height: 40,
                   decoration: BoxDecoration(
                     color: Colors.transparent,
-                    border: Border.all(color: AppColors.ink),
+                    border: Border.all(color: context.colors.ink),
                   ),
-                  child: Icon(item["icon"], color: AppColors.ink, size: 20),
+                  child: Icon(
+                    item["icon"],
+                    color: context.colors.ink,
+                    size: 20,
+                  ),
                 ),
-                SizedBox(width: 20),
+                SizedBox(width: AppSpacing.xl),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -86,31 +91,31 @@ class _FunctionCardsState extends State<FunctionCards> {
                       Text(
                         item["title"],
                         style: TextStyle(
-                          fontFamily: "serif",
+                          fontFamily: kAppFontFamily,
                           fontSize: 18,
                           fontWeight: FontWeight.w600,
-                          color: AppColors.ink,
+                          color: context.colors.ink,
                         ),
                       ),
-                      SizedBox(height: 8),
+                      SizedBox(height: AppSpacing.sm),
                       Text(
                         item["subtitle"],
                         style: TextStyle(
                           fontSize: 14,
-                          color: AppColors.muted,
+                          color: context.colors.muted,
                           height: 1.5,
                         ),
                       ),
                     ],
                   ),
                 ),
-                SizedBox(width: 16),
+                SizedBox(width: AppSpacing.lg),
                 Padding(
                   padding: const EdgeInsets.only(top: 8.0),
                   child: Icon(
                     Icons.arrow_forward_rounded,
                     size: 20,
-                    color: AppColors.ink,
+                    color: context.colors.ink,
                   ),
                 ),
               ],

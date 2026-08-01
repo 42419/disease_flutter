@@ -5,8 +5,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:farm_flutter/utils/app_colors.dart';
+import 'package:farm_flutter/utils/app_theme.dart';
+import 'package:farm_flutter/utils/app_spacing.dart';
 import 'package:provider/provider.dart';
-import 'package:farm_flutter/providers/theme_mode_provider.dart';
 
 class UploadWidget extends StatefulWidget {
   const UploadWidget({super.key});
@@ -20,10 +21,12 @@ class _UploadWidgetState extends State<UploadWidget> {
     showDialog(
       context: context,
       builder: (dialogContext) => Dialog(
-        backgroundColor: AppColors.surfaceCard,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        backgroundColor: context.colors.surfaceCard,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(AppRadius.lg),
+        ),
         child: Padding(
-          padding: EdgeInsets.all(20),
+          padding: EdgeInsets.all(AppSpacing.xl),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -33,30 +36,27 @@ class _UploadWidgetState extends State<UploadWidget> {
                 style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.w600,
-                  color: AppColors.textPrimary,
+                  color: context.colors.ink,
                 ),
               ),
-              SizedBox(height: 16),
+              SizedBox(height: AppSpacing.lg),
               Container(
-                padding: EdgeInsets.all(12),
+                padding: EdgeInsets.all(AppSpacing.md),
                 decoration: BoxDecoration(
-                  color: AppColors.cardBackground,
-                  borderRadius: BorderRadius.circular(8),
-                  border: Border.all(
-                    color: AppColors.uploadAreaBorder,
-                    width: 1,
-                  ),
+                  color: context.colors.surfaceSoft,
+                  borderRadius: BorderRadius.circular(AppRadius.md),
+                  border: Border.all(color: context.colors.hairline, width: 1),
                 ),
                 child: SelectableText(
                   result,
                   style: TextStyle(
                     fontSize: 16,
-                    color: AppColors.danger,
+                    color: context.colors.error,
                     fontWeight: FontWeight.w500,
                   ),
                 ),
               ),
-              SizedBox(height: 20),
+              SizedBox(height: AppSpacing.xl),
               Row(
                 children: [
                   Expanded(
@@ -65,15 +65,15 @@ class _UploadWidgetState extends State<UploadWidget> {
                       child: OutlinedButton(
                         onPressed: () => Navigator.pop(dialogContext),
                         style: OutlinedButton.styleFrom(
-                          side: BorderSide(color: AppColors.uploadAreaBorder),
+                          side: BorderSide(color: context.colors.hairline),
                           shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8),
+                            borderRadius: BorderRadius.circular(AppRadius.md),
                           ),
                         ),
                         child: Text(
                           "关闭",
                           style: TextStyle(
-                            color: AppColors.textSecondary,
+                            color: context.colors.body,
                             fontSize: 16,
                             fontWeight: FontWeight.w500,
                           ),
@@ -94,20 +94,20 @@ class _UploadWidgetState extends State<UploadWidget> {
                             SnackBar(
                               content: Text("已复制到剪贴板"),
                               duration: Duration(seconds: 2),
-                              backgroundColor: AppColors.primary,
+                              backgroundColor: context.colors.primary,
                             ),
                           );
                         },
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColors.primary,
+                          backgroundColor: context.colors.primary,
                           shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8),
+                            borderRadius: BorderRadius.circular(AppRadius.md),
                           ),
                         ),
                         child: Text(
                           "复制",
                           style: TextStyle(
-                            color: AppColors.white,
+                            color: context.colors.white,
                             fontSize: 16,
                             fontWeight: FontWeight.w500,
                           ),
@@ -132,9 +132,9 @@ class _UploadWidgetState extends State<UploadWidget> {
         child: Container(
           margin: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
           decoration: BoxDecoration(
-            color: AppColors.canvas,
-            borderRadius: BorderRadius.circular(4),
-            border: Border.all(color: AppColors.hairline),
+            color: context.colors.canvas,
+            borderRadius: BorderRadius.circular(AppRadius.sm),
+            border: Border.all(color: context.colors.hairline),
           ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -145,8 +145,8 @@ class _UploadWidgetState extends State<UploadWidget> {
                 width: 32,
                 height: 3,
                 decoration: BoxDecoration(
-                  color: AppColors.hairline,
-                  borderRadius: BorderRadius.circular(2),
+                  color: context.colors.hairline,
+                  borderRadius: BorderRadius.circular(AppRadius.xs),
                 ),
               ),
 
@@ -156,16 +156,16 @@ class _UploadWidgetState extends State<UploadWidget> {
                 child: Text(
                   "选择图片",
                   style: TextStyle(
-                    fontFamily: "serif",
+                    fontFamily: kAppFontFamily,
                     fontSize: 18,
                     fontWeight: FontWeight.w600,
-                    color: AppColors.ink,
+                    color: context.colors.ink,
                     letterSpacing: 0.5,
                   ),
                 ),
               ),
 
-              Divider(color: AppColors.hairline, height: 1),
+              Divider(color: context.colors.hairline, height: 1),
 
               // 拍照上传选项
               _buildOptionItem(
@@ -180,7 +180,7 @@ class _UploadWidgetState extends State<UploadWidget> {
 
               // 分割线
               Divider(
-                color: AppColors.hairline,
+                color: context.colors.hairline,
                 height: 1,
                 indent: 20,
                 endIndent: 20,
@@ -199,14 +199,14 @@ class _UploadWidgetState extends State<UploadWidget> {
 
               // 取消按钮
               Padding(
-                padding: EdgeInsets.all(16),
+                padding: EdgeInsets.all(AppSpacing.lg),
                 child: TextButton(
                   onPressed: () => Navigator.pop(sheetContext),
                   child: Text(
                     "取消",
                     style: TextStyle(
-                      fontFamily: "serif",
-                      color: AppColors.muted,
+                      fontFamily: kAppFontFamily,
+                      color: context.colors.muted,
                       fontSize: 14,
                       fontWeight: FontWeight.w500,
                     ),
@@ -237,11 +237,11 @@ class _UploadWidgetState extends State<UploadWidget> {
               width: 44,
               height: 44,
               decoration: BoxDecoration(
-                color: AppColors.surfaceSoft,
-                borderRadius: BorderRadius.circular(2),
-                border: Border.all(color: AppColors.hairline),
+                color: context.colors.surfaceSoft,
+                borderRadius: BorderRadius.circular(AppRadius.xs),
+                border: Border.all(color: context.colors.hairline),
               ),
-              child: Icon(icon, color: AppColors.ink, size: 22),
+              child: Icon(icon, color: context.colors.ink, size: 22),
             ),
             SizedBox(width: 14),
 
@@ -253,19 +253,19 @@ class _UploadWidgetState extends State<UploadWidget> {
                   Text(
                     title,
                     style: TextStyle(
-                      fontFamily: "serif",
+                      fontFamily: kAppFontFamily,
                       fontSize: 15,
                       fontWeight: FontWeight.w600,
-                      color: AppColors.ink,
+                      color: context.colors.ink,
                     ),
                   ),
-                  SizedBox(height: 2),
+                  SizedBox(height: AppSpacing.xxs),
                   Text(
                     subtitle,
                     style: TextStyle(
-                      fontFamily: "serif",
+                      fontFamily: kAppFontFamily,
                       fontSize: 12,
-                      color: AppColors.muted,
+                      color: context.colors.muted,
                       fontStyle: FontStyle.italic,
                     ),
                   ),
@@ -274,7 +274,11 @@ class _UploadWidgetState extends State<UploadWidget> {
             ),
 
             // 箭头图标
-            Icon(Icons.chevron_right_rounded, color: AppColors.muted, size: 20),
+            Icon(
+              Icons.chevron_right_rounded,
+              color: context.colors.muted,
+              size: 20,
+            ),
           ],
         ),
       ),
@@ -310,7 +314,7 @@ class _UploadWidgetState extends State<UploadWidget> {
 
     final selected = await showModalBottomSheet<RegionOption>(
       context: context,
-      backgroundColor: AppColors.canvas,
+      backgroundColor: context.colors.canvas,
       showDragHandle: true,
       builder: (sheetContext) {
         return SafeArea(
@@ -324,30 +328,33 @@ class _UploadWidgetState extends State<UploadWidget> {
                   child: Text(
                     '选择诊断地区',
                     style: TextStyle(
-                      fontFamily: "serif",
+                      fontFamily: kAppFontFamily,
                       fontSize: 18,
                       fontWeight: FontWeight.w600,
-                      color: AppColors.ink,
+                      color: context.colors.ink,
                     ),
                   ),
                 ),
-                Divider(height: 1, color: AppColors.hairline),
+                Divider(height: 1, color: context.colors.hairline),
                 Expanded(
                   child: ListView.separated(
                     itemCount: regions.length,
                     separatorBuilder: (_, _) =>
-                        Divider(height: 1, color: AppColors.hairline),
+                        Divider(height: 1, color: context.colors.hairline),
                     itemBuilder: (_, index) {
                       final region = regions[index];
                       return ListTile(
                         title: Text(
                           region.name,
-                          style: TextStyle(color: AppColors.ink, fontSize: 15),
+                          style: TextStyle(
+                            color: context.colors.ink,
+                            fontSize: 15,
+                          ),
                         ),
                         subtitle: Text(
                           '${region.level.isEmpty ? '区域' : region.level} · ${region.adcode}',
                           style: TextStyle(
-                            color: AppColors.muted,
+                            color: context.colors.muted,
                             fontSize: 12,
                           ),
                         ),
@@ -390,14 +397,14 @@ class _UploadWidgetState extends State<UploadWidget> {
             child: Text(
               "0${index + 1}",
               style: TextStyle(
-                fontFamily: "serif",
-                color: index == 0 ? AppColors.ink : AppColors.muted,
+                fontFamily: kAppFontFamily,
+                color: index == 0 ? context.colors.ink : context.colors.muted,
                 fontSize: 16,
                 fontWeight: index == 0 ? FontWeight.w600 : FontWeight.normal,
               ),
             ),
           ),
-          SizedBox(width: 8),
+          SizedBox(width: AppSpacing.sm),
           Expanded(
             flex: 2,
             child: Tooltip(
@@ -407,11 +414,11 @@ class _UploadWidgetState extends State<UploadWidget> {
               padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
               margin: EdgeInsets.symmetric(horizontal: 24),
               decoration: BoxDecoration(
-                color: AppColors.ink,
-                borderRadius: BorderRadius.circular(4),
+                color: context.colors.ink,
+                borderRadius: BorderRadius.circular(AppRadius.sm),
               ),
               textStyle: TextStyle(
-                color: AppColors.canvas,
+                color: context.colors.canvas,
                 fontSize: 14,
                 height: 1.4,
               ),
@@ -420,39 +427,39 @@ class _UploadWidgetState extends State<UploadWidget> {
                 style: TextStyle(
                   fontSize: 16,
                   fontWeight: index == 0 ? FontWeight.w600 : FontWeight.normal,
-                  color: AppColors.ink,
+                  color: context.colors.ink,
                 ),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
               ),
             ),
           ),
-          SizedBox(width: 16),
+          SizedBox(width: AppSpacing.lg),
           Expanded(
             flex: 3,
             child: Container(
               height: 3,
-              color: AppColors.hairline,
+              color: context.colors.hairline,
               alignment: Alignment.centerLeft,
               child: FractionallySizedBox(
                 widthFactor: widthFactor,
                 child: Container(
                   height: 3,
-                  color: index == 0 ? AppColors.ink : AppColors.muted,
+                  color: index == 0 ? context.colors.ink : context.colors.muted,
                 ),
               ),
             ),
           ),
-          SizedBox(width: 16),
+          SizedBox(width: AppSpacing.lg),
           SizedBox(
             width: 60,
             child: Text(
               "$percentage%",
               textAlign: TextAlign.right,
               style: TextStyle(
-                fontFamily: "serif",
+                fontFamily: kAppFontFamily,
                 fontSize: 16,
-                color: index == 0 ? AppColors.ink : AppColors.muted,
+                color: index == 0 ? context.colors.ink : context.colors.muted,
                 fontWeight: index == 0 ? FontWeight.w600 : FontWeight.normal,
               ),
             ),
@@ -464,7 +471,6 @@ class _UploadWidgetState extends State<UploadWidget> {
 
   @override
   Widget build(BuildContext context) {
-    context.watch<ThemeModeController>(); // 深色模式切换时用于触发本页面重建
     final uploadProvider = context.watch<UploadProvider>();
     final heatmapBytes = PredictionResult(
       result: uploadProvider.result ?? '',
@@ -497,7 +503,7 @@ class _UploadWidgetState extends State<UploadWidget> {
               height: 180,
               decoration: BoxDecoration(
                 color: Colors.transparent,
-                border: Border.all(color: AppColors.ink, width: 1.5),
+                border: Border.all(color: context.colors.ink, width: 1.5),
               ),
               child: uploadProvider.selectedImage != null
                   ? Image.file(
@@ -510,14 +516,14 @@ class _UploadWidgetState extends State<UploadWidget> {
                         Icon(
                           Icons.camera_alt_outlined,
                           size: 48,
-                          color: AppColors.ink,
+                          color: context.colors.ink,
                         ),
-                        SizedBox(height: 16),
+                        SizedBox(height: AppSpacing.lg),
                         Text(
                           "拍照 / 上传",
                           style: TextStyle(
-                            fontFamily: "serif",
-                            color: AppColors.ink,
+                            fontFamily: kAppFontFamily,
+                            color: context.colors.ink,
                             fontSize: 18,
                             fontWeight: FontWeight.w600,
                             letterSpacing: 2.0,
@@ -537,8 +543,8 @@ class _UploadWidgetState extends State<UploadWidget> {
               padding: EdgeInsets.symmetric(horizontal: 16, vertical: 16),
               decoration: BoxDecoration(
                 border: Border(
-                  top: BorderSide(color: AppColors.hairline),
-                  bottom: BorderSide(color: AppColors.hairline),
+                  top: BorderSide(color: context.colors.hairline),
+                  bottom: BorderSide(color: context.colors.hairline),
                 ),
               ),
               width: double.infinity,
@@ -549,9 +555,9 @@ class _UploadWidgetState extends State<UploadWidget> {
                     Text(
                       "识别中...",
                       style: TextStyle(
-                        fontFamily: "serif",
+                        fontFamily: kAppFontFamily,
                         fontSize: 18,
-                        color: AppColors.muted,
+                        color: context.colors.muted,
                         fontStyle: FontStyle.italic,
                       ),
                     ),
@@ -560,7 +566,7 @@ class _UploadWidgetState extends State<UploadWidget> {
                       height: 16,
                       child: CircularProgressIndicator(
                         strokeWidth: 2,
-                        color: AppColors.ink,
+                        color: context.colors.ink,
                       ),
                     ),
                   ] else if (uploadProvider.errorMessage != null) ...[
@@ -569,17 +575,17 @@ class _UploadWidgetState extends State<UploadWidget> {
                         TextSpan(
                           text: "识别失败   ",
                           style: TextStyle(
-                            fontFamily: "serif",
+                            fontFamily: kAppFontFamily,
                             fontSize: 16,
-                            color: AppColors.danger,
+                            color: context.colors.error,
                           ),
                           children: [
                             TextSpan(
                               text: uploadProvider.errorMessage!,
                               style: TextStyle(
-                                fontFamily: "serif",
+                                fontFamily: kAppFontFamily,
                                 fontSize: 14,
-                                color: AppColors.textSecondary,
+                                color: context.colors.body,
                               ),
                             ),
                           ],
@@ -594,17 +600,17 @@ class _UploadWidgetState extends State<UploadWidget> {
                         TextSpan(
                           text: "识别类别   ",
                           style: TextStyle(
-                            fontFamily: "serif",
+                            fontFamily: kAppFontFamily,
                             fontSize: 16,
-                            color: AppColors.muted,
+                            color: context.colors.muted,
                           ),
                           children: [
                             TextSpan(
                               text: uploadProvider.result ?? "未知",
                               style: TextStyle(
-                                fontFamily: "serif",
+                                fontFamily: kAppFontFamily,
                                 fontSize: 20,
-                                color: AppColors.ink,
+                                color: context.colors.ink,
                                 fontWeight: FontWeight.w600,
                               ),
                             ),
@@ -624,7 +630,7 @@ class _UploadWidgetState extends State<UploadWidget> {
                       child: Icon(
                         Icons.arrow_forward_rounded,
                         size: 20,
-                        color: AppColors.ink,
+                        color: context.colors.ink,
                       ),
                     ),
                   ],
@@ -637,7 +643,9 @@ class _UploadWidgetState extends State<UploadWidget> {
               width: double.infinity,
               padding: EdgeInsets.symmetric(vertical: 24),
               decoration: BoxDecoration(
-                border: Border(bottom: BorderSide(color: AppColors.hairline)),
+                border: Border(
+                  bottom: BorderSide(color: context.colors.hairline),
+                ),
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -645,20 +653,22 @@ class _UploadWidgetState extends State<UploadWidget> {
                   Text(
                     "诊断热力图",
                     style: TextStyle(
-                      fontFamily: "serif",
+                      fontFamily: kAppFontFamily,
                       fontSize: 20,
                       fontWeight: FontWeight.w600,
-                      color: AppColors.ink,
+                      color: context.colors.ink,
                     ),
                   ),
-                  SizedBox(height: 24),
+                  SizedBox(height: AppSpacing.xxl),
                   Row(
                     children: [
                       if (uploadProvider.selectedImage != null)
                         Expanded(
                           child: Container(
                             decoration: BoxDecoration(
-                              border: Border.all(color: AppColors.hairline),
+                              border: Border.all(
+                                color: context.colors.hairline,
+                              ),
                             ),
                             child: Image.file(
                               uploadProvider.selectedImage!,
@@ -674,7 +684,7 @@ class _UploadWidgetState extends State<UploadWidget> {
                           padding: const EdgeInsets.symmetric(horizontal: 16),
                           child: Icon(
                             Icons.arrow_forward_rounded,
-                            color: AppColors.muted,
+                            color: context.colors.muted,
                           ),
                         ),
                       if (uploadProvider.heatmapData != null &&
@@ -682,7 +692,9 @@ class _UploadWidgetState extends State<UploadWidget> {
                         Expanded(
                           child: Container(
                             decoration: BoxDecoration(
-                              border: Border.all(color: AppColors.hairline),
+                              border: Border.all(
+                                color: context.colors.hairline,
+                              ),
                             ),
                             child: heatmapBytes == null
                                 ? SizedBox(
@@ -691,7 +703,7 @@ class _UploadWidgetState extends State<UploadWidget> {
                                       child: Text(
                                         '热力图数据异常',
                                         style: TextStyle(
-                                          color: AppColors.muted,
+                                          color: context.colors.muted,
                                           fontSize: 13,
                                         ),
                                       ),
@@ -709,7 +721,7 @@ class _UploadWidgetState extends State<UploadWidget> {
                 ],
               ),
             ),
-            SizedBox(height: 48),
+            SizedBox(height: AppSpacing.huge),
             Container(
               width: double.infinity,
               padding: EdgeInsets.symmetric(vertical: 24),
@@ -719,13 +731,13 @@ class _UploadWidgetState extends State<UploadWidget> {
                   Text(
                     "病害概率排行",
                     style: TextStyle(
-                      fontFamily: "serif",
+                      fontFamily: kAppFontFamily,
                       fontSize: 20,
                       fontWeight: FontWeight.w600,
-                      color: AppColors.ink,
+                      color: context.colors.ink,
                     ),
                   ),
-                  SizedBox(height: 24),
+                  SizedBox(height: AppSpacing.xxl),
                   if (top5Classes != null &&
                       predictTop5 != null &&
                       probabilityCount > 0)
@@ -741,14 +753,14 @@ class _UploadWidgetState extends State<UploadWidget> {
                 ],
               ),
             ),
-            SizedBox(height: 32),
+            SizedBox(height: AppSpacing.xxxl),
             SizedBox(
               height: 52,
               width: double.infinity,
               child: ElevatedButton(
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.ink,
-                  foregroundColor: AppColors.canvas,
+                  backgroundColor: context.colors.ink,
+                  foregroundColor: context.colors.canvas,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.zero,
                   ),

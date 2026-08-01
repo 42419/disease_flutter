@@ -1,9 +1,17 @@
-import 'package:farm_flutter/utils/app_colors.dart';
 import 'package:flutter/material.dart';
 
 /// 对文本中的关键词进行高亮处理，返回 InlineSpan 列表。
 /// badgeKeywords 以黑色圆角标签显示，其余关键词以红色粗体显示。
-List<InlineSpan> buildHighlightedSpans(String text) {
+///
+/// 本函数是纯文本格式化工具，不持有 BuildContext，颜色由调用方
+/// （Widget 的 build() 里）传入当前主题下的配色，例如：
+/// `buildHighlightedSpans(text, labelColor: context.colors.ink,
+/// highlightColor: context.colors.error)`。
+List<InlineSpan> buildHighlightedSpans(
+  String text, {
+  required Color labelColor,
+  required Color highlightColor,
+}) {
   const keywords = [
     // 病害类型
     '真菌性病害',
@@ -110,15 +118,12 @@ List<InlineSpan> buildHighlightedSpans(String text) {
       spans.add(
         TextSpan(
           text: label,
-          style: TextStyle(
-            color: AppColors.textPrimary,
-            fontWeight: FontWeight.w700,
-          ),
+          style: TextStyle(color: labelColor, fontWeight: FontWeight.w700),
         ),
       );
-      spans.addAll(_buildKeywordSpans(content, keywords));
+      spans.addAll(_buildKeywordSpans(content, keywords, highlightColor));
     } else {
-      spans.addAll(_buildKeywordSpans(line, keywords));
+      spans.addAll(_buildKeywordSpans(line, keywords, highlightColor));
     }
 
     if (i < lines.length - 1) {
@@ -129,7 +134,11 @@ List<InlineSpan> buildHighlightedSpans(String text) {
   return spans;
 }
 
-List<InlineSpan> _buildKeywordSpans(String text, List<String> keywords) {
+List<InlineSpan> _buildKeywordSpans(
+  String text,
+  List<String> keywords,
+  Color highlightColor,
+) {
   final spans = <InlineSpan>[];
   var remaining = text;
 
@@ -157,7 +166,7 @@ List<InlineSpan> _buildKeywordSpans(String text, List<String> keywords) {
     spans.add(
       TextSpan(
         text: earliestKeyword!,
-        style: TextStyle(color: AppColors.danger, fontWeight: FontWeight.w600),
+        style: TextStyle(color: highlightColor, fontWeight: FontWeight.w600),
       ),
     );
     remaining = remaining.substring(earliestIdx + earliestKeyword.length);

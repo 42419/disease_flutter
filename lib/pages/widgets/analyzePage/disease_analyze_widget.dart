@@ -4,9 +4,10 @@ import 'package:farm_flutter/providers/disease_analyze_provider.dart';
 import 'package:farm_flutter/providers/user_provider.dart';
 import 'package:farm_flutter/providers/upload_provider.dart';
 import 'package:farm_flutter/utils/app_colors.dart';
+import 'package:farm_flutter/utils/app_theme.dart';
+import 'package:farm_flutter/utils/app_spacing.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:farm_flutter/providers/theme_mode_provider.dart';
 
 class DiseaseAnalyzeWidget extends StatefulWidget {
   final String initialDiseaseName;
@@ -71,7 +72,6 @@ class _DiseaseAnalyzeWidgetState extends State<DiseaseAnalyzeWidget> {
 
   @override
   Widget build(BuildContext context) {
-    context.watch<ThemeModeController>(); // 深色模式切换时用于触发本页面重建
     final analyzeProvider = context.watch<DiseaseAnalyzeProvider>();
 
     if (analyzeProvider.showInput) return _buildInputWidget();
@@ -83,29 +83,29 @@ class _DiseaseAnalyzeWidgetState extends State<DiseaseAnalyzeWidget> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(Icons.error_outline, color: AppColors.danger, size: 48),
-              const SizedBox(height: 16),
+              Icon(Icons.error_outline, color: context.colors.error, size: 48),
+              const SizedBox(height: AppSpacing.lg),
               Text(
                 '分析失败',
                 style: TextStyle(
-                  fontFamily: "serif",
+                  fontFamily: kAppFontFamily,
                   fontSize: 18,
                   fontWeight: FontWeight.w600,
-                  color: AppColors.textPrimary,
+                  color: context.colors.ink,
                 ),
               ),
-              const SizedBox(height: 8),
+              const SizedBox(height: AppSpacing.sm),
               Text(
                 analyzeProvider.errorMessage ?? '',
-                style: TextStyle(color: AppColors.textSecondary, fontSize: 13),
+                style: TextStyle(color: context.colors.body, fontSize: 13),
                 textAlign: TextAlign.center,
               ),
-              const SizedBox(height: 24),
+              const SizedBox(height: AppSpacing.xxl),
               ElevatedButton(
                 onPressed: () => analyzeProvider.startAnalysis(),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.ink,
-                  foregroundColor: AppColors.canvas,
+                  backgroundColor: context.colors.ink,
+                  foregroundColor: context.colors.canvas,
                   elevation: 0,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.zero,
@@ -144,30 +144,27 @@ class _DiseaseAnalyzeWidgetState extends State<DiseaseAnalyzeWidget> {
                 width: 5,
                 height: 20,
                 decoration: BoxDecoration(
-                  color: AppColors.danger,
-                  borderRadius: BorderRadius.circular(2),
+                  color: context.colors.error,
+                  borderRadius: BorderRadius.circular(AppRadius.xs),
                 ),
               ),
-              const SizedBox(width: 12),
+              const SizedBox(width: AppSpacing.md),
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
                     '输入病害名称',
                     style: TextStyle(
-                      fontFamily: "serif",
+                      fontFamily: kAppFontFamily,
                       fontSize: 20,
                       fontWeight: FontWeight.w600,
-                      color: AppColors.textPrimary,
+                      color: context.colors.ink,
                     ),
                   ),
-                  SizedBox(height: 2),
+                  SizedBox(height: AppSpacing.xxs),
                   Text(
                     '识别结果为空，请手动输入以模拟',
-                    style: TextStyle(
-                      fontSize: 13,
-                      color: AppColors.textSecondary,
-                    ),
+                    style: TextStyle(fontSize: 13, color: context.colors.body),
                   ),
                 ],
               ),
@@ -177,43 +174,43 @@ class _DiseaseAnalyzeWidgetState extends State<DiseaseAnalyzeWidget> {
           TextField(
             controller: _inputController,
             autofocus: true,
-            style: TextStyle(fontSize: 16, color: AppColors.textPrimary),
+            style: TextStyle(fontSize: 16, color: context.colors.ink),
             decoration: InputDecoration(
               hintText: '例如：苹果黑斑病',
-              hintStyle: TextStyle(color: AppColors.textTertiary, fontSize: 15),
+              hintStyle: TextStyle(color: context.colors.muted, fontSize: 15),
               filled: true,
-              fillColor: AppColors.surfaceSoft,
+              fillColor: context.colors.surfaceSoft,
               contentPadding: const EdgeInsets.symmetric(
                 horizontal: 16,
                 vertical: 14,
               ),
               border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(2),
-                borderSide: BorderSide(color: AppColors.hairline),
+                borderRadius: BorderRadius.circular(AppRadius.xs),
+                borderSide: BorderSide(color: context.colors.hairline),
               ),
               enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(2),
-                borderSide: BorderSide(color: AppColors.hairline),
+                borderRadius: BorderRadius.circular(AppRadius.xs),
+                borderSide: BorderSide(color: context.colors.hairline),
               ),
               focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(2),
+                borderRadius: BorderRadius.circular(AppRadius.xs),
                 borderSide: BorderSide(
-                  color: AppColors.inputBorderFocused,
+                  color: context.colors.primary,
                   width: 1.5,
                 ),
               ),
             ),
             onSubmitted: (_) => _submitInput(),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: AppSpacing.lg),
           SizedBox(
             width: double.infinity,
             height: 48,
             child: ElevatedButton(
               onPressed: _submitInput,
               style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.ink,
-                foregroundColor: AppColors.canvas,
+                backgroundColor: context.colors.ink,
+                foregroundColor: context.colors.canvas,
                 elevation: 0,
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.zero),
               ),
@@ -240,27 +237,27 @@ class _DiseaseAnalyzeWidgetState extends State<DiseaseAnalyzeWidget> {
           width: 5,
           height: 20,
           decoration: BoxDecoration(
-            color: AppColors.danger,
-            borderRadius: BorderRadius.circular(2),
+            color: context.colors.error,
+            borderRadius: BorderRadius.circular(AppRadius.xs),
           ),
         ),
-        const SizedBox(width: 12),
+        const SizedBox(width: AppSpacing.md),
         Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
               '病因分析',
               style: TextStyle(
-                fontFamily: "serif",
+                fontFamily: kAppFontFamily,
                 fontSize: 20,
                 fontWeight: FontWeight.w600,
-                color: AppColors.textPrimary,
+                color: context.colors.ink,
               ),
             ),
-            SizedBox(height: 2),
+            SizedBox(height: AppSpacing.xxs),
             Text(
               '基于多维数据的智能推断',
-              style: TextStyle(fontSize: 13, color: AppColors.textSecondary),
+              style: TextStyle(fontSize: 13, color: context.colors.body),
             ),
           ],
         ),
@@ -271,23 +268,23 @@ class _DiseaseAnalyzeWidgetState extends State<DiseaseAnalyzeWidget> {
   Widget _buildMainCard(DiseaseAnalyzeProvider analyzeProvider) {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.all(AppSpacing.xl),
       decoration: BoxDecoration(
-        color: AppColors.canvas,
-        border: Border.all(color: AppColors.hairline),
-        borderRadius: BorderRadius.circular(2),
+        color: context.colors.canvas,
+        border: Border.all(color: context.colors.hairline),
+        borderRadius: BorderRadius.circular(AppRadius.xs),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           _buildSectionHeader(),
-          const SizedBox(height: 16),
+          const SizedBox(height: AppSpacing.lg),
           Container(
             width: double.infinity,
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.all(AppSpacing.lg),
             decoration: BoxDecoration(
-              color: AppColors.surfaceSoft,
-              borderRadius: BorderRadius.circular(2),
+              color: context.colors.surfaceSoft,
+              borderRadius: BorderRadius.circular(AppRadius.xs),
             ),
             child: AnimatedSwitcher(
               duration: const Duration(milliseconds: 500),

@@ -13,11 +13,41 @@ import 'package:latlong2/latlong.dart';
 /// 阻塞 UI 线程、造成明显卡顿。这里用 [compute] 把"解析"这一步丢到后台 isolate
 /// 执行，主 isolate 只负责用 `rootBundle` 读取原始字符串（读文件依赖
 /// Flutter binding，必须留在主 isolate）。
+///
+/// 解析结果按 [assetPath] 缓存在静态 Map 里（跨 [GeoJsonParser] 实例、
+/// 跨 AdminMapView 的多次进入/退出共享）：地图页是 PageView 里的一个 Tab，
+/// 每次导航离开又回来都会重建 State，之前解析结果只存在 State 内部字段里，
+/// 于是每次都要重新读取 + 重新解析一遍 2MB+ 的 GeoJSON。缓存到 service 层
+/// 之后，同一个 assetPath 只在 App 生命周期内真正解析一次。
 class GeoJsonParser {
   const GeoJsonParser();
 
+  static final Map<String, GeoDataBundle> _cache = {};
+  static final Map<String, Future<GeoDataBundle>> _inFlight = {};
+
   /// 从 asset 路径加载并解析 GeoJSON，返回 [GeoDataBundle]。
+  ///
+  /// 同一个 [assetPath] 第二次及以后调用会直接返回缓存结果，不会重新读取
+  /// 文件或重新解析；同一 assetPath 的并发调用也会共享同一次解析任务。
   Future<GeoDataBundle> loadFromAsset(String assetPath) async {
+    final cached = _cache[assetPath];
+    if (cached != null) return cached;
+
+    final inFlight = _inFlight[assetPath];
+    if (inFlight != null) return inFlight;
+
+    final future = _loadAndParse(assetPath);
+    _inFlight[assetPath] = future;
+    try {
+      final bundle = await future;
+      _cache[assetPath] = bundle;
+      return bundle;
+    } finally {
+      _inFlight.remove(assetPath);
+    }
+  }
+
+  Future<GeoDataBundle> _loadAndParse(String assetPath) async {
     final rawJson = await rootBundle.loadString(assetPath);
     return compute(
       _parseGeoJsonInBackground,
