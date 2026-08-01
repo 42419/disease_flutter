@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:farm_flutter/routes/route.dart';
@@ -9,8 +10,10 @@ import 'package:flutter_displaymode/flutter_displaymode.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   HttpUtil.init(baseUrl: Config.baseUrl);
-  await _enableHighRefreshRate();
   runApp(getRootWidget());
+  // 放在 runApp 之后、不 await：高刷申请本身跟首帧渲染没有依赖关系，
+  // 放在 runApp 之前会白白拖慢首帧出现的时间。
+  unawaited(_enableHighRefreshRate());
 }
 
 /// 主动向系统申请设备支持的最高刷新率（如 90/120Hz）。

@@ -1,9 +1,9 @@
 import 'package:farm_flutter/utils/app_colors.dart';
 import 'package:farm_flutter/providers/user_provider.dart';
 import 'package:farm_flutter/services/auth_storage.dart';
+import 'package:farm_flutter/utils/app_spacing.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:farm_flutter/providers/theme_mode_provider.dart';
 
 class AppInitPage extends StatefulWidget {
   const AppInitPage({super.key});
@@ -54,30 +54,29 @@ class _AppInitPageState extends State<AppInitPage> {
 
   @override
   Widget build(BuildContext context) {
-    context.watch<ThemeModeController>(); // 深色模式切换时用于触发本页面重建
     return Scaffold(
-      backgroundColor: AppColors.canvas,
+      backgroundColor: context.colors.canvas,
       body: Center(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             Image.asset('assets/img/logo.png', width: 120, height: 120),
-            const SizedBox(height: 24),
+            const SizedBox(height: AppSpacing.xxl),
             Text(
               '禾康智诊',
               style: TextStyle(
                 fontSize: 24,
                 fontWeight: FontWeight.w400,
-                color: AppColors.ink,
+                color: context.colors.ink,
                 letterSpacing: 4,
               ),
             ),
-            const SizedBox(height: 48),
+            const SizedBox(height: AppSpacing.huge),
             SizedBox(
               width: 24,
               height: 24,
               child: CircularProgressIndicator(
-                color: AppColors.primary,
+                color: context.colors.primary,
                 strokeWidth: 2,
               ),
             ),

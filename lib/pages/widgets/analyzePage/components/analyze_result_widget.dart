@@ -1,9 +1,9 @@
 import 'package:farm_flutter/pages/widgets/analyzePage/components/highlight_utils.dart';
 import 'package:farm_flutter/pages/widgets/analyzePage/components/suggestion_item.dart';
 import 'package:farm_flutter/utils/app_colors.dart';
+import 'package:farm_flutter/utils/app_theme.dart';
+import 'package:farm_flutter/utils/app_spacing.dart';
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import 'package:farm_flutter/providers/theme_mode_provider.dart';
 
 class AnalyzeResultWidget extends StatelessWidget {
   final String? diseaseType;
@@ -25,7 +25,6 @@ class AnalyzeResultWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    context.watch<ThemeModeController>(); // 深色模式切换时用于触发本页面重建
     return ValueListenableBuilder<List<String>>(
       valueListenable: displayedSuggestionsNotifier,
       builder: (context, suggestions, _) {
@@ -33,15 +32,16 @@ class AnalyzeResultWidget extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             _buildAnalysisParagraph(
+              context,
               diseaseType,
               causeAnalysis,
               displayedAnalysisNotifier,
               isTypingNotifier,
             ),
             if (suggestions.isNotEmpty) ...[
-              const SizedBox(height: 16),
-              _buildSectionHeader('防治建议'),
-              const SizedBox(height: 8),
+              const SizedBox(height: AppSpacing.lg),
+              _buildSectionHeader(context, '防治建议'),
+              const SizedBox(height: AppSpacing.sm),
               ...suggestions
                   .asMap()
                   .entries
@@ -68,6 +68,7 @@ class AnalyzeResultWidget extends StatelessWidget {
   }
 
   Widget _buildAnalysisParagraph(
+    BuildContext context,
     String? diseaseType,
     String? causeAnalysis,
     ValueNotifier<String> displayedNotifier,
@@ -80,7 +81,7 @@ class AnalyzeResultWidget extends StatelessWidget {
           final content = displayed.isNotEmpty
               ? displayed
               : (causeAnalysis ?? '');
-          return _buildStructuredAnalysisContent(content);
+          return _buildStructuredAnalysisContent(context, content);
         },
       );
     }
@@ -106,14 +107,14 @@ class AnalyzeResultWidget extends StatelessWidget {
                     vertical: 5,
                   ),
                   decoration: BoxDecoration(
-                    color: AppColors.danger.withAlpha(18),
+                    color: context.colors.error.withAlpha(18),
                     borderRadius: BorderRadius.circular(6),
                   ),
                   child: RichText(
                     text: TextSpan(
                       style: TextStyle(
                         fontSize: 13.5,
-                        color: AppColors.textPrimary,
+                        color: context.colors.ink,
                       ),
                       children: [
                         const TextSpan(
@@ -123,7 +124,7 @@ class AnalyzeResultWidget extends StatelessWidget {
                         TextSpan(
                           text: diseaseType,
                           style: TextStyle(
-                            color: AppColors.danger,
+                            color: context.colors.error,
                             fontWeight: FontWeight.w700,
                           ),
                         ),
@@ -131,9 +132,10 @@ class AnalyzeResultWidget extends StatelessWidget {
                     ),
                   ),
                 ),
-                if (content.isNotEmpty) const SizedBox(height: 8),
+                if (content.isNotEmpty) const SizedBox(height: AppSpacing.sm),
                 if (content.isNotEmpty)
                   _buildStructuredAnalysisContent(
+                    context,
                     content,
                     showCursor: showCursor,
                   ),
@@ -145,25 +147,25 @@ class AnalyzeResultWidget extends StatelessWidget {
     );
   }
 
-  Widget _buildSectionHeader(String title) {
+  Widget _buildSectionHeader(BuildContext context, String title) {
     return Row(
       children: [
         Container(
           width: 4,
           height: 18,
           decoration: BoxDecoration(
-            color: AppColors.success,
-            borderRadius: BorderRadius.circular(2),
+            color: context.colors.success,
+            borderRadius: BorderRadius.circular(AppRadius.xs),
           ),
         ),
         const SizedBox(width: 10),
         Text(
           title,
           style: TextStyle(
-            fontFamily: "serif",
+            fontFamily: kAppFontFamily,
             fontSize: 16,
             fontWeight: FontWeight.w600,
-            color: AppColors.textPrimary,
+            color: context.colors.ink,
           ),
         ),
       ],
@@ -171,6 +173,7 @@ class AnalyzeResultWidget extends StatelessWidget {
   }
 
   Widget _buildStructuredAnalysisContent(
+    BuildContext context,
     String content, {
     bool showCursor = false,
   }) {
@@ -193,6 +196,7 @@ class AnalyzeResultWidget extends StatelessWidget {
         children: rawLines.asMap().entries.map((entry) {
           final isLast = entry.key == rawLines.length - 1;
           return _buildAnalysisRow(
+            context,
             entry.value,
             showCursor: showCursor && isLast,
             isLast: isLast,
@@ -224,6 +228,7 @@ class AnalyzeResultWidget extends StatelessWidget {
             showCursor && i + symptomLines.length == rawLines.length - 1;
         widgets.add(
           _buildSymptomTimeline(
+            context,
             rawLines[i],
             symptomLines,
             showCursor: cursorOnSymptom,
@@ -234,6 +239,7 @@ class AnalyzeResultWidget extends StatelessWidget {
         final isLast = i == rawLines.length - 1;
         widgets.add(
           _buildAnalysisRow(
+            context,
             rawLines[i],
             showCursor: showCursor && isLast,
             isLast: isLast,
@@ -249,6 +255,7 @@ class AnalyzeResultWidget extends StatelessWidget {
   }
 
   Widget _buildAnalysisRow(
+    BuildContext context,
     String line, {
     bool showCursor = false,
     bool isLast = false,
@@ -267,8 +274,8 @@ class AnalyzeResultWidget extends StatelessWidget {
               width: 4,
               height: 18,
               decoration: BoxDecoration(
-                color: AppColors.danger,
-                borderRadius: BorderRadius.circular(2),
+                color: context.colors.error,
+                borderRadius: BorderRadius.circular(AppRadius.xs),
               ),
             ),
             const SizedBox(width: 10),
@@ -276,10 +283,10 @@ class AnalyzeResultWidget extends StatelessWidget {
               child: RichText(
                 text: TextSpan(
                   style: TextStyle(
-                    fontFamily: "serif",
+                    fontFamily: kAppFontFamily,
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
-                    color: AppColors.textPrimary,
+                    color: context.colors.ink,
                   ),
                   children: [
                     TextSpan(text: line),
@@ -287,7 +294,7 @@ class AnalyzeResultWidget extends StatelessWidget {
                       TextSpan(
                         text: '▎',
                         style: TextStyle(
-                          color: AppColors.danger,
+                          color: context.colors.error,
                           fontWeight: FontWeight.bold,
                           fontSize: 14,
                         ),
@@ -315,38 +322,42 @@ class AnalyzeResultWidget extends StatelessWidget {
                 width: 3,
                 height: 14,
                 decoration: BoxDecoration(
-                  color: AppColors.primary.withAlpha(70),
-                  borderRadius: BorderRadius.circular(2),
+                  color: context.colors.primary.withAlpha(70),
+                  borderRadius: BorderRadius.circular(AppRadius.xs),
                 ),
               ),
-              const SizedBox(width: 8),
+              const SizedBox(width: AppSpacing.sm),
               Text(
                 label,
                 style: TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.w700,
-                  color: AppColors.textPrimary,
+                  color: context.colors.ink,
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 4),
+          const SizedBox(height: AppSpacing.xs),
           Padding(
             padding: const EdgeInsets.only(left: 11),
             child: RichText(
               text: TextSpan(
                 style: TextStyle(
                   fontSize: 14,
-                  color: AppColors.textPrimary,
+                  color: context.colors.ink,
                   height: 1.55,
                 ),
                 children: [
-                  ...buildHighlightedSpans(body),
+                  ...buildHighlightedSpans(
+                    body,
+                    labelColor: context.colors.ink,
+                    highlightColor: context.colors.error,
+                  ),
                   if (showCursor)
                     TextSpan(
                       text: '▎',
                       style: TextStyle(
-                        color: AppColors.danger,
+                        color: context.colors.error,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
@@ -360,6 +371,7 @@ class AnalyzeResultWidget extends StatelessWidget {
   }
 
   Widget _buildSymptomTimeline(
+    BuildContext context,
     String header,
     List<String> stages, {
     bool showCursor = false,
@@ -379,30 +391,30 @@ class AnalyzeResultWidget extends StatelessWidget {
                 width: 4,
                 height: 18,
                 decoration: BoxDecoration(
-                  color: AppColors.danger,
-                  borderRadius: BorderRadius.circular(2),
+                  color: context.colors.error,
+                  borderRadius: BorderRadius.circular(AppRadius.xs),
                 ),
               ),
               const SizedBox(width: 10),
               Text(
                 header,
                 style: TextStyle(
-                  fontFamily: "serif",
+                  fontFamily: kAppFontFamily,
                   fontSize: 16,
                   fontWeight: FontWeight.w600,
-                  color: AppColors.textPrimary,
+                  color: context.colors.ink,
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 4),
+          const SizedBox(height: AppSpacing.xs),
           if (stages.isEmpty && showCursor)
             Padding(
               padding: const EdgeInsets.only(left: leftPad + 10),
               child: Text(
                 '▎',
                 style: TextStyle(
-                  color: AppColors.danger,
+                  color: context.colors.error,
                   fontWeight: FontWeight.bold,
                   fontSize: 18,
                 ),
@@ -434,18 +446,18 @@ class AnalyzeResultWidget extends StatelessWidget {
                           Container(
                             width: lineWidth,
                             height: 4,
-                            color: AppColors.cardBorder,
+                            color: context.colors.hairline,
                           ),
-                        const SizedBox(height: 2),
+                        const SizedBox(height: AppSpacing.xxs),
                         Container(
                           width: dotSize,
                           height: dotSize,
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
-                            color: AppColors.success,
+                            color: context.colors.success,
                             boxShadow: [
                               BoxShadow(
-                                color: AppColors.success.withAlpha(60),
+                                color: context.colors.success.withAlpha(60),
                                 blurRadius: 4,
                                 spreadRadius: 1,
                               ),
@@ -456,7 +468,7 @@ class AnalyzeResultWidget extends StatelessWidget {
                           Expanded(
                             child: Container(
                               width: lineWidth,
-                              color: AppColors.cardBorder,
+                              color: context.colors.hairline,
                             ),
                           ),
                       ],
@@ -474,7 +486,7 @@ class AnalyzeResultWidget extends StatelessWidget {
                               style: TextStyle(
                                 fontSize: 14,
                                 fontWeight: FontWeight.w700,
-                                color: AppColors.textPrimary,
+                                color: context.colors.ink,
                               ),
                               children: [
                                 TextSpan(text: label),
@@ -482,29 +494,33 @@ class AnalyzeResultWidget extends StatelessWidget {
                                   TextSpan(
                                     text: '▎',
                                     style: TextStyle(
-                                      color: AppColors.danger,
+                                      color: context.colors.error,
                                       fontWeight: FontWeight.bold,
                                     ),
                                   ),
                               ],
                             ),
                           ),
-                          if (hasColon) const SizedBox(height: 4),
+                          if (hasColon) const SizedBox(height: AppSpacing.xs),
                           if (hasColon)
                             RichText(
                               text: TextSpan(
                                 style: TextStyle(
                                   fontSize: 13.5,
-                                  color: AppColors.textSecondary,
+                                  color: context.colors.body,
                                   height: 1.55,
                                 ),
                                 children: [
-                                  ...buildHighlightedSpans(body),
+                                  ...buildHighlightedSpans(
+                                    body,
+                                    labelColor: context.colors.ink,
+                                    highlightColor: context.colors.error,
+                                  ),
                                   if (showStageCursor)
                                     TextSpan(
                                       text: '▎',
                                       style: TextStyle(
-                                        color: AppColors.danger,
+                                        color: context.colors.error,
                                         fontWeight: FontWeight.bold,
                                       ),
                                     ),

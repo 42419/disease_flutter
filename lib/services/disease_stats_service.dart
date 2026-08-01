@@ -1,7 +1,6 @@
 import 'package:farm_flutter/config/config.dart';
 import 'package:farm_flutter/config/province_config.dart';
 import 'package:farm_flutter/models/map_models.dart';
-import 'package:farm_flutter/utils/app_colors.dart';
 import 'package:farm_flutter/utils/http_util.dart';
 import 'package:flutter/material.dart';
 
@@ -112,30 +111,35 @@ class DiseaseStatsService {
   }
 
   /// 根据区域状态计算填充颜色。
+  ///
+  /// [successColor] / [errorColor] 由调用方（有 BuildContext 的 Widget）
+  /// 传入当前主题下的语义色，服务层本身不持有全局配色状态。
   Color regionFillColor({
     required bool hasGeoData,
     required bool hasData,
     required bool isSelected,
     required double severityRatio,
+    required Color successColor,
+    required Color errorColor,
   }) {
     if (hasGeoData && !hasData) {
       return isSelected
-          ? AppColors.success.withValues(alpha: 0.46)
-          : AppColors.success.withValues(alpha: 0.30);
+          ? successColor.withValues(alpha: 0.46)
+          : successColor.withValues(alpha: 0.30);
     }
     if (!hasGeoData) {
       return isSelected
-          ? AppColors.success.withValues(alpha: 0.24)
-          : AppColors.success.withValues(alpha: 0.16);
+          ? successColor.withValues(alpha: 0.24)
+          : successColor.withValues(alpha: 0.16);
     }
 
     final baseRed = Color.lerp(
-      AppColors.error.withValues(alpha: 0.24),
-      AppColors.error.withValues(alpha: 0.68),
+      errorColor.withValues(alpha: 0.24),
+      errorColor.withValues(alpha: 0.68),
       severityRatio,
     )!;
     return isSelected
-        ? Color.lerp(baseRed, AppColors.error.withValues(alpha: 0.82), 0.35)!
+        ? Color.lerp(baseRed, errorColor.withValues(alpha: 0.82), 0.35)!
         : baseRed;
   }
 
@@ -145,17 +149,19 @@ class DiseaseStatsService {
     required bool hasData,
     required bool isSelected,
     required double severityRatio,
+    required Color successColor,
+    required Color errorColor,
   }) {
-    if (isSelected) return AppColors.error;
+    if (isSelected) return errorColor;
     if (hasGeoData && !hasData) {
-      return AppColors.success.withValues(alpha: 0.82);
+      return successColor.withValues(alpha: 0.82);
     }
     if (!hasGeoData) {
-      return AppColors.success.withValues(alpha: 0.60);
+      return successColor.withValues(alpha: 0.60);
     }
     return Color.lerp(
-      AppColors.error.withValues(alpha: 0.58),
-      AppColors.error.withValues(alpha: 0.92),
+      errorColor.withValues(alpha: 0.58),
+      errorColor.withValues(alpha: 0.92),
       severityRatio,
     )!;
   }

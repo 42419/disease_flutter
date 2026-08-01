@@ -2,9 +2,10 @@ import 'package:farm_flutter/pages/widgets/common/miuix_dropdown_menu.dart';
 import 'package:farm_flutter/providers/user_provider.dart';
 import 'package:farm_flutter/services/auth_storage.dart';
 import 'package:farm_flutter/utils/app_colors.dart';
+import 'package:farm_flutter/utils/app_theme.dart';
+import 'package:farm_flutter/utils/app_spacing.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:farm_flutter/providers/theme_mode_provider.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -106,7 +107,7 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text("请勾选《用户协议》和《隐私政策》"),
-          backgroundColor: AppColors.warning,
+          backgroundColor: context.colors.warning,
         ),
       );
       return;
@@ -121,8 +122,9 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
     showDialog(
       context: context,
       barrierDismissible: false,
-      builder: (context) =>
-          Center(child: CircularProgressIndicator(color: AppColors.primary)),
+      builder: (context) => Center(
+        child: CircularProgressIndicator(color: context.colors.primary),
+      ),
     );
 
     // 登录请求 + 响应解析统一由 UserProvider.loginWithCredentials 完成
@@ -142,7 +144,7 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text("登录失败，${result.message}"),
-          backgroundColor: AppColors.error,
+          backgroundColor: context.colors.error,
         ),
       );
       return;
@@ -164,7 +166,7 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text("登录成功, 欢迎 $resolvedName"),
-        backgroundColor: AppColors.success,
+        backgroundColor: context.colors.success,
         duration: const Duration(milliseconds: 500),
       ),
     );
@@ -204,11 +206,10 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
-    context.watch<ThemeModeController>(); // 深色模式切换时用于触发本页面重建
     return GestureDetector(
       onTap: () => FocusScope.of(context).unfocus(),
       child: Scaffold(
-        backgroundColor: AppColors.canvas,
+        backgroundColor: context.colors.canvas,
         body: SafeArea(
           child: Column(
             children: [
@@ -229,21 +230,21 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
                           height: 84,
                         ),
                       ),
-                      const SizedBox(height: 24),
+                      const SizedBox(height: AppSpacing.xxl),
 
                       // 品牌名
                       Text(
                         "禾康智诊",
                         style: TextStyle(
-                          fontFamily: "serif",
+                          fontFamily: kAppFontFamily,
                           fontWeight: FontWeight.w600,
                           fontSize: 36,
                           height: 1.1,
-                          color: AppColors.ink,
+                          color: context.colors.ink,
                           letterSpacing: 2.0,
                         ),
                       ),
-                      const SizedBox(height: 16),
+                      const SizedBox(height: AppSpacing.lg),
 
                       // 推广语
                       Row(
@@ -251,14 +252,14 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
                           Container(
                             width: 30,
                             height: 2,
-                            color: AppColors.primary,
+                            color: context.colors.primary,
                           ),
                           const SizedBox(width: 10),
                           Text(
                             "让东北黑土地遇见智慧",
                             style: TextStyle(
                               fontSize: 15,
-                              color: AppColors.primary,
+                              color: context.colors.primary,
                               letterSpacing: 1.2,
                               fontWeight: FontWeight.w600,
                             ),
@@ -279,7 +280,7 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
                               textInputAction: TextInputAction.next,
                               validator: _validateUsername,
                               style: TextStyle(
-                                color: AppColors.ink,
+                                color: context.colors.ink,
                                 fontSize: 18,
                               ),
                               decoration: _buildMinimalInputDecoration(
@@ -287,7 +288,7 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
                                 icon: Icons.person_outline,
                               ),
                             ),
-                            const SizedBox(height: 16),
+                            const SizedBox(height: AppSpacing.lg),
 
                             // Password Input
                             TextFormField(
@@ -297,7 +298,7 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
                               validator: _validatePassword,
                               onFieldSubmitted: (_) => _login(),
                               style: TextStyle(
-                                color: AppColors.ink,
+                                color: context.colors.ink,
                                 fontSize: 18,
                               ),
                               decoration: _buildMinimalInputDecoration(
@@ -305,7 +306,7 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
                                 icon: Icons.lock_outline,
                               ),
                             ),
-                            const SizedBox(height: 16),
+                            const SizedBox(height: AppSpacing.lg),
 
                             // Role Selection（贴合字段弹出的选择卡片）
                             FormField<String>(
@@ -314,12 +315,14 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
                               builder: (field) {
                                 return InkWell(
                                   key: _roleFieldKey,
-                                  borderRadius: BorderRadius.circular(4),
+                                  borderRadius: BorderRadius.circular(
+                                    AppRadius.sm,
+                                  ),
                                   onTap: () => _showRoleMenu(field),
                                   child: AnimatedContainer(
                                     duration: const Duration(milliseconds: 120),
                                     color: _isRoleMenuOpen
-                                        ? AppColors.hairline.withValues(
+                                        ? context.colors.hairline.withValues(
                                             alpha: 0.25,
                                           )
                                         : Colors.transparent,
@@ -336,11 +339,11 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
                                                   "请选择角色",
                                               style: TextStyle(
                                                 color: _selectedRole == null
-                                                    ? AppColors.muted
+                                                    ? context.colors.muted
                                                           .withValues(
                                                             alpha: 0.6,
                                                           )
-                                                    : AppColors.ink,
+                                                    : context.colors.ink,
                                                 fontSize: 18,
                                               ),
                                             ),
@@ -353,7 +356,7 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
                                             curve: Curves.easeOutCubic,
                                             child: Icon(
                                               Icons.expand_more_outlined,
-                                              color: AppColors.muted,
+                                              color: context.colors.muted,
                                               size: 23,
                                             ),
                                           ),
@@ -365,7 +368,7 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
                               },
                             ),
 
-                            const SizedBox(height: 32),
+                            const SizedBox(height: AppSpacing.xxxl),
 
                             // Options
                             Row(
@@ -374,7 +377,7 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
                                   _rememberMe,
                                   (v) => setState(() => _rememberMe = v!),
                                 ),
-                                const SizedBox(width: 12),
+                                const SizedBox(width: AppSpacing.md),
                                 GestureDetector(
                                   onTap: () => setState(
                                     () => _rememberMe = !_rememberMe,
@@ -382,14 +385,14 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
                                   child: Text(
                                     "保持登录状态",
                                     style: TextStyle(
-                                      color: AppColors.body,
+                                      color: context.colors.body,
                                       fontSize: 15,
                                     ),
                                   ),
                                 ),
                               ],
                             ),
-                            const SizedBox(height: 16),
+                            const SizedBox(height: AppSpacing.lg),
 
                             // Agreement
                             Row(
@@ -399,7 +402,7 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
                                   _isSelected,
                                   (v) => setState(() => _isSelected = v!),
                                 ),
-                                const SizedBox(width: 12),
+                                const SizedBox(width: AppSpacing.md),
                                 Expanded(
                                   child: Wrap(
                                     crossAxisAlignment:
@@ -412,7 +415,7 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
                                         child: Text(
                                           "已阅读并同意",
                                           style: TextStyle(
-                                            color: AppColors.muted,
+                                            color: context.colors.muted,
                                             fontSize: 14,
                                             height: 1.5,
                                           ),
@@ -423,7 +426,7 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
                                         child: Text(
                                           "《用户协议》",
                                           style: TextStyle(
-                                            color: AppColors.primary,
+                                            color: context.colors.primary,
                                             fontSize: 14,
                                             height: 1.5,
                                           ),
@@ -432,7 +435,7 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
                                       Text(
                                         "和",
                                         style: TextStyle(
-                                          color: AppColors.muted,
+                                          color: context.colors.muted,
                                           fontSize: 14,
                                           height: 1.5,
                                         ),
@@ -442,7 +445,7 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
                                         child: Text(
                                           "《隐私政策》",
                                           style: TextStyle(
-                                            color: AppColors.primary,
+                                            color: context.colors.primary,
                                             fontSize: 14,
                                             height: 1.5,
                                           ),
@@ -453,7 +456,7 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
                                 ),
                               ],
                             ),
-                            const SizedBox(height: 48),
+                            const SizedBox(height: AppSpacing.huge),
 
                             // Login Button
                             SizedBox(
@@ -467,10 +470,11 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
                                         _login();
                                       },
                                 style: ElevatedButton.styleFrom(
-                                  backgroundColor: AppColors.ink,
-                                  foregroundColor: AppColors.canvas,
-                                  disabledBackgroundColor: AppColors.hairline,
-                                  disabledForegroundColor: AppColors.muted,
+                                  backgroundColor: context.colors.ink,
+                                  foregroundColor: context.colors.canvas,
+                                  disabledBackgroundColor:
+                                      context.colors.hairline,
+                                  disabledForegroundColor: context.colors.muted,
                                   elevation: 0,
                                   shape: RoundedRectangleBorder(
                                     borderRadius: BorderRadius.circular(
@@ -483,7 +487,7 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
                                         height: 20,
                                         width: 20,
                                         child: CircularProgressIndicator(
-                                          color: AppColors.canvas,
+                                          color: context.colors.canvas,
                                           strokeWidth: 2,
                                         ),
                                       )
@@ -497,7 +501,7 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
                                       ),
                               ),
                             ),
-                            const SizedBox(height: 32),
+                            const SizedBox(height: AppSpacing.xxxl),
 
                             // Bottom Action
                             Row(
@@ -510,7 +514,7 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
                                 Container(
                                   height: 12,
                                   width: 1,
-                                  color: AppColors.hairline,
+                                  color: context.colors.hairline,
                                   margin: const EdgeInsets.symmetric(
                                     horizontal: 16,
                                   ),
@@ -521,7 +525,7 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
                                 ),
                               ],
                             ),
-                            const SizedBox(height: 48),
+                            const SizedBox(height: AppSpacing.huge),
                           ],
                         ),
                       ),
@@ -542,7 +546,7 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
       SnackBar(
         content: Text(msg),
         duration: const Duration(milliseconds: 1000),
-        backgroundColor: AppColors.ink,
+        backgroundColor: context.colors.ink,
       ),
     );
   }
@@ -553,7 +557,7 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
       child: Text(
         text,
         style: TextStyle(
-          color: AppColors.muted,
+          color: context.colors.muted,
           fontSize: 13,
           fontWeight: FontWeight.w500,
         ),
@@ -568,12 +572,12 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
       child: Checkbox(
         value: value,
         onChanged: onChanged,
-        activeColor: AppColors.ink,
-        checkColor: AppColors.canvas,
+        activeColor: context.colors.ink,
+        checkColor: context.colors.canvas,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(0)),
         // Sharp checkbox
         side: BorderSide(
-          color: AppColors.muted.withValues(alpha: 0.5),
+          color: context.colors.muted.withValues(alpha: 0.5),
           width: 1.5,
         ),
       ),
@@ -588,30 +592,30 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
       hintText: hintText,
       prefixIcon: Padding(
         padding: const EdgeInsets.only(right: 16),
-        child: Icon(icon, color: AppColors.muted, size: 24),
+        child: Icon(icon, color: context.colors.muted, size: 24),
       ),
       prefixIconConstraints: const BoxConstraints(minWidth: 0, minHeight: 0),
       hintStyle: TextStyle(
-        color: AppColors.muted.withValues(alpha: 0.6),
+        color: context.colors.muted.withValues(alpha: 0.6),
         fontSize: 18,
         fontWeight: FontWeight.w400,
       ),
       filled: false,
       contentPadding: const EdgeInsets.symmetric(vertical: 16),
       border: UnderlineInputBorder(
-        borderSide: BorderSide(color: AppColors.hairline, width: 1),
+        borderSide: BorderSide(color: context.colors.hairline, width: 1),
       ),
       enabledBorder: UnderlineInputBorder(
-        borderSide: BorderSide(color: AppColors.hairline, width: 1),
+        borderSide: BorderSide(color: context.colors.hairline, width: 1),
       ),
       focusedBorder: UnderlineInputBorder(
         borderSide: BorderSide(
-          color: AppColors.ink,
+          color: context.colors.ink,
           width: 2,
         ), // Underline highlight in ink
       ),
       errorBorder: UnderlineInputBorder(
-        borderSide: BorderSide(color: AppColors.error, width: 1),
+        borderSide: BorderSide(color: context.colors.error, width: 1),
       ),
     );
   }

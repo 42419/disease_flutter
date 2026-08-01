@@ -1,8 +1,8 @@
+import 'package:farm_flutter/utils/app_theme.dart';
+import 'package:farm_flutter/utils/app_spacing.dart';
 import 'package:flutter/material.dart';
 
 import '../../../utils/app_colors.dart';
-import 'package:provider/provider.dart';
-import 'package:farm_flutter/providers/theme_mode_provider.dart';
 
 class FarmNews extends StatefulWidget {
   const FarmNews({super.key});
@@ -29,7 +29,6 @@ class _FarmNewsState extends State<FarmNews> {
 
   @override
   Widget build(BuildContext context) {
-    context.watch<ThemeModeController>(); // 深色模式切换时用于触发本页面重建
     return Column(
       children: [
         Column(
@@ -42,7 +41,7 @@ class _FarmNewsState extends State<FarmNews> {
                   SnackBar(
                     content: Text("跳转 ${item["title"]}"),
                     duration: Duration(milliseconds: 500),
-                    backgroundColor: AppColors.ink,
+                    backgroundColor: context.colors.ink,
                   ),
                 );
               },
@@ -51,10 +50,10 @@ class _FarmNewsState extends State<FarmNews> {
                   border: Border(
                     top: BorderSide(
                       color: index == 0
-                          ? AppColors.hairline
+                          ? context.colors.hairline
                           : Colors.transparent,
                     ),
-                    bottom: BorderSide(color: AppColors.hairline),
+                    bottom: BorderSide(color: context.colors.hairline),
                   ),
                 ),
                 padding: EdgeInsets.symmetric(vertical: 24),
@@ -66,8 +65,8 @@ class _FarmNewsState extends State<FarmNews> {
                       height: 80,
                       clipBehavior: Clip.antiAlias,
                       decoration: BoxDecoration(
-                        border: Border.all(color: AppColors.hairline),
-                        color: AppColors.surfaceSoft,
+                        border: Border.all(color: context.colors.hairline),
+                        color: context.colors.surfaceSoft,
                       ),
                       child: Image.network(
                         item["picture"],
@@ -80,7 +79,7 @@ class _FarmNewsState extends State<FarmNews> {
                               height: 18,
                               child: CircularProgressIndicator(
                                 strokeWidth: 2,
-                                color: AppColors.muted,
+                                color: context.colors.muted,
                                 value: progress.expectedTotalBytes != null
                                     ? progress.cumulativeBytesLoaded /
                                           progress.expectedTotalBytes!
@@ -92,13 +91,13 @@ class _FarmNewsState extends State<FarmNews> {
                         errorBuilder: (context, error, stackTrace) {
                           return Icon(
                             Icons.image_not_supported_outlined,
-                            color: AppColors.mutedSoft,
+                            color: context.colors.mutedSoft,
                             size: 22,
                           );
                         },
                       ),
                     ),
-                    SizedBox(width: 20),
+                    SizedBox(width: AppSpacing.xl),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -108,17 +107,17 @@ class _FarmNewsState extends State<FarmNews> {
                             style: TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.w600,
-                              color: AppColors.ink,
+                              color: context.colors.ink,
                             ),
                             maxLines: 2,
                             overflow: TextOverflow.ellipsis,
                           ),
-                          SizedBox(height: 12),
+                          SizedBox(height: AppSpacing.md),
                           Text(
                             "${item["time"]}   ·   ${item["watched"]}",
                             style: TextStyle(
-                              fontFamily: "serif",
-                              color: AppColors.muted,
+                              fontFamily: kAppFontFamily,
+                              color: context.colors.muted,
                               fontSize: 13,
                               fontStyle: FontStyle.italic,
                             ),
