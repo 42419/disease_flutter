@@ -41,9 +41,19 @@ class DiseaseChartMarker extends StatelessWidget {
             width: cardWidth,
             padding: const EdgeInsets.fromLTRB(16, 14, 16, 10),
             decoration: BoxDecoration(
-              color: context.colors.canvas.withAlpha(244),
-              borderRadius: BorderRadius.circular(AppRadius.xs),
-              border: Border.all(color: context.colors.hairline),
+              color: context.isDarkMode
+                  ? context.colors.surfaceCard
+                  : context.colors.canvas,
+              borderRadius: BorderRadius.circular(AppRadius.lg),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(
+                    alpha: context.isDarkMode ? 0.36 : 0.16,
+                  ),
+                  blurRadius: 12,
+                  offset: const Offset(0, 6),
+                ),
+              ],
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -192,11 +202,11 @@ class DiseaseChartMarker extends StatelessWidget {
     return Row(
       children: [
         Container(
-          width: 3,
-          height: 16,
+          width: 8,
+          height: 8,
           decoration: BoxDecoration(
             color: context.colors.primary,
-            borderRadius: BorderRadius.circular(AppRadius.xs),
+            shape: BoxShape.circle,
           ),
         ),
         const SizedBox(width: AppSpacing.sm),
@@ -215,7 +225,7 @@ class DiseaseChartMarker extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
           decoration: BoxDecoration(
             color: context.colors.surfaceSoft,
-            borderRadius: BorderRadius.circular(AppRadius.xs),
+            borderRadius: BorderRadius.circular(AppRadius.xl),
           ),
           child: Text(
             '${displayStats.length} 种',

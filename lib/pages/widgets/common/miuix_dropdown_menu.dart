@@ -3,6 +3,7 @@ import 'package:flutter/physics.dart';
 
 import 'package:farm_flutter/utils/app_colors.dart';
 import 'package:farm_flutter/utils/app_spacing.dart';
+import 'package:farm_flutter/utils/miuix_motion.dart';
 
 /// 一个下拉菜单选项。
 class MiuixMenuItem<T> {
@@ -30,13 +31,6 @@ class MiuixDropdownMenu<T> {
 
   bool get isOpen => _overlayEntry != null;
 
-  static const SpringDescription _fractionSpring = SpringDescription(
-    mass: 1,
-    stiffness: 362.5,
-    damping: 31.22,
-  );
-  static const Duration _alphaEnterDuration = Duration(milliseconds: 200);
-  static const Duration _alphaExitDuration = Duration(milliseconds: 150);
   static const Duration _dimEnterDuration = Duration(milliseconds: 300);
   static const Duration _dimExitDuration = Duration(milliseconds: 150);
 
@@ -47,7 +41,7 @@ class MiuixDropdownMenu<T> {
     );
     _alphaCtrl ??= AnimationController(
       vsync: _vsync,
-      duration: _alphaEnterDuration,
+      duration: MiuixMotion.alphaEnterDuration,
     );
     _dimCtrl ??= AnimationController(
       vsync: _vsync,
@@ -104,7 +98,7 @@ class MiuixDropdownMenu<T> {
           builder: (context, _) {
             final fraction = _fractionCtrl!.value;
             final clipFraction = fraction.clamp(0.0, 1.0);
-            final scale = 0.15 + 0.85 * fraction;
+            final scale = MiuixMotion.scaleForFraction(fraction);
             final alpha = _alphaCtrl!.value.clamp(0.0, 1.0);
             final dimAlpha = _dimCtrl!.value.clamp(0.0, 1.0);
 
@@ -182,12 +176,12 @@ class MiuixDropdownMenu<T> {
     _fractionCtrl!
       ..stop()
       ..value = 0
-      ..animateWith(SpringSimulation(_fractionSpring, 0, 1, 0));
+      ..animateWith(SpringSimulation(MiuixMotion.spring, 0, 1, 0));
     _alphaCtrl!
       ..value = 0
       ..animateTo(
         1,
-        duration: _alphaEnterDuration,
+        duration: MiuixMotion.alphaEnterDuration,
         curve: Curves.fastOutSlowIn,
       );
     _dimCtrl!
@@ -204,7 +198,7 @@ class MiuixDropdownMenu<T> {
         : 0.0;
     _fractionCtrl!.animateWith(
       SpringSimulation(
-        _fractionSpring,
+        MiuixMotion.spring,
         _fractionCtrl!.value,
         0,
         fractionVelocity,
@@ -217,7 +211,7 @@ class MiuixDropdownMenu<T> {
     );
     await _alphaCtrl!.animateTo(
       0,
-      duration: _alphaExitDuration,
+      duration: MiuixMotion.alphaExitDuration,
       curve: Curves.fastOutSlowIn,
     );
 
