@@ -65,6 +65,16 @@ class _ScaffoldWithBottomNavState extends State<ScaffoldWithBottomNav>
   void _startPolling() {
     final user = context.read<UserProvider>();
     final provider = context.read<DiagnosisRecordsProvider>();
+    // 立即拉一次数据，不要只是启动定时器。PageView 不会预先构建"我的"
+    // 这个还没被看到的 Tab，MineView.initState 里那次拉取要等用户真的
+    // 划到"我的"才会触发；定时器本身也不会立即执行第一次（Timer.periodic
+    // 要等一个完整的轮询间隔才会跑第一次回调）。这就导致管理员登录后如果
+    // 先停留在"首页"（地图），会一直没有数据，直到轮询周期到了或者手动
+    // 去"我的"页面才刷新——这里主动拉一次，保证不管先停在哪个 Tab 数据
+    // 都能尽快到位。
+    if (provider.records.isEmpty && provider.isLoading) {
+      provider.fetchRecords(role: user.role, nickName: user.nickName);
+    }
     provider.startTimer(role: user.role, nickName: user.nickName);
   }
 

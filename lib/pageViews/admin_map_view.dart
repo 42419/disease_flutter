@@ -2,8 +2,10 @@ import 'dart:async';
 import 'dart:math' as math;
 
 import 'package:farm_flutter/config/province_config.dart';
+import 'package:farm_flutter/models/diagnosis.dart';
 import 'package:farm_flutter/models/map_models.dart';
 import 'package:farm_flutter/pageViews/widgets/adminMap/disease_chart_marker.dart';
+import 'package:farm_flutter/providers/diagnosis_records_provider.dart';
 import 'package:farm_flutter/services/disease_stats_service.dart';
 import 'package:farm_flutter/services/geojson_parser.dart';
 import 'package:farm_flutter/utils/app_colors.dart';
@@ -14,6 +16,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/physics.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
+import 'package:provider/provider.dart';
 
 class AdminMapView extends StatefulWidget {
   const AdminMapView({super.key});
@@ -101,6 +104,10 @@ class AdminMapViewState extends State<AdminMapView>
   // 病害总数的最大值，用来算填色的深浅比例——只跟"当前图层有哪些数据"
   // 有关，跟选中哪个区域无关，不需要跟着选中态变化重新算。
   int _maxRegionCount = 1;
+  // 上一次同步病害统计时用的 records 引用。DiagnosisRecordsProvider 每次
+  // 拉取成功都会把 _records 整体替换成一份新 List，用 identical() 判断
+  // "是不是新数据"比对比内容便宜得多，不是新数据就不用重新统计。
+  List<Diagnosis>? _lastSyncedRecords;
 
   // ---- 计算属性 ----
   List<GeoRegion> get _activeRegions =>
@@ -172,15 +179,29 @@ class AdminMapViewState extends State<AdminMapView>
         _errorMessage = '加载 GeoJSON 失败：$e';
       });
     }
-
-    await _statsService.fetchDiseaseData();
-    if (mounted) {
-      setState(() {});
-      _rebuildCache();
-    }
   }
 
   // ---- 缓存构建 ----
+
+  /// 病害统计跟 [DiagnosisRecordsProvider] 共用同一份数据，新数据到了就
+  /// 重新统计+重建缓存。用 [ModalRoute.isCurrent] 跳过"本页被诊断记录页
+  /// 这类 push 上来的页面盖住、当前不可见"的情况——这时候还挂载但看不见，
+  /// 同步做重计算会跟盖在上面那个页面抢同一帧，导致明显卡顿。跳过时不
+  /// 更新 [_lastSyncedRecords]，等页面重新可见时会自然补上。
+  void _syncStatsIfVisible(DiagnosisRecordsProvider recordsProvider) {
+    final records = recordsProvider.records;
+    if (identical(_lastSyncedRecords, records)) return;
+    if (ModalRoute.of(context)?.isCurrent == false) return;
+
+    _lastSyncedRecords = records;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      setState(() {
+        _statsService.updateFromRecords(records);
+        _rebuildCache();
+      });
+    });
+  }
 
   /// 全量重建：区/市图层切换、初次加载、主题变化这些"整个 _activeRegions
   /// 集合都可能变了"的场景用这个。
@@ -838,6 +859,7 @@ class AdminMapViewState extends State<AdminMapView>
 
   @override
   Widget build(BuildContext context) {
+    _syncStatsIfVisible(context.watch<DiagnosisRecordsProvider>());
     if (_lastIsDark != context.isDarkMode) {
       // 亮度变化后，_cachedPolygons/_cachedLabels 里缓存的颜色是旧主题算出来的，
       // 这里强制重新计算一次，避免地图图层颜色和其余 UI 不同步。
