@@ -1,57 +1,37 @@
-import 'package:farm_flutter/config/config.dart';
 import 'package:farm_flutter/config/province_config.dart';
+import 'package:farm_flutter/models/diagnosis.dart';
 import 'package:farm_flutter/models/map_models.dart';
-import 'package:farm_flutter/utils/http_util.dart';
 import 'package:flutter/material.dart';
 
-/// 病害数据统计服务：负责从后端拉取诊断数据、计算区域病害统计和颜色。
+/// 病害数据统计服务：负责把诊断记录解析成区域病害统计、计算地图着色。
 class DiseaseStatsService {
   final Set<String> dataAdcodes = {};
   final Set<String> cityCodesWithDistrictData = {};
   final Map<String, Map<String, int>> diseaseStatsByCode = {};
 
-  /// 从后端拉取诊断记录并解析为统计结构。
-  ///
-  /// 默认仅保留 [currentProvince.adcodePrefix] 下的 location，避免全国数据
-  /// 污染当前省地图着色。
-  Future<void> fetchDiseaseData({String? adcodePrefix}) async {
+  /// 根据 [records] 重新计算区域病害统计，纯内存计算，不发网络请求。
+  void updateFromRecords(List<Diagnosis> records, {String? adcodePrefix}) {
     final prefix = adcodePrefix ?? currentProvince.adcodePrefix;
-    try {
-      final resp = await HttpUtil.get(
-        '/get_all_dg',
-        headers: {'X-API-Token': Config.apiToken},
-      );
-      if (resp is Map && resp['data'] is List) {
-        final dataList = resp['data'] as List;
-        dataAdcodes.clear();
-        final tempStats = <String, Map<String, int>>{};
-        for (final item in dataList) {
-          if (item is Map) {
-            final loc = item['location']?.toString().trim();
-            final name = item['bhname']?.toString().trim();
-            if (loc == null || loc.isEmpty || loc == 'null') continue;
-            if (name == null || name.isEmpty) continue;
-            if (prefix.isNotEmpty && !loc.startsWith(prefix)) continue;
-            dataAdcodes.add(loc);
-            tempStats.putIfAbsent(loc, () => {});
-            tempStats[loc]!.update(name, (c) => c + 1, ifAbsent: () => 1);
-          }
-        }
-        diseaseStatsByCode.clear();
-        diseaseStatsByCode.addAll(tempStats);
-      } else {
-        debugPrint(
-          'fetch disease data: unexpected response type=${resp.runtimeType}',
-        );
+    dataAdcodes.clear();
+    final tempStats = <String, Map<String, int>>{};
+    for (final r in records) {
+      final loc = r.location?.trim();
+      final name = r.bhname.trim();
+      if (loc == null || loc.isEmpty || loc == 'null') continue;
+      if (name.isEmpty) continue;
+      if (prefix.isNotEmpty && !loc.startsWith(prefix)) continue;
+      dataAdcodes.add(loc);
+      tempStats.putIfAbsent(loc, () => {});
+      tempStats[loc]!.update(name, (c) => c + 1, ifAbsent: () => 1);
+    }
+    diseaseStatsByCode.clear();
+    diseaseStatsByCode.addAll(tempStats);
+
+    cityCodesWithDistrictData.clear();
+    for (final adcode in dataAdcodes) {
+      if (adcode.length == 6 && !adcode.endsWith('00')) {
+        cityCodesWithDistrictData.add('${adcode.substring(0, 4)}00');
       }
-      cityCodesWithDistrictData.clear();
-      for (final adcode in dataAdcodes) {
-        if (adcode.length == 6 && !adcode.endsWith('00')) {
-          cityCodesWithDistrictData.add('${adcode.substring(0, 4)}00');
-        }
-      }
-    } catch (e, st) {
-      debugPrint('fetch disease data failed: $e\n$st');
     }
   }
 
